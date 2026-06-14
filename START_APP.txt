@@ -1,0 +1,40 @@
+# Backend setup
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# If you get an execution policy error, run this first:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then activate again:
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements/base.txt
+
+# Copy environment file
+copy .env.example .env
+
+# Run the application
+uvicorn app.main:app --reload
+
+
+
+# Backend (keep running)
+cd backend
+.\venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+
+# Frontend (in new terminal)
+cd frontend
+npm run dev
+
+# Build for production
+npm run build
+
+# Run with Docker
+docker-compose up -d

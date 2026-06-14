@@ -1,0 +1,118 @@
+# Backup original main.py
+Copy-Item app/main.py app/main.py.backup
+
+# Create corrected main.py
+@'
+"""
+FastAPI Main Application Entry Point
+"""
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from contextlib import asynccontextmanager
+import logging
+from datetime import datetime
+
+from app.core.config import settings
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for startup and shutdown events
+    """
+    # Startup
+    logger.info("Starting up...")
+    logger.info("Application startup complete")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down...")
+
+
+# Create FastAPI application FIRST
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    description="High-Performance WebSocket Application",
+    lifespan=lifespan,
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Add GZip compression
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Try to import and add exception handlers (optional)
+try:
+    from app.utils.exceptions import (
+        AppException,
+        app_exception_handler,
+        http_exception_handler,
+        generic_exception_handler
+    )
+    
+    # Register exception handlers (app already exists)
+    app.add_exception_handler(AppException, app_exception_handler)
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(Exception, generic_exception_handler)
+    logger.info("Exception handlers registered")
+except ImportError as e:
+    logger.warning(f"Exception handlers not available: {e}")
+
+# Import and include API routers
+try:
+    from app.api.v1.api import api_router
+    app.include_router(api_router, prefix=settings.API_V1_STR)
+    logger.info("API routers registered")
+except ImportError as e:
+    logger.warning(f"API routers not available: {e}")
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": settings.VERSION,
+    }
+
+# Root endpoint
+@app.get("/")
+async def root():
+    return {
+        "message": f"Welcome to {settings.PROJECT_NAME} API",
+        "version": settings.VERSION,
+        "docs": "/docs",
+        "status": "running"
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.DEBUG,
+        log_level=settings.LOG_LEVEL.lower(),
+    )
+'@ | Out-File -FilePath app/main.py -Encoding utf8
+
+Write-Host "main.py has been fixed!" -ForegroundColor Green

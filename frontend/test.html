@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Management System</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { margin: 10px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🏭 Asset Management System</h1>
+    <div id="status">Testing connection...</div>
+    <div id="result"></div>
+    <button onclick="testAPI()">Test API</button>
+    <button onclick="testAssets()">Get Assets</button>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<div class="success">✅ Backend is running!<br>' + JSON.stringify(data) + '</div>';
+                document.getElementById('status').innerHTML = '<span class="success">✅ Connected to backend on port 8000</span>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+                document.getElementById('status').innerHTML = '<span class="error">❌ Cannot connect to backend</span>';
+            }
+        }
+
+        async function testAssets() {
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/assets');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+            }
+        }
+
+        // Test immediately
+        testAPI();
+    </script>
+</body>
+</html>

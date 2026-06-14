@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Management API Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🏭 Asset Management System API Test</h1>
+    <p>Testing backend at http://localhost:8000</p>
+    
+    <div>
+        <button onclick="testHealth()">✅ Test Health</button>
+        <button onclick="testGetAssets()">📋 Get Assets</button>
+        <button onclick="testCreateAsset()">➕ Create Test Asset</button>
+    </div>
+    
+    <h3>Result:</h3>
+    <pre id="result">Click a button to test...</pre>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        async function testHealth() {
+            try {
+                const res = await fetch(API_URL + '/health');
+                const data = await res.json();
+                document.getElementById('result').innerHTML = '✅ Health Check Success:\n' + JSON.stringify(data, null, 2);
+            } catch(e) {
+                document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+            }
+        }
+        
+        async function testGetAssets() {
+            try {
+                const res = await fetch(API_URL + '/api/v1/assets');
+                const data = await res.json();
+                document.getElementById('result').innerHTML = '📋 Assets:\n' + JSON.stringify(data, null, 2);
+            } catch(e) {
+                document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+            }
+        }
+        
+        async function testCreateAsset() {
+            try {
+                const res = await fetch(API_URL + '/api/v1/assets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        plant_id: 1,
+                        asset_type: 'generator',
+                        asset_name: 'Test Generator ' + Date.now(),
+                        asset_code: 'GEN' + Date.now(),
+                        manufacturer: 'Caterpillar',
+                        model: '3516C'
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('result').innerHTML = '✅ Asset Created:\n' + JSON.stringify(data, null, 2);
+            } catch(e) {
+                document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
