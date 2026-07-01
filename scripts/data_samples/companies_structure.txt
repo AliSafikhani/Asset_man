@@ -1,0 +1,29 @@
+TABLE STRUCTURE: COMPANIES
+================================================================================
+
+Column Name               Data Type                 Nullable     Default             
+-------------------------------------------------------------------------------------
+id                        integer                   NO           nextval('companies_id_seq'::regclass)
+centroid_id               integer                   YES          None                
+name                      character varying         NO           None                
+code                      character varying         NO           None                
+abbreviation              character varying         YES          None                
+company_type              character varying         YES          None                
+contact_person            character varying         YES          None                
+contact_email             character varying         YES          None                
+contact_phone             character varying         YES          None                
+address_line1             text                      YES          None                
+address_line2             text                      YES          None                
+city                      character varying         YES          None                
+state                     character varying         YES          None                
+country                   character varying         YES          None                
+postal_code               character varying         YES          None                
+status                    character varying         YES          'active'::character varying
+metadata                  jsonb                     YES          '{}'::jsonb         
+created_at                timestamp with time zone  YES          CURRENT_TIMESTAMP   
+updated_at                timestamp with time zone  YES          CURRENT_TIMESTAMP   
+parent_company_id         integer                   YES          None                
+address                   text                      YES          None                
+phone                     character varying         YES          None                
+email                     character varying         YES          None                
+extra_data                jsonb                     YES          '{}'::jsonb         

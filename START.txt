@@ -1,6 +1,6 @@
-cd D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\2_EMA_2\backend
+cd D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend
 .\venv\Scripts\Activate.ps1
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-cd D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\2_EMA_2\frontend
+cd D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend
 npm run dev

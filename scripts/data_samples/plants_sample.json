@@ -1,0 +1,127 @@
+[
+  {
+    "company_id": 30,
+    "name": "Boston Power Plant",
+    "code": "BOS-001",
+    "plant_type": "Natural Gas",
+    "plant_manager_name": "Robert Johnson",
+    "plant_manager_email": "robert.johnson@northeastpower.com",
+    "plant_manager_phone": "+1-617-555-1001",
+    "address_line1": "200 Industrial Drive",
+    "address_line2": "",
+    "city": "Boston",
+    "state": "MA",
+    "country": "USA",
+    "postal_code": "02118",
+    "gps_coordinates": "(42.3601, -71.0589)",
+    "commissioning_date": "2010-03-15",
+    "operational_status": "operational",
+    "installed_capacity_mw": 450.5,
+    "metadata": {
+      "fuel_type": "Natural Gas",
+      "efficiency": 0.65,
+      "turbine_count": 3,
+      "supplier": "Siemens"
+    },
+    "location": "200 Industrial Drive, Boston, MA 02118",
+    "extra_data": {
+      "plant_license": "PL-2024-001",
+      "annual_output": 2500000,
+      "emissions": "Low"
+    }
+  },
+  {
+    "company_id": 30,
+    "name": "Northeast Wind Farm",
+    "code": "NEW-002",
+    "plant_type": "Wind",
+    "plant_manager_name": "Sarah Williams",
+    "plant_manager_email": "sarah.williams@northeastpower.com",
+    "plant_manager_phone": "+1-617-555-1002",
+    "address_line1": "100 Windmill Road",
+    "address_line2": "",
+    "city": "Portland",
+    "state": "ME",
+    "country": "USA",
+    "postal_code": "04101",
+    "gps_coordinates": "(43.6591, -70.2568)",
+    "commissioning_date": "2018-08-22",
+    "operational_status": "operational",
+    "installed_capacity_mw": 125.0,
+    "metadata": {
+      "turbine_count": 50,
+      "turbine_manufacturer": "Vestas",
+      "hub_height": 80,
+      "rotor_diameter": 110
+    },
+    "location": "100 Windmill Road, Portland, ME 04101",
+    "extra_data": {
+      "plant_license": "PL-2024-002",
+      "annual_output": 350000,
+      "wind_speed_avg": 7.5
+    }
+  },
+  {
+    "company_id": 30,
+    "name": "Phoenix Solar Farm",
+    "code": "PHX-003",
+    "plant_type": "Solar",
+    "plant_manager_name": "Maria Rodriguez",
+    "plant_manager_email": "maria.rodriguez@southwestenergy.com",
+    "plant_manager_phone": "+1-602-555-1003",
+    "address_line1": "300 Solar Avenue",
+    "address_line2": "Unit B",
+    "city": "Phoenix",
+    "state": "AZ",
+    "country": "USA",
+    "postal_code": "85003",
+    "gps_coordinates": "(33.4484, -112.0740)",
+    "commissioning_date": "2020-06-10",
+    "operational_status": "operational",
+    "installed_capacity_mw": 85.0,
+    "metadata": {
+      "panel_type": "Monocrystalline",
+      "panel_count": 250000,
+      "tracking": "Single-axis",
+      "efficiency": 0.22
+    },
+    "location": "300 Solar Avenue, Phoenix, AZ 85003",
+    "extra_data": {
+      "plant_license": "PL-2024-003",
+      "annual_output": 180000,
+      "sun_hours": 3200
+    }
+  },
+  {
+    "company_id": 30,
+    "name": "Desert Energy Complex",
+    "code": "DEC-004",
+    "plant_type": "Solar Thermal",
+    "plant_manager_name": "James Lee",
+    "plant_manager_email": "james.lee@southwestenergy.com",
+    "plant_manager_phone": "+1-602-555-1004",
+    "address_line1": "450 Desert Heat Boulevard",
+    "address_line2": "",
+    "city": "Tucson",
+    "state": "AZ",
+    "country": "USA",
+    "postal_code": "85701",
+    "gps_coordinates": "(32.2226, -110.9747)",
+    "commissioning_date": "2016-11-05",
+    "operational_status": "operational",
+    "installed_capacity_mw": 280.0,
+    "metadata": {
+      "technology": "Parabolic Trough",
+      "collector_count": 1500,
+      "storage_hours": 6,
+      "efficiency": 0.35
+    },
+    "location": "450 Desert Heat Boulevard, Tucson, AZ 85701",
+    "extra_data": {
+      "plant_license": "PL-2024-004",
+      "annual_output": 600000,
+      "thermal_storage": "Molten Salt"
+    }
+  }
+  
+]

@@ -1,0 +1,4836 @@
+﻿[
+    {
+        "plant_id":  1,
+        "asset_type":  "Generator",
+        "asset_name":  "Turbine Generator G1",
+        "asset_code":  "GEN-001-001",
+        "asset_tag":  "G-101",
+        "manufacturer":  "Siemens",
+        "model":  "SGT-800",
+        "serial_number":  "SN-SIE-001",
+        "manufacturing_year":  2019,
+        "installation_date":  "2020-01-15",
+        "commissioning_date":  "2020-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  92.5,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(42.3601, -71.0589)",
+        "bay_number":  "B-01",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-001-001",
+        "photo_url":  "https://images.company.com/assets/GEN-001-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "45MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2020-03-01",
+        "warranty_end_date":  "2025-03-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  20,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2500000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Generator",
+        "asset_name":  "Turbine Generator G2",
+        "asset_code":  "GEN-001-002",
+        "asset_tag":  "G-102",
+        "manufacturer":  "GE",
+        "model":  "MS6001",
+        "serial_number":  "SN-GE-002",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-10",
+        "commissioning_date":  "2020-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(42.3603, -71.0591)",
+        "bay_number":  "B-02",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-001-002",
+        "photo_url":  "https://images.company.com/assets/GEN-001-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2020-08-01",
+        "warranty_end_date":  "2025-08-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2800000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Transformer",
+        "asset_name":  "Step-Up Transformer T1",
+        "asset_code":  "TRF-001-001",
+        "asset_tag":  "T-101",
+        "manufacturer":  "ABB",
+        "model":  "50MVA",
+        "serial_number":  "SN-ABB-001",
+        "manufacturing_year":  2018,
+        "installation_date":  "2019-11-20",
+        "commissioning_date":  "2020-01-10",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(42.3605, -71.0595)",
+        "bay_number":  "B-03",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-001-001",
+        "photo_url":  "https://images.company.com/assets/TRF-001-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2020-01-10",
+        "warranty_end_date":  "2025-01-10",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  850000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Transformer",
+        "asset_name":  "Auxiliary Transformer T2",
+        "asset_code":  "TRF-001-002",
+        "asset_tag":  "T-102",
+        "manufacturer":  "Siemens",
+        "model":  "10MVA",
+        "serial_number":  "SN-SIE-003",
+        "manufacturing_year":  2019,
+        "installation_date":  "2020-02-15",
+        "commissioning_date":  "2020-03-15",
+        "operational_status":  "active",
+        "asset_health_score":  90.5,
+        "criticality_level":  "High",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(42.3607, -71.0598)",
+        "bay_number":  "B-04",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-001-002",
+        "photo_url":  "https://images.company.com/assets/TRF-001-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2020-03-15",
+        "warranty_end_date":  "2025-03-15",
+        "expected_life_years":  30,
+        "remaining_life_years":  25,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  250000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Pump Motor M1",
+        "asset_code":  "MOT-001-001",
+        "asset_tag":  "M-101",
+        "manufacturer":  "WEG",
+        "model":  "500HP",
+        "serial_number":  "SN-WEG-001",
+        "manufacturing_year":  2019,
+        "installation_date":  "2020-01-20",
+        "commissioning_date":  "2020-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(42.3602, -71.0587)",
+        "bay_number":  "B-05",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-001-001",
+        "photo_url":  "https://images.company.com/assets/MOT-001-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "500HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2020-03-01",
+        "warranty_end_date":  "2025-03-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-03-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  45000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Motor",
+        "asset_name":  "Fan Motor M2",
+        "asset_code":  "MOT-001-002",
+        "asset_tag":  "M-102",
+        "manufacturer":  "Marathon",
+        "model":  "200HP",
+        "serial_number":  "SN-MAR-001",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-05-10",
+        "commissioning_date":  "2020-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  91.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Cooling Tower",
+        "gps_coordinates":  "(42.3604, -71.0590)",
+        "bay_number":  "B-06",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-001-002",
+        "photo_url":  "https://images.company.com/assets/MOT-001-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "200HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-06-15",
+        "warranty_end_date":  "2025-06-15",
+        "expected_life_years":  20,
+        "remaining_life_years":  16,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  18000
+                       }
+    },
+    {
+        "plant_id":  1,
+        "asset_type":  "Motor",
+        "asset_name":  "Boiler Feed Pump M3",
+        "asset_code":  "MOT-001-003",
+        "asset_tag":  "M-103",
+        "manufacturer":  "GE",
+        "model":  "750HP",
+        "serial_number":  "SN-GE-003",
+        "manufacturing_year":  2018,
+        "installation_date":  "2019-12-01",
+        "commissioning_date":  "2020-01-15",
+        "operational_status":  "active",
+        "asset_health_score":  84.5,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Boiler House",
+        "gps_coordinates":  "(42.3606, -71.0593)",
+        "bay_number":  "B-07",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-001-003",
+        "photo_url":  "https://images.company.com/assets/MOT-001-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "750HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2020-01-15",
+        "warranty_end_date":  "2025-01-15",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  65000
+                       }
+    },
+    {
+        "plant_id":  2,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Turbine Generator W1",
+        "asset_code":  "GEN-002-001",
+        "asset_tag":  "G-201",
+        "manufacturer":  "Vestas",
+        "model":  "V112-3.0MW",
+        "serial_number":  "SN-VES-001",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-08-15",
+        "commissioning_date":  "2018-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(43.6591, -70.2568)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-002-001",
+        "photo_url":  "https://images.company.com/assets/GEN-002-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3.0MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-10-01",
+        "warranty_end_date":  "2023-10-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2500000
+                       }
+    },
+    {
+        "plant_id":  2,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Farm Transformer T1",
+        "asset_code":  "TRF-002-001",
+        "asset_tag":  "T-201",
+        "manufacturer":  "ABB",
+        "model":  "30MVA",
+        "serial_number":  "SN-ABB-002",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-07-20",
+        "commissioning_date":  "2018-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.5,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(43.6595, -70.2572)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-002-001",
+        "photo_url":  "https://images.company.com/assets/TRF-002-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2018-10-01",
+        "warranty_end_date":  "2023-10-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  22,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  600000
+                       }
+    },
+    {
+        "plant_id":  2,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor Y1",
+        "asset_code":  "MOT-002-001",
+        "asset_tag":  "M-201",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-004",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-08-01",
+        "commissioning_date":  "2018-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(43.6592, -70.2569)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-002-001",
+        "photo_url":  "https://images.company.com/assets/MOT-002-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-10-01",
+        "warranty_end_date":  "2023-10-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  9,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  2,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor P1",
+        "asset_code":  "MOT-002-002",
+        "asset_tag":  "M-202",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-003",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-08-01",
+        "commissioning_date":  "2018-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(43.6593, -70.2570)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-002-002",
+        "photo_url":  "https://images.company.com/assets/MOT-002-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2018-10-01",
+        "warranty_end_date":  "2023-10-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  9,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  3,
+        "asset_type":  "Transformer",
+        "asset_name":  "Solar Step-Up T1",
+        "asset_code":  "TRF-003-001",
+        "asset_tag":  "T-301",
+        "manufacturer":  "Siemens",
+        "model":  "20MVA",
+        "serial_number":  "SN-SIE-005",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-01",
+        "commissioning_date":  "2020-06-10",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(33.4484, -112.0740)",
+        "bay_number":  "B-01",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-003-001",
+        "photo_url":  "https://images.company.com/assets/TRF-003-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "20MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2020-06-10",
+        "warranty_end_date":  "2025-06-10",
+        "expected_life_years":  30,
+        "remaining_life_years":  26,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  450000
+                       }
+    },
+    {
+        "plant_id":  3,
+        "asset_type":  "Transformer",
+        "asset_name":  "Inverter Transformer T2",
+        "asset_code":  "TRF-003-002",
+        "asset_tag":  "T-302",
+        "manufacturer":  "GE",
+        "model":  "5MVA",
+        "serial_number":  "SN-GE-004",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-01",
+        "commissioning_date":  "2020-06-10",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(33.4486, -112.0743)",
+        "bay_number":  "B-02",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-003-002",
+        "photo_url":  "https://images.company.com/assets/TRF-003-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5MVA",
+                               "voltage_ratio":  "480/34.5kV"
+                           },
+        "warranty_start_date":  "2020-06-10",
+        "warranty_end_date":  "2025-06-10",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  120000
+                       }
+    },
+    {
+        "plant_id":  3,
+        "asset_type":  "Motor",
+        "asset_name":  "Tracker Motor M1",
+        "asset_code":  "MOT-003-001",
+        "asset_tag":  "M-301",
+        "manufacturer":  "WEG",
+        "model":  "5HP",
+        "serial_number":  "SN-WEG-002",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-01",
+        "commissioning_date":  "2020-06-10",
+        "operational_status":  "active",
+        "asset_health_score":  95.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Solar Field",
+        "gps_coordinates":  "(33.4488, -112.0745)",
+        "bay_number":  "B-03",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-003-001",
+        "photo_url":  "https://images.company.com/assets/MOT-003-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-06-10",
+        "warranty_end_date":  "2025-06-10",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000
+                       }
+    },
+    {
+        "plant_id":  3,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan M2",
+        "asset_code":  "MOT-003-002",
+        "asset_tag":  "M-302",
+        "manufacturer":  "Marathon",
+        "model":  "3HP",
+        "serial_number":  "SN-MAR-002",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-01",
+        "commissioning_date":  "2020-06-10",
+        "operational_status":  "active",
+        "asset_health_score":  96.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(33.4485, -112.0742)",
+        "bay_number":  "B-04",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-003-002",
+        "photo_url":  "https://images.company.com/assets/MOT-003-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2020-06-10",
+        "warranty_end_date":  "2025-06-10",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1200
+                       }
+    },
+    {
+        "plant_id":  8,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Generator WG1",
+        "asset_code":  "GEN-008-001",
+        "asset_tag":  "G-801",
+        "manufacturer":  "GE",
+        "model":  "2.5MW",
+        "serial_number":  "SN-GE-005",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-06-15",
+        "commissioning_date":  "2019-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.5,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(36.8529, -75.9780)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-008-001",
+        "photo_url":  "https://images.company.com/assets/GEN-008-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "2.5MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-08-01",
+        "warranty_end_date":  "2024-08-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2200000
+                       }
+    },
+    {
+        "plant_id":  8,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Transformer T1",
+        "asset_code":  "TRF-008-001",
+        "asset_tag":  "T-801",
+        "manufacturer":  "ABB",
+        "model":  "25MVA",
+        "serial_number":  "SN-ABB-004",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-06-01",
+        "commissioning_date":  "2019-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(36.8532, -75.9785)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-008-001",
+        "photo_url":  "https://images.company.com/assets/TRF-008-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2019-08-01",
+        "warranty_end_date":  "2024-08-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  23,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  550000
+                       }
+    },
+    {
+        "plant_id":  8,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor WY1",
+        "asset_code":  "MOT-008-001",
+        "asset_tag":  "M-801",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-006",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-07-01",
+        "commissioning_date":  "2019-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(36.8530, -75.9782)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-008-001",
+        "photo_url":  "https://images.company.com/assets/MOT-008-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-08-01",
+        "warranty_end_date":  "2024-08-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  8,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor WP1",
+        "asset_code":  "MOT-008-002",
+        "asset_tag":  "M-802",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-005",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-07-01",
+        "commissioning_date":  "2019-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(36.8531, -75.9783)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-008-002",
+        "photo_url":  "https://images.company.com/assets/MOT-008-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-08-01",
+        "warranty_end_date":  "2024-08-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  9,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H1",
+        "asset_code":  "GEN-009-001",
+        "asset_tag":  "G-901",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 45MW",
+        "serial_number":  "SN-SIE-007",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-01",
+        "commissioning_date":  "2017-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(45.5152, -122.6784)",
+        "bay_number":  "B-01",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-009-001",
+        "photo_url":  "https://images.company.com/assets/GEN-009-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "45MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2017-09-01",
+        "warranty_end_date":  "2022-09-01",
+        "expected_life_years":  40,
+        "remaining_life_years":  33,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500000
+                       }
+    },
+    {
+        "plant_id":  9,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H2",
+        "asset_code":  "GEN-009-002",
+        "asset_tag":  "G-902",
+        "manufacturer":  "GE",
+        "model":  "Hydro 40MW",
+        "serial_number":  "SN-GE-006",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-01",
+        "commissioning_date":  "2017-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  91.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(45.5154, -122.6786)",
+        "bay_number":  "B-02",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-009-002",
+        "photo_url":  "https://images.company.com/assets/GEN-009-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "40MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2017-09-01",
+        "warranty_end_date":  "2022-09-01",
+        "expected_life_years":  40,
+        "remaining_life_years":  33,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3200000
+                       }
+    },
+    {
+        "plant_id":  9,
+        "asset_type":  "Transformer",
+        "asset_name":  "Hydro Step-Up T1",
+        "asset_code":  "TRF-009-001",
+        "asset_tag":  "T-901",
+        "manufacturer":  "ABB",
+        "model":  "60MVA",
+        "serial_number":  "SN-ABB-006",
+        "manufacturing_year":  2016,
+        "installation_date":  "2017-08-01",
+        "commissioning_date":  "2017-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(45.5156, -122.6788)",
+        "bay_number":  "B-03",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-009-001",
+        "photo_url":  "https://images.company.com/assets/TRF-009-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "60MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2017-09-01",
+        "warranty_end_date":  "2022-09-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  22,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  900000
+                       }
+    },
+    {
+        "plant_id":  9,
+        "asset_type":  "Motor",
+        "asset_name":  "Gate Motor GM1",
+        "asset_code":  "MOT-009-001",
+        "asset_tag":  "M-901",
+        "manufacturer":  "WEG",
+        "model":  "50HP",
+        "serial_number":  "SN-WEG-003",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-08-15",
+        "commissioning_date":  "2017-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Spillway",
+        "gps_coordinates":  "(45.5151, -122.6782)",
+        "bay_number":  "B-04",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-009-001",
+        "photo_url":  "https://images.company.com/assets/MOT-009-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2017-09-01",
+        "warranty_end_date":  "2022-09-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  13,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  8000
+                       }
+    },
+    {
+        "plant_id":  10,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G1",
+        "asset_code":  "GEN-010-001",
+        "asset_tag":  "G-1001",
+        "manufacturer":  "GE",
+        "model":  "MS7001",
+        "serial_number":  "SN-GE-007",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-15",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(25.7617, -80.1918)",
+        "bay_number":  "B-01",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-010-001",
+        "photo_url":  "https://images.company.com/assets/GEN-010-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "60MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3000000
+                       }
+    },
+    {
+        "plant_id":  10,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G2",
+        "asset_code":  "GEN-010-002",
+        "asset_tag":  "G-1002",
+        "manufacturer":  "Siemens",
+        "model":  "SGT-600",
+        "serial_number":  "SN-SIE-008",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-03-10",
+        "commissioning_date":  "2019-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  92.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(25.7619, -80.1920)",
+        "bay_number":  "B-02",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-010-002",
+        "photo_url":  "https://images.company.com/assets/GEN-010-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "45MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-05-01",
+        "warranty_end_date":  "2024-05-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  20,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2700000
+                       }
+    },
+    {
+        "plant_id":  10,
+        "asset_type":  "Transformer",
+        "asset_name":  "Gas Plant Transformer T1",
+        "asset_code":  "TRF-010-001",
+        "asset_tag":  "T-1001",
+        "manufacturer":  "ABB",
+        "model":  "65MVA",
+        "serial_number":  "SN-ABB-007",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-20",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.5,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(25.7621, -80.1923)",
+        "bay_number":  "B-03",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-010-001",
+        "photo_url":  "https://images.company.com/assets/TRF-010-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "65MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  950000
+                       }
+    },
+    {
+        "plant_id":  10,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Pump M1",
+        "asset_code":  "MOT-010-001",
+        "asset_tag":  "M-1001",
+        "manufacturer":  "Marathon",
+        "model":  "200HP",
+        "serial_number":  "SN-MAR-003",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-01",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(25.7615, -80.1915)",
+        "bay_number":  "B-04",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-010-001",
+        "photo_url":  "https://images.company.com/assets/MOT-010-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "200HP",
+                               "voltage":  "480V",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  18000
+                       }
+    },
+    {
+        "plant_id":  29,
+        "asset_type":  "Transformer",
+        "asset_name":  "Solar Transformer T1",
+        "asset_code":  "TRF-029-001",
+        "asset_tag":  "T-2901",
+        "manufacturer":  "Siemens",
+        "model":  "25MVA",
+        "serial_number":  "SN-SIE-009",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-10-15",
+        "commissioning_date":  "2020-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(36.1699, -115.1398)",
+        "bay_number":  "B-01",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-029-001",
+        "photo_url":  "https://images.company.com/assets/TRF-029-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2020-11-01",
+        "warranty_end_date":  "2025-11-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  26,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  500000
+                       }
+    },
+    {
+        "plant_id":  29,
+        "asset_type":  "Transformer",
+        "asset_name":  "Inverter Transformer T2",
+        "asset_code":  "TRF-029-002",
+        "asset_tag":  "T-2902",
+        "manufacturer":  "GE",
+        "model":  "8MVA",
+        "serial_number":  "SN-GE-008",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-10-15",
+        "commissioning_date":  "2020-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  95.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(36.1701, -115.1400)",
+        "bay_number":  "B-02",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-029-002",
+        "photo_url":  "https://images.company.com/assets/TRF-029-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "8MVA",
+                               "voltage_ratio":  "480/34.5kV"
+                           },
+        "warranty_start_date":  "2020-11-01",
+        "warranty_end_date":  "2025-11-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  180000
+                       }
+    },
+    {
+        "plant_id":  29,
+        "asset_type":  "Motor",
+        "asset_name":  "Tracker Motor ST1",
+        "asset_code":  "MOT-029-001",
+        "asset_tag":  "M-2901",
+        "manufacturer":  "WEG",
+        "model":  "5HP",
+        "serial_number":  "SN-WEG-004",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-10-15",
+        "commissioning_date":  "2020-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  96.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Solar Field",
+        "gps_coordinates":  "(36.1703, -115.1403)",
+        "bay_number":  "B-03",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-029-001",
+        "photo_url":  "https://images.company.com/assets/MOT-029-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-11-01",
+        "warranty_end_date":  "2025-11-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000
+                       }
+    },
+    {
+        "plant_id":  29,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan SF1",
+        "asset_code":  "MOT-029-002",
+        "asset_tag":  "M-2902",
+        "manufacturer":  "Marathon",
+        "model":  "3HP",
+        "serial_number":  "SN-MAR-004",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-10-15",
+        "commissioning_date":  "2020-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  97.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(36.1700, -115.1399)",
+        "bay_number":  "B-04",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-029-002",
+        "photo_url":  "https://images.company.com/assets/MOT-029-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2020-11-01",
+        "warranty_end_date":  "2025-11-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1200
+                       }
+    },
+    {
+        "plant_id":  30,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Generator WG1",
+        "asset_code":  "GEN-030-001",
+        "asset_tag":  "G-3001",
+        "manufacturer":  "Vestas",
+        "model":  "V117-3.0MW",
+        "serial_number":  "SN-VES-002",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-08-20",
+        "commissioning_date":  "2019-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(38.3363, -75.0849)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-030-001",
+        "photo_url":  "https://images.company.com/assets/GEN-030-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3.0MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-10-01",
+        "warranty_end_date":  "2024-10-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2600000
+                       }
+    },
+    {
+        "plant_id":  30,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Transformer T1",
+        "asset_code":  "TRF-030-001",
+        "asset_tag":  "T-3001",
+        "manufacturer":  "ABB",
+        "model":  "30MVA",
+        "serial_number":  "SN-ABB-008",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-08-01",
+        "commissioning_date":  "2019-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(38.3366, -75.0852)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-030-001",
+        "photo_url":  "https://images.company.com/assets/TRF-030-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2019-10-01",
+        "warranty_end_date":  "2024-10-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  620000
+                       }
+    },
+    {
+        "plant_id":  30,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor WY1",
+        "asset_code":  "MOT-030-001",
+        "asset_tag":  "M-3001",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-010",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-09-01",
+        "commissioning_date":  "2019-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(38.3364, -75.0850)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-030-001",
+        "photo_url":  "https://images.company.com/assets/MOT-030-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-10-01",
+        "warranty_end_date":  "2024-10-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  30,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor WP1",
+        "asset_code":  "MOT-030-002",
+        "asset_tag":  "M-3002",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-009",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-09-01",
+        "commissioning_date":  "2019-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(38.3365, -75.0851)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-030-002",
+        "photo_url":  "https://images.company.com/assets/MOT-030-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-10-01",
+        "warranty_end_date":  "2024-10-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G1",
+        "asset_code":  "GEN-031-001",
+        "asset_tag":  "G-3101",
+        "manufacturer":  "Siemens",
+        "model":  "SGT-800",
+        "serial_number":  "SN-SIE-011",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-15",
+        "commissioning_date":  "2018-06-01",
+        "operational_status":  "active",
+        "asset_health_score":  91.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(47.6062, -122.3321)",
+        "bay_number":  "B-01",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-031-001",
+        "photo_url":  "https://images.company.com/assets/GEN-031-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-06-01",
+        "warranty_end_date":  "2023-06-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2800000
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G2",
+        "asset_code":  "GEN-031-002",
+        "asset_tag":  "G-3102",
+        "manufacturer":  "GE",
+        "model":  "MS6001",
+        "serial_number":  "SN-GE-009",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-03-20",
+        "commissioning_date":  "2019-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(47.6064, -122.3323)",
+        "bay_number":  "B-02",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-031-002",
+        "photo_url":  "https://images.company.com/assets/GEN-031-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "45MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-05-01",
+        "warranty_end_date":  "2024-05-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  20,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2500000
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Transformer",
+        "asset_name":  "Gas Transformer T1",
+        "asset_code":  "TRF-031-001",
+        "asset_tag":  "T-3101",
+        "manufacturer":  "ABB",
+        "model":  "60MVA",
+        "serial_number":  "SN-ABB-010",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-01",
+        "commissioning_date":  "2018-06-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(47.6066, -122.3325)",
+        "bay_number":  "B-03",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-031-001",
+        "photo_url":  "https://images.company.com/assets/TRF-031-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "60MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2018-06-01",
+        "warranty_end_date":  "2023-06-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  900000
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Motor",
+        "asset_name":  "Boiler Feed Pump M1",
+        "asset_code":  "MOT-031-001",
+        "asset_tag":  "M-3101",
+        "manufacturer":  "WEG",
+        "model":  "500HP",
+        "serial_number":  "SN-WEG-005",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-20",
+        "commissioning_date":  "2018-06-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Boiler House",
+        "gps_coordinates":  "(47.6060, -122.3319)",
+        "bay_number":  "B-04",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-031-001",
+        "photo_url":  "https://images.company.com/assets/MOT-031-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "500HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2018-06-01",
+        "warranty_end_date":  "2023-06-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  45000
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Motor",
+        "asset_name":  "Condenser Pump M2",
+        "asset_code":  "MOT-031-002",
+        "asset_tag":  "M-3102",
+        "manufacturer":  "Marathon",
+        "model":  "300HP",
+        "serial_number":  "SN-MAR-005",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-01-15",
+        "commissioning_date":  "2019-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(47.6061, -122.3320)",
+        "bay_number":  "B-05",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-031-002",
+        "photo_url":  "https://images.company.com/assets/MOT-031-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "300HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-03-01",
+        "warranty_end_date":  "2024-03-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  25000
+                       }
+    },
+    {
+        "plant_id":  31,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Tower Fan M3",
+        "asset_code":  "MOT-031-003",
+        "asset_tag":  "M-3103",
+        "manufacturer":  "GE",
+        "model":  "150HP",
+        "serial_number":  "SN-GE-010",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-06-01",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Cooling Tower",
+        "gps_coordinates":  "(47.6063, -122.3322)",
+        "bay_number":  "B-06",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-031-003",
+        "photo_url":  "https://images.company.com/assets/MOT-031-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "150HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  12000
+                       }
+    },
+    {
+        "plant_id":  32,
+        "asset_type":  "Transformer",
+        "asset_name":  "Solar Transformer T1",
+        "asset_code":  "TRF-032-001",
+        "asset_tag":  "T-3201",
+        "manufacturer":  "Siemens",
+        "model":  "20MVA",
+        "serial_number":  "SN-SIE-012",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-15",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(36.0395, -114.9817)",
+        "bay_number":  "B-01",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-032-001",
+        "photo_url":  "https://images.company.com/assets/TRF-032-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "20MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  450000
+                       }
+    },
+    {
+        "plant_id":  32,
+        "asset_type":  "Transformer",
+        "asset_name":  "Inverter Transformer T2",
+        "asset_code":  "TRF-032-002",
+        "asset_tag":  "T-3202",
+        "manufacturer":  "GE",
+        "model":  "6MVA",
+        "serial_number":  "SN-GE-011",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-15",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  92.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(36.0397, -114.9819)",
+        "bay_number":  "B-02",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-032-002",
+        "photo_url":  "https://images.company.com/assets/TRF-032-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "6MVA",
+                               "voltage_ratio":  "480/34.5kV"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  140000
+                       }
+    },
+    {
+        "plant_id":  32,
+        "asset_type":  "Motor",
+        "asset_name":  "Tracker Motor ST1",
+        "asset_code":  "MOT-032-001",
+        "asset_tag":  "M-3201",
+        "manufacturer":  "WEG",
+        "model":  "5HP",
+        "serial_number":  "SN-WEG-006",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-15",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Solar Field",
+        "gps_coordinates":  "(36.0399, -114.9821)",
+        "bay_number":  "B-03",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-032-001",
+        "photo_url":  "https://images.company.com/assets/MOT-032-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  9,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000
+                       }
+    },
+    {
+        "plant_id":  32,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan SF1",
+        "asset_code":  "MOT-032-002",
+        "asset_tag":  "M-3202",
+        "manufacturer":  "Marathon",
+        "model":  "3HP",
+        "serial_number":  "SN-MAR-006",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-15",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(36.0396, -114.9818)",
+        "bay_number":  "B-04",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-032-002",
+        "photo_url":  "https://images.company.com/assets/MOT-032-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  9,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1200
+                       }
+    },
+    {
+        "plant_id":  33,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H1",
+        "asset_code":  "GEN-033-001",
+        "asset_tag":  "G-3301",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 50MW",
+        "serial_number":  "SN-SIE-013",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-09-15",
+        "commissioning_date":  "2015-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(40.7608, -111.8910)",
+        "bay_number":  "B-01",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-033-001",
+        "photo_url":  "https://images.company.com/assets/GEN-033-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2015-10-01",
+        "warranty_end_date":  "2020-10-01",
+        "expected_life_years":  40,
+        "remaining_life_years":  30,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  4000000
+                       }
+    },
+    {
+        "plant_id":  33,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H2",
+        "asset_code":  "GEN-033-002",
+        "asset_tag":  "G-3302",
+        "manufacturer":  "GE",
+        "model":  "Hydro 35MW",
+        "serial_number":  "SN-GE-012",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-09-15",
+        "commissioning_date":  "2015-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(40.7610, -111.8912)",
+        "bay_number":  "B-02",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-033-002",
+        "photo_url":  "https://images.company.com/assets/GEN-033-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "35MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2015-10-01",
+        "warranty_end_date":  "2020-10-01",
+        "expected_life_years":  40,
+        "remaining_life_years":  30,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3000000
+                       }
+    },
+    {
+        "plant_id":  33,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H3",
+        "asset_code":  "GEN-033-003",
+        "asset_tag":  "G-3303",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 40MW",
+        "serial_number":  "SN-SIE-014",
+        "manufacturing_year":  2016,
+        "installation_date":  "2016-09-15",
+        "commissioning_date":  "2016-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(40.7612, -111.8914)",
+        "bay_number":  "B-03",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-033-003",
+        "photo_url":  "https://images.company.com/assets/GEN-033-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "40MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2016-10-01",
+        "warranty_end_date":  "2021-10-01",
+        "expected_life_years":  40,
+        "remaining_life_years":  31,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500000
+                       }
+    },
+    {
+        "plant_id":  33,
+        "asset_type":  "Transformer",
+        "asset_name":  "Hydro Step-Up T1",
+        "asset_code":  "TRF-033-001",
+        "asset_tag":  "T-3301",
+        "manufacturer":  "ABB",
+        "model":  "70MVA",
+        "serial_number":  "SN-ABB-011",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-08-15",
+        "commissioning_date":  "2015-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(40.7614, -111.8916)",
+        "bay_number":  "B-04",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-033-001",
+        "photo_url":  "https://images.company.com/assets/TRF-033-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "70MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2015-10-01",
+        "warranty_end_date":  "2020-10-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1000000
+                       }
+    },
+    {
+        "plant_id":  33,
+        "asset_type":  "Motor",
+        "asset_name":  "Gate Motor GM1",
+        "asset_code":  "MOT-033-001",
+        "asset_tag":  "M-3301",
+        "manufacturer":  "WEG",
+        "model":  "60HP",
+        "serial_number":  "SN-WEG-007",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-08-20",
+        "commissioning_date":  "2015-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  82.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Spillway",
+        "gps_coordinates":  "(40.7606, -111.8908)",
+        "bay_number":  "B-05",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-033-001",
+        "photo_url":  "https://images.company.com/assets/MOT-033-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "60HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2015-10-01",
+        "warranty_end_date":  "2020-10-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  9000
+                       }
+    },
+    {
+        "plant_id":  34,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Generator WG1",
+        "asset_code":  "GEN-034-001",
+        "asset_tag":  "G-3401",
+        "manufacturer":  "Vestas",
+        "model":  "V112-3.0MW",
+        "serial_number":  "SN-VES-003",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-09-20",
+        "commissioning_date":  "2019-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  91.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(42.9634, -85.6681)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-034-001",
+        "photo_url":  "https://images.company.com/assets/GEN-034-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3.0MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-11-01",
+        "warranty_end_date":  "2024-11-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2500000
+                       }
+    },
+    {
+        "plant_id":  34,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Transformer T1",
+        "asset_code":  "TRF-034-001",
+        "asset_tag":  "T-3401",
+        "manufacturer":  "ABB",
+        "model":  "30MVA",
+        "serial_number":  "SN-ABB-012",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-09-01",
+        "commissioning_date":  "2019-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(42.9637, -85.6684)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-034-001",
+        "photo_url":  "https://images.company.com/assets/TRF-034-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2019-11-01",
+        "warranty_end_date":  "2024-11-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  600000
+                       }
+    },
+    {
+        "plant_id":  34,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor WY1",
+        "asset_code":  "MOT-034-001",
+        "asset_tag":  "M-3401",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-015",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-10-01",
+        "commissioning_date":  "2019-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(42.9635, -85.6682)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-034-001",
+        "photo_url":  "https://images.company.com/assets/MOT-034-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-11-01",
+        "warranty_end_date":  "2024-11-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  34,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor WP1",
+        "asset_code":  "MOT-034-002",
+        "asset_tag":  "M-3402",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-013",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-10-01",
+        "commissioning_date":  "2019-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  91.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(42.9636, -85.6683)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-034-002",
+        "photo_url":  "https://images.company.com/assets/MOT-034-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-11-01",
+        "warranty_end_date":  "2024-11-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G1",
+        "asset_code":  "GEN-035-001",
+        "asset_tag":  "G-3501",
+        "manufacturer":  "GE",
+        "model":  "Frame 9",
+        "serial_number":  "SN-GE-013",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-08-20",
+        "commissioning_date":  "2017-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(42.3314, -83.0458)",
+        "bay_number":  "B-01",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-035-001",
+        "photo_url":  "https://images.company.com/assets/GEN-035-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "80MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2017-10-01",
+        "warranty_end_date":  "2022-10-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  18,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500000
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G2",
+        "asset_code":  "GEN-035-002",
+        "asset_tag":  "G-3502",
+        "manufacturer":  "Siemens",
+        "model":  "SGT-800",
+        "serial_number":  "SN-SIE-016",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-06-10",
+        "commissioning_date":  "2018-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  92.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(42.3316, -83.0460)",
+        "bay_number":  "B-02",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-035-002",
+        "photo_url":  "https://images.company.com/assets/GEN-035-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-08-01",
+        "warranty_end_date":  "2023-08-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2800000
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Transformer",
+        "asset_name":  "Gas Transformer T1",
+        "asset_code":  "TRF-035-001",
+        "asset_tag":  "T-3501",
+        "manufacturer":  "ABB",
+        "model":  "85MVA",
+        "serial_number":  "SN-ABB-014",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-08-01",
+        "commissioning_date":  "2017-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(42.3318, -83.0462)",
+        "bay_number":  "B-03",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-035-001",
+        "photo_url":  "https://images.company.com/assets/TRF-035-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "85MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2017-10-01",
+        "warranty_end_date":  "2022-10-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  23,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1100000
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Water Pump M1",
+        "asset_code":  "MOT-035-001",
+        "asset_tag":  "M-3501",
+        "manufacturer":  "WEG",
+        "model":  "400HP",
+        "serial_number":  "SN-WEG-008",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-08-10",
+        "commissioning_date":  "2017-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(42.3310, -83.0454)",
+        "bay_number":  "B-04",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-035-001",
+        "photo_url":  "https://images.company.com/assets/MOT-035-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "400HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2017-10-01",
+        "warranty_end_date":  "2022-10-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  13,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  35000
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Motor",
+        "asset_name":  "Boiler Feed Pump M2",
+        "asset_code":  "MOT-035-002",
+        "asset_tag":  "M-3502",
+        "manufacturer":  "Marathon",
+        "model":  "600HP",
+        "serial_number":  "SN-MAR-007",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-01-15",
+        "commissioning_date":  "2018-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Boiler House",
+        "gps_coordinates":  "(42.3312, -83.0456)",
+        "bay_number":  "B-05",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-035-002",
+        "photo_url":  "https://images.company.com/assets/MOT-035-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "600HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2018-03-01",
+        "warranty_end_date":  "2023-03-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  55000
+                       }
+    },
+    {
+        "plant_id":  35,
+        "asset_type":  "Motor",
+        "asset_name":  "Condenser Pump M3",
+        "asset_code":  "MOT-035-003",
+        "asset_tag":  "M-3503",
+        "manufacturer":  "GE",
+        "model":  "250HP",
+        "serial_number":  "SN-GE-014",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-01",
+        "commissioning_date":  "2017-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(42.3314, -83.0458)",
+        "bay_number":  "B-06",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-035-003",
+        "photo_url":  "https://images.company.com/assets/MOT-035-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "250HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2017-10-01",
+        "warranty_end_date":  "2022-10-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  13,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  22000
+                       }
+    },
+    {
+        "plant_id":  36,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Generator WG1",
+        "asset_code":  "GEN-036-001",
+        "asset_tag":  "G-3601",
+        "manufacturer":  "GE",
+        "model":  "2.5MW",
+        "serial_number":  "SN-GE-015",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-07-15",
+        "commissioning_date":  "2019-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(41.9779, -91.6656)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-036-001",
+        "photo_url":  "https://images.company.com/assets/GEN-036-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "2.5MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-09-01",
+        "warranty_end_date":  "2024-09-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2200000
+                       }
+    },
+    {
+        "plant_id":  36,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Transformer T1",
+        "asset_code":  "TRF-036-001",
+        "asset_tag":  "T-3601",
+        "manufacturer":  "ABB",
+        "model":  "25MVA",
+        "serial_number":  "SN-ABB-015",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-07-01",
+        "commissioning_date":  "2019-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(41.9782, -91.6659)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-036-001",
+        "photo_url":  "https://images.company.com/assets/TRF-036-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2019-09-01",
+        "warranty_end_date":  "2024-09-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  23,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  550000
+                       }
+    },
+    {
+        "plant_id":  36,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor WY1",
+        "asset_code":  "MOT-036-001",
+        "asset_tag":  "M-3601",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-017",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-08-01",
+        "commissioning_date":  "2019-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(41.9780, -91.6657)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-036-001",
+        "photo_url":  "https://images.company.com/assets/MOT-036-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-09-01",
+        "warranty_end_date":  "2024-09-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  36,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor WP1",
+        "asset_code":  "MOT-036-002",
+        "asset_tag":  "M-3602",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-016",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-08-01",
+        "commissioning_date":  "2019-09-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(41.9781, -91.6658)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-036-002",
+        "photo_url":  "https://images.company.com/assets/MOT-036-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-09-01",
+        "warranty_end_date":  "2024-09-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  37,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H1",
+        "asset_code":  "GEN-037-001",
+        "asset_tag":  "G-3701",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 30MW",
+        "serial_number":  "SN-SIE-018",
+        "manufacturing_year":  1995,
+        "installation_date":  "1995-06-15",
+        "commissioning_date":  "1995-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  78.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(40.2338, -111.6585)",
+        "bay_number":  "B-01",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-037-001",
+        "photo_url":  "https://images.company.com/assets/GEN-037-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1995-06-15",
+        "warranty_end_date":  "2000-06-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  8,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000000
+                       }
+    },
+    {
+        "plant_id":  37,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H2",
+        "asset_code":  "GEN-037-002",
+        "asset_tag":  "G-3702",
+        "manufacturer":  "GE",
+        "model":  "Hydro 25MW",
+        "serial_number":  "SN-GE-016",
+        "manufacturing_year":  1998,
+        "installation_date":  "1998-06-15",
+        "commissioning_date":  "1998-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  80.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(40.2340, -111.6587)",
+        "bay_number":  "B-02",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-037-002",
+        "photo_url":  "https://images.company.com/assets/GEN-037-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1998-06-15",
+        "warranty_end_date":  "2003-06-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1800000
+                       }
+    },
+    {
+        "plant_id":  37,
+        "asset_type":  "Transformer",
+        "asset_name":  "Hydro Step-Up T1",
+        "asset_code":  "TRF-037-001",
+        "asset_tag":  "T-3701",
+        "manufacturer":  "ABB",
+        "model":  "40MVA",
+        "serial_number":  "SN-ABB-017",
+        "manufacturing_year":  1995,
+        "installation_date":  "1995-05-15",
+        "commissioning_date":  "1995-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  75.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(40.2342, -111.6589)",
+        "bay_number":  "B-03",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-037-001",
+        "photo_url":  "https://images.company.com/assets/TRF-037-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "40MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "1995-06-15",
+        "warranty_end_date":  "2000-06-15",
+        "expected_life_years":  30,
+        "remaining_life_years":  6,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  600000
+                       }
+    },
+    {
+        "plant_id":  37,
+        "asset_type":  "Motor",
+        "asset_name":  "Gate Motor GM1",
+        "asset_code":  "MOT-037-001",
+        "asset_tag":  "M-3701",
+        "manufacturer":  "WEG",
+        "model":  "40HP",
+        "serial_number":  "SN-WEG-009",
+        "manufacturing_year":  1995,
+        "installation_date":  "1995-06-01",
+        "commissioning_date":  "1995-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  72.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Spillway",
+        "gps_coordinates":  "(40.2336, -111.6583)",
+        "bay_number":  "B-04",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-037-001",
+        "photo_url":  "https://images.company.com/assets/MOT-037-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "40HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "1995-06-15",
+        "warranty_end_date":  "2000-06-15",
+        "expected_life_years":  20,
+        "remaining_life_years":  6,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  6000
+                       }
+    },
+    {
+        "plant_id":  38,
+        "asset_type":  "Transformer",
+        "asset_name":  "Grid Control Transformer T1",
+        "asset_code":  "TRF-038-001",
+        "asset_tag":  "T-3801",
+        "manufacturer":  "Schneider",
+        "model":  "15MVA",
+        "serial_number":  "SN-SCH-001",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-07-15",
+        "commissioning_date":  "2020-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  95.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Control Room",
+        "gps_coordinates":  "(37.3382, -121.8863)",
+        "bay_number":  "B-01",
+        "substation_name":  "Smart Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-038-001",
+        "photo_url":  "https://images.company.com/assets/TRF-038-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "2020-08-01",
+        "warranty_end_date":  "2025-08-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  350000
+                       }
+    },
+    {
+        "plant_id":  38,
+        "asset_type":  "Transformer",
+        "asset_name":  "Backup Transformer T2",
+        "asset_code":  "TRF-038-002",
+        "asset_tag":  "T-3802",
+        "manufacturer":  "Eaton",
+        "model":  "5MVA",
+        "serial_number":  "SN-EAT-001",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-07-15",
+        "commissioning_date":  "2020-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  96.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Backup Room",
+        "gps_coordinates":  "(37.3384, -121.8865)",
+        "bay_number":  "B-02",
+        "substation_name":  "Smart Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-038-002",
+        "photo_url":  "https://images.company.com/assets/TRF-038-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2020-08-01",
+        "warranty_end_date":  "2025-08-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  120000
+                       }
+    },
+    {
+        "plant_id":  38,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan M1",
+        "asset_code":  "MOT-038-001",
+        "asset_tag":  "M-3801",
+        "manufacturer":  "Marathon",
+        "model":  "10HP",
+        "serial_number":  "SN-MAR-008",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-07-15",
+        "commissioning_date":  "2020-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  97.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Server Room",
+        "gps_coordinates":  "(37.3381, -121.8862)",
+        "bay_number":  "B-03",
+        "substation_name":  "Smart Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-038-001",
+        "photo_url":  "https://images.company.com/assets/MOT-038-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-08-01",
+        "warranty_end_date":  "2025-08-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Generator",
+        "asset_name":  "Nuclear Generator G1",
+        "asset_code":  "GEN-039-001",
+        "asset_tag":  "G-3901",
+        "manufacturer":  "Westinghouse",
+        "model":  "PWR 850MW",
+        "serial_number":  "SN-WES-001",
+        "manufacturing_year":  1980,
+        "installation_date":  "1980-07-01",
+        "commissioning_date":  "1980-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  72.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(37.5407, -77.4360)",
+        "bay_number":  "B-01",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-039-001",
+        "photo_url":  "https://images.company.com/assets/GEN-039-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "850MW",
+                               "voltage":  "24kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1980-07-20",
+        "warranty_end_date":  "1985-07-20",
+        "expected_life_years":  40,
+        "remaining_life_years":  5,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  15000000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Generator",
+        "asset_name":  "Nuclear Generator G2",
+        "asset_code":  "GEN-039-002",
+        "asset_tag":  "G-3902",
+        "manufacturer":  "Westinghouse",
+        "model":  "PWR 750MW",
+        "serial_number":  "SN-WES-002",
+        "manufacturing_year":  1982,
+        "installation_date":  "1982-07-01",
+        "commissioning_date":  "1982-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  74.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(37.5409, -77.4362)",
+        "bay_number":  "B-02",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-039-002",
+        "photo_url":  "https://images.company.com/assets/GEN-039-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "750MW",
+                               "voltage":  "24kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1982-07-20",
+        "warranty_end_date":  "1987-07-20",
+        "expected_life_years":  40,
+        "remaining_life_years":  7,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  13000000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Transformer",
+        "asset_name":  "Nuclear Step-Up T1",
+        "asset_code":  "TRF-039-001",
+        "asset_tag":  "T-3901",
+        "manufacturer":  "ABB",
+        "model":  "1000MVA",
+        "serial_number":  "SN-ABB-018",
+        "manufacturing_year":  1980,
+        "installation_date":  "1980-06-15",
+        "commissioning_date":  "1980-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  70.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(37.5411, -77.4364)",
+        "bay_number":  "B-03",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-039-001",
+        "photo_url":  "https://images.company.com/assets/TRF-039-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "1000MVA",
+                               "voltage_ratio":  "24/345kV"
+                           },
+        "warranty_start_date":  "1980-07-20",
+        "warranty_end_date":  "1985-07-20",
+        "expected_life_years":  30,
+        "remaining_life_years":  5,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Transformer",
+        "asset_name":  "Auxiliary Transformer T2",
+        "asset_code":  "TRF-039-002",
+        "asset_tag":  "T-3902",
+        "manufacturer":  "Siemens",
+        "model":  "20MVA",
+        "serial_number":  "SN-SIE-019",
+        "manufacturing_year":  1980,
+        "installation_date":  "1980-06-15",
+        "commissioning_date":  "1980-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  73.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Auxiliary Building",
+        "gps_coordinates":  "(37.5405, -77.4358)",
+        "bay_number":  "B-04",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-039-002",
+        "photo_url":  "https://images.company.com/assets/TRF-039-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "20MVA",
+                               "voltage_ratio":  "24/4.16kV"
+                           },
+        "warranty_start_date":  "1980-07-20",
+        "warranty_end_date":  "1985-07-20",
+        "expected_life_years":  30,
+        "remaining_life_years":  5,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  400000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Motor",
+        "asset_name":  "Coolant Pump M1",
+        "asset_code":  "MOT-039-001",
+        "asset_tag":  "M-3901",
+        "manufacturer":  "GE",
+        "model":  "2000HP",
+        "serial_number":  "SN-GE-017",
+        "manufacturing_year":  1980,
+        "installation_date":  "1980-07-01",
+        "commissioning_date":  "1980-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  68.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Coolant Building",
+        "gps_coordinates":  "(37.5403, -77.4356)",
+        "bay_number":  "B-05",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-039-001",
+        "photo_url":  "https://images.company.com/assets/MOT-039-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "2000HP",
+                               "voltage":  "6.6kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "1980-07-20",
+        "warranty_end_date":  "1985-07-20",
+        "expected_life_years":  20,
+        "remaining_life_years":  5,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  150000
+                       }
+    },
+    {
+        "plant_id":  39,
+        "asset_type":  "Motor",
+        "asset_name":  "Emergency Pump M2",
+        "asset_code":  "MOT-039-002",
+        "asset_tag":  "M-3902",
+        "manufacturer":  "Siemens",
+        "model":  "500HP",
+        "serial_number":  "SN-SIE-020",
+        "manufacturing_year":  1980,
+        "installation_date":  "1980-07-01",
+        "commissioning_date":  "1980-07-20",
+        "operational_status":  "active",
+        "asset_health_score":  70.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Emergency Room",
+        "gps_coordinates":  "(37.5404, -77.4357)",
+        "bay_number":  "B-06",
+        "substation_name":  "Nuclear Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-039-002",
+        "photo_url":  "https://images.company.com/assets/MOT-039-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "500HP",
+                               "voltage":  "4.16kV",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "1980-07-20",
+        "warranty_end_date":  "1985-07-20",
+        "expected_life_years":  20,
+        "remaining_life_years":  5,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  50000
+                       }
+    },
+    {
+        "plant_id":  40,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G1",
+        "asset_code":  "GEN-040-001",
+        "asset_tag":  "G-4001",
+        "manufacturer":  "Siemens",
+        "model":  "SGT-600",
+        "serial_number":  "SN-SIE-021",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-15",
+        "commissioning_date":  "2017-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(61.2181, -149.9003)",
+        "bay_number":  "B-01",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-040-001",
+        "photo_url":  "https://images.company.com/assets/GEN-040-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "45MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2017-11-01",
+        "warranty_end_date":  "2022-11-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  18,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2700000
+                       }
+    },
+    {
+        "plant_id":  40,
+        "asset_type":  "Generator",
+        "asset_name":  "Gas Turbine G2",
+        "asset_code":  "GEN-040-002",
+        "asset_tag":  "G-4002",
+        "manufacturer":  "GE",
+        "model":  "MS6001",
+        "serial_number":  "SN-GE-018",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-10",
+        "commissioning_date":  "2018-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(61.2183, -149.9005)",
+        "bay_number":  "B-02",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-040-002",
+        "photo_url":  "https://images.company.com/assets/GEN-040-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "40MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-07-01",
+        "warranty_end_date":  "2023-07-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2400000
+                       }
+    },
+    {
+        "plant_id":  40,
+        "asset_type":  "Transformer",
+        "asset_name":  "Gas Transformer T1",
+        "asset_code":  "TRF-040-001",
+        "asset_tag":  "T-4001",
+        "manufacturer":  "ABB",
+        "model":  "55MVA",
+        "serial_number":  "SN-ABB-019",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-01",
+        "commissioning_date":  "2017-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(61.2185, -149.9007)",
+        "bay_number":  "B-03",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-040-001",
+        "photo_url":  "https://images.company.com/assets/TRF-040-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "55MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2017-11-01",
+        "warranty_end_date":  "2022-11-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  23,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  850000
+                       }
+    },
+    {
+        "plant_id":  40,
+        "asset_type":  "Motor",
+        "asset_name":  "Heater Pump M1",
+        "asset_code":  "MOT-040-001",
+        "asset_tag":  "M-4001",
+        "manufacturer":  "WEG",
+        "model":  "150HP",
+        "serial_number":  "SN-WEG-010",
+        "manufacturing_year":  2017,
+        "installation_date":  "2017-09-20",
+        "commissioning_date":  "2017-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  83.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Heating Room",
+        "gps_coordinates":  "(61.2179, -149.9001)",
+        "bay_number":  "B-04",
+        "substation_name":  "Gas Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-040-001",
+        "photo_url":  "https://images.company.com/assets/MOT-040-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "150HP",
+                               "voltage":  "480V",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2017-11-01",
+        "warranty_end_date":  "2022-11-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  13,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  12000
+                       }
+    },
+    {
+        "plant_id":  41,
+        "asset_type":  "Transformer",
+        "asset_name":  "Solar Transformer T1",
+        "asset_code":  "TRF-041-001",
+        "asset_tag":  "T-4101",
+        "manufacturer":  "Siemens",
+        "model":  "30MVA",
+        "serial_number":  "SN-SIE-022",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-11-15",
+        "commissioning_date":  "2020-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(28.5383, -81.3792)",
+        "bay_number":  "B-01",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-041-001",
+        "photo_url":  "https://images.company.com/assets/TRF-041-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2020-12-01",
+        "warranty_end_date":  "2025-12-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  26,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  550000
+                       }
+    },
+    {
+        "plant_id":  41,
+        "asset_type":  "Transformer",
+        "asset_name":  "Inverter Transformer T2",
+        "asset_code":  "TRF-041-002",
+        "asset_tag":  "T-4102",
+        "manufacturer":  "GE",
+        "model":  "10MVA",
+        "serial_number":  "SN-GE-019",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-11-15",
+        "commissioning_date":  "2020-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  95.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(28.5385, -81.3794)",
+        "bay_number":  "B-02",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-041-002",
+        "photo_url":  "https://images.company.com/assets/TRF-041-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10MVA",
+                               "voltage_ratio":  "480/34.5kV"
+                           },
+        "warranty_start_date":  "2020-12-01",
+        "warranty_end_date":  "2025-12-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  200000
+                       }
+    },
+    {
+        "plant_id":  41,
+        "asset_type":  "Motor",
+        "asset_name":  "Tracker Motor ST1",
+        "asset_code":  "MOT-041-001",
+        "asset_tag":  "M-4101",
+        "manufacturer":  "WEG",
+        "model":  "5HP",
+        "serial_number":  "SN-WEG-011",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-11-15",
+        "commissioning_date":  "2020-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  96.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Solar Field",
+        "gps_coordinates":  "(28.5387, -81.3796)",
+        "bay_number":  "B-03",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-041-001",
+        "photo_url":  "https://images.company.com/assets/MOT-041-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-12-01",
+        "warranty_end_date":  "2025-12-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000
+                       }
+    },
+    {
+        "plant_id":  41,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan SF1",
+        "asset_code":  "MOT-041-002",
+        "asset_tag":  "M-4102",
+        "manufacturer":  "Marathon",
+        "model":  "3HP",
+        "serial_number":  "SN-MAR-009",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-11-15",
+        "commissioning_date":  "2020-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  97.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Inverter Room",
+        "gps_coordinates":  "(28.5384, -81.3793)",
+        "bay_number":  "B-04",
+        "substation_name":  "Solar Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-041-002",
+        "photo_url":  "https://images.company.com/assets/MOT-041-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2020-12-01",
+        "warranty_end_date":  "2025-12-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  11,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1200
+                       }
+    },
+    {
+        "plant_id":  42,
+        "asset_type":  "Generator",
+        "asset_name":  "Wind Generator WG1",
+        "asset_code":  "GEN-042-001",
+        "asset_tag":  "G-4201",
+        "manufacturer":  "Vestas",
+        "model":  "V112-3.0MW",
+        "serial_number":  "SN-VES-004",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-10-15",
+        "commissioning_date":  "2019-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Wind Farm",
+        "gps_coordinates":  "(36.8508, -76.2859)",
+        "bay_number":  "B-01",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-042-001",
+        "photo_url":  "https://images.company.com/assets/GEN-042-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3.0MW",
+                               "voltage":  "690V",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-12-01",
+        "warranty_end_date":  "2024-12-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2600000
+                       }
+    },
+    {
+        "plant_id":  42,
+        "asset_type":  "Transformer",
+        "asset_name":  "Wind Transformer T1",
+        "asset_code":  "TRF-042-001",
+        "asset_tag":  "T-4201",
+        "manufacturer":  "ABB",
+        "model":  "30MVA",
+        "serial_number":  "SN-ABB-020",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-10-01",
+        "commissioning_date":  "2019-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(36.8512, -76.2863)",
+        "bay_number":  "B-02",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-042-001",
+        "photo_url":  "https://images.company.com/assets/TRF-042-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "34.5/138kV"
+                           },
+        "warranty_start_date":  "2019-12-01",
+        "warranty_end_date":  "2024-12-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  600000
+                       }
+    },
+    {
+        "plant_id":  42,
+        "asset_type":  "Motor",
+        "asset_name":  "Yaw Motor WY1",
+        "asset_code":  "MOT-042-001",
+        "asset_tag":  "M-4201",
+        "manufacturer":  "Siemens",
+        "model":  "15HP",
+        "serial_number":  "SN-SIE-023",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-11-01",
+        "commissioning_date":  "2019-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(36.8510, -76.2861)",
+        "bay_number":  "B-03",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-042-001",
+        "photo_url":  "https://images.company.com/assets/MOT-042-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-12-01",
+        "warranty_end_date":  "2024-12-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-25"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  42,
+        "asset_type":  "Motor",
+        "asset_name":  "Pitch Motor WP1",
+        "asset_code":  "MOT-042-002",
+        "asset_tag":  "M-4202",
+        "manufacturer":  "ABB",
+        "model":  "10HP",
+        "serial_number":  "SN-ABB-021",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-11-01",
+        "commissioning_date":  "2019-12-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Nacelle",
+        "gps_coordinates":  "(36.8511, -76.2862)",
+        "bay_number":  "B-04",
+        "substation_name":  "Wind Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-042-002",
+        "photo_url":  "https://images.company.com/assets/MOT-042-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-12-01",
+        "warranty_end_date":  "2024-12-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  3500
+                       }
+    },
+    {
+        "plant_id":  43,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H1",
+        "asset_code":  "GEN-043-001",
+        "asset_tag":  "G-4301",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 20MW",
+        "serial_number":  "SN-SIE-024",
+        "manufacturing_year":  1990,
+        "installation_date":  "1990-08-15",
+        "commissioning_date":  "1990-08-15",
+        "operational_status":  "active",
+        "asset_health_score":  76.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(41.6005, -93.6091)",
+        "bay_number":  "B-01",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-043-001",
+        "photo_url":  "https://images.company.com/assets/GEN-043-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "20MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1990-08-15",
+        "warranty_end_date":  "1995-08-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  6,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1500000
+                       }
+    },
+    {
+        "plant_id":  43,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H2",
+        "asset_code":  "GEN-043-002",
+        "asset_tag":  "G-4302",
+        "manufacturer":  "GE",
+        "model":  "Hydro 15MW",
+        "serial_number":  "SN-GE-020",
+        "manufacturing_year":  1992,
+        "installation_date":  "1992-08-15",
+        "commissioning_date":  "1992-08-15",
+        "operational_status":  "active",
+        "asset_health_score":  78.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(41.6007, -93.6093)",
+        "bay_number":  "B-02",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-043-002",
+        "photo_url":  "https://images.company.com/assets/GEN-043-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "1992-08-15",
+        "warranty_end_date":  "1997-08-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  8,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1200000
+                       }
+    },
+    {
+        "plant_id":  43,
+        "asset_type":  "Transformer",
+        "asset_name":  "Hydro Step-Up T1",
+        "asset_code":  "TRF-043-001",
+        "asset_tag":  "T-4301",
+        "manufacturer":  "ABB",
+        "model":  "25MVA",
+        "serial_number":  "SN-ABB-022",
+        "manufacturing_year":  1990,
+        "installation_date":  "1990-07-15",
+        "commissioning_date":  "1990-08-15",
+        "operational_status":  "active",
+        "asset_health_score":  74.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(41.6009, -93.6095)",
+        "bay_number":  "B-03",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-043-001",
+        "photo_url":  "https://images.company.com/assets/TRF-043-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "1990-08-15",
+        "warranty_end_date":  "1995-08-15",
+        "expected_life_years":  30,
+        "remaining_life_years":  6,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  450000
+                       }
+    },
+    {
+        "plant_id":  43,
+        "asset_type":  "Motor",
+        "asset_name":  "Gate Motor GM1",
+        "asset_code":  "MOT-043-001",
+        "asset_tag":  "M-4301",
+        "manufacturer":  "WEG",
+        "model":  "30HP",
+        "serial_number":  "SN-WEG-012",
+        "manufacturing_year":  1990,
+        "installation_date":  "1990-08-01",
+        "commissioning_date":  "1990-08-15",
+        "operational_status":  "active",
+        "asset_health_score":  70.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Spillway",
+        "gps_coordinates":  "(41.6003, -93.6089)",
+        "bay_number":  "B-04",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-043-001",
+        "photo_url":  "https://images.company.com/assets/MOT-043-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "1990-08-15",
+        "warranty_end_date":  "1995-08-15",
+        "expected_life_years":  20,
+        "remaining_life_years":  6,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  5000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Generator",
+        "asset_name":  "Biofuel Generator G1",
+        "asset_code":  "GEN-044-001",
+        "asset_tag":  "G-4401",
+        "manufacturer":  "Caterpillar",
+        "model":  "CAT-G3520",
+        "serial_number":  "SN-CAT-001",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-15",
+        "commissioning_date":  "2018-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Generator Hall",
+        "gps_coordinates":  "(41.9779, -91.6656)",
+        "bay_number":  "B-01",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-044-001",
+        "photo_url":  "https://images.company.com/assets/GEN-044-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-05-01",
+        "warranty_end_date":  "2023-05-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  19,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Generator",
+        "asset_name":  "Biofuel Generator G2",
+        "asset_code":  "GEN-044-002",
+        "asset_tag":  "G-4402",
+        "manufacturer":  "Caterpillar",
+        "model":  "CAT-G3512",
+        "serial_number":  "SN-CAT-002",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-03-15",
+        "commissioning_date":  "2019-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Generator Hall",
+        "gps_coordinates":  "(41.9781, -91.6658)",
+        "bay_number":  "B-02",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-044-002",
+        "photo_url":  "https://images.company.com/assets/GEN-044-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-05-01",
+        "warranty_end_date":  "2024-05-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  20,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1800000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Transformer",
+        "asset_name":  "Biofuel Transformer T1",
+        "asset_code":  "TRF-044-001",
+        "asset_tag":  "T-4401",
+        "manufacturer":  "ABB",
+        "model":  "35MVA",
+        "serial_number":  "SN-ABB-023",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-01",
+        "commissioning_date":  "2018-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(41.9783, -91.6660)",
+        "bay_number":  "B-03",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-044-001",
+        "photo_url":  "https://images.company.com/assets/TRF-044-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "35MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2018-05-01",
+        "warranty_end_date":  "2023-05-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  700000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Motor",
+        "asset_name":  "Conveyor Motor M1",
+        "asset_code":  "MOT-044-001",
+        "asset_tag":  "M-4401",
+        "manufacturer":  "WEG",
+        "model":  "200HP",
+        "serial_number":  "SN-WEG-013",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-04-10",
+        "commissioning_date":  "2018-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Processing Area",
+        "gps_coordinates":  "(41.9777, -91.6654)",
+        "bay_number":  "B-04",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-044-001",
+        "photo_url":  "https://images.company.com/assets/MOT-044-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "200HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-05-01",
+        "warranty_end_date":  "2023-05-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  18000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Motor",
+        "asset_name":  "Pump Motor M2",
+        "asset_code":  "MOT-044-002",
+        "asset_tag":  "M-4402",
+        "manufacturer":  "Marathon",
+        "model":  "150HP",
+        "serial_number":  "SN-MAR-010",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-01-15",
+        "commissioning_date":  "2019-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(41.9778, -91.6655)",
+        "bay_number":  "B-05",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-044-002",
+        "photo_url":  "https://images.company.com/assets/MOT-044-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "150HP",
+                               "voltage":  "480V",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2019-03-01",
+        "warranty_end_date":  "2024-03-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  12000
+                       }
+    },
+    {
+        "plant_id":  44,
+        "asset_type":  "Motor",
+        "asset_name":  "Blower Motor M3",
+        "asset_code":  "MOT-044-003",
+        "asset_tag":  "M-4403",
+        "manufacturer":  "GE",
+        "model":  "100HP",
+        "serial_number":  "SN-GE-021",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-05-01",
+        "commissioning_date":  "2018-06-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Blower Room",
+        "gps_coordinates":  "(41.9779, -91.6656)",
+        "bay_number":  "B-06",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-044-003",
+        "photo_url":  "https://images.company.com/assets/MOT-044-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "100HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-06-01",
+        "warranty_end_date":  "2023-06-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  8000
+                       }
+    },
+    {
+        "plant_id":  45,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T1",
+        "asset_code":  "TRF-045-001",
+        "asset_tag":  "T-4501",
+        "manufacturer":  "Schneider",
+        "model":  "10MVA",
+        "serial_number":  "SN-SCH-002",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-06-15",
+        "commissioning_date":  "2018-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  88.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(39.7392, -104.9903)",
+        "bay_number":  "B-01",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-045-001",
+        "photo_url":  "https://images.company.com/assets/TRF-045-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "2018-08-01",
+        "warranty_end_date":  "2023-08-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  300000
+                       }
+    },
+    {
+        "plant_id":  45,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T2",
+        "asset_code":  "TRF-045-002",
+        "asset_tag":  "T-4502",
+        "manufacturer":  "Eaton",
+        "model":  "8MVA",
+        "serial_number":  "SN-EAT-002",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-03-15",
+        "commissioning_date":  "2019-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Substation Yard",
+        "gps_coordinates":  "(39.7394, -104.9905)",
+        "bay_number":  "B-02",
+        "substation_name":  "Secondary Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-045-002",
+        "photo_url":  "https://images.company.com/assets/TRF-045-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "8MVA",
+                               "voltage_ratio":  "69/13.8kV"
+                           },
+        "warranty_start_date":  "2019-05-01",
+        "warranty_end_date":  "2024-05-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  25,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  250000
+                       }
+    },
+    {
+        "plant_id":  45,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T3",
+        "asset_code":  "TRF-045-003",
+        "asset_tag":  "T-4503",
+        "manufacturer":  "Siemens",
+        "model":  "5MVA",
+        "serial_number":  "SN-SIE-025",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-01-15",
+        "commissioning_date":  "2020-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Distribution Center",
+        "gps_coordinates":  "(39.7396, -104.9907)",
+        "bay_number":  "B-03",
+        "substation_name":  "Distribution Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-045-003",
+        "photo_url":  "https://images.company.com/assets/TRF-045-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2020-03-01",
+        "warranty_end_date":  "2025-03-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  150000
+                       }
+    },
+    {
+        "plant_id":  45,
+        "asset_type":  "Motor",
+        "asset_name":  "Feeder Motor M1",
+        "asset_code":  "MOT-045-001",
+        "asset_tag":  "M-4501",
+        "manufacturer":  "WEG",
+        "model":  "75HP",
+        "serial_number":  "SN-WEG-014",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-06-15",
+        "commissioning_date":  "2018-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Switchgear Room",
+        "gps_coordinates":  "(39.7390, -104.9901)",
+        "bay_number":  "B-04",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-045-001",
+        "photo_url":  "https://images.company.com/assets/MOT-045-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "75HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-08-01",
+        "warranty_end_date":  "2023-08-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  6000
+                       }
+    },
+    {
+        "plant_id":  45,
+        "asset_type":  "Motor",
+        "asset_name":  "Cooling Fan M2",
+        "asset_code":  "MOT-045-002",
+        "asset_tag":  "M-4502",
+        "manufacturer":  "Marathon",
+        "model":  "50HP",
+        "serial_number":  "SN-MAR-011",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-04-15",
+        "commissioning_date":  "2019-06-01",
+        "operational_status":  "active",
+        "asset_health_score":  89.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Cooling Room",
+        "gps_coordinates":  "(39.7391, -104.9902)",
+        "bay_number":  "B-05",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-045-002",
+        "photo_url":  "https://images.company.com/assets/MOT-045-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50HP",
+                               "voltage":  "480V",
+                               "speed":  "1800RPM"
+                           },
+        "warranty_start_date":  "2019-06-01",
+        "warranty_end_date":  "2024-06-01",
+        "expected_life_years":  15,
+        "remaining_life_years":  10,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  4000
+                       }
+    },
+    {
+        "plant_id":  46,
+        "asset_type":  "Transformer",
+        "asset_name":  "Trading Hub Transformer T1",
+        "asset_code":  "TRF-046-001",
+        "asset_tag":  "T-4601",
+        "manufacturer":  "ABB",
+        "model":  "15MVA",
+        "serial_number":  "SN-ABB-024",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-03-10",
+        "commissioning_date":  "2015-03-10",
+        "operational_status":  "active",
+        "asset_health_score":  82.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Data Center",
+        "gps_coordinates":  "(40.7068, -74.0117)",
+        "bay_number":  "B-01",
+        "substation_name":  "Trading Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-046-001",
+        "photo_url":  "https://images.company.com/assets/TRF-046-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "2015-03-10",
+        "warranty_end_date":  "2020-03-10",
+        "expected_life_years":  30,
+        "remaining_life_years":  20,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  350000
+                       }
+    },
+    {
+        "plant_id":  46,
+        "asset_type":  "Transformer",
+        "asset_name":  "Backup Transformer T2",
+        "asset_code":  "TRF-046-002",
+        "asset_tag":  "T-4602",
+        "manufacturer":  "Siemens",
+        "model":  "8MVA",
+        "serial_number":  "SN-SIE-026",
+        "manufacturing_year":  2016,
+        "installation_date":  "2016-03-10",
+        "commissioning_date":  "2016-03-10",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Backup Room",
+        "gps_coordinates":  "(40.7070, -74.0119)",
+        "bay_number":  "B-02",
+        "substation_name":  "Trading Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-046-002",
+        "photo_url":  "https://images.company.com/assets/TRF-046-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "8MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2016-03-10",
+        "warranty_end_date":  "2021-03-10",
+        "expected_life_years":  30,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  200000
+                       }
+    },
+    {
+        "plant_id":  46,
+        "asset_type":  "Motor",
+        "asset_name":  "UPS Cooling Fan M1",
+        "asset_code":  "MOT-046-001",
+        "asset_tag":  "M-4601",
+        "manufacturer":  "Marathon",
+        "model":  "5HP",
+        "serial_number":  "SN-MAR-012",
+        "manufacturing_year":  2015,
+        "installation_date":  "2015-03-10",
+        "commissioning_date":  "2015-03-10",
+        "operational_status":  "active",
+        "asset_health_score":  80.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Server Room",
+        "gps_coordinates":  "(40.7066, -74.0115)",
+        "bay_number":  "B-03",
+        "substation_name":  "Trading Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-046-001",
+        "photo_url":  "https://images.company.com/assets/MOT-046-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "5HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2015-03-10",
+        "warranty_end_date":  "2020-03-10",
+        "expected_life_years":  15,
+        "remaining_life_years":  8,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1500
+                       }
+    },
+    {
+        "plant_id":  47,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H1",
+        "asset_code":  "GEN-047-001",
+        "asset_tag":  "G-4701",
+        "manufacturer":  "GE",
+        "model":  "Hydro 10MW",
+        "serial_number":  "SN-GE-022",
+        "manufacturing_year":  2000,
+        "installation_date":  "2000-06-15",
+        "commissioning_date":  "2000-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  74.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(37.5407, -77.4360)",
+        "bay_number":  "B-01",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-047-001",
+        "photo_url":  "https://images.company.com/assets/GEN-047-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "10MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2000-06-15",
+        "warranty_end_date":  "2005-06-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  800000
+                       }
+    },
+    {
+        "plant_id":  47,
+        "asset_type":  "Generator",
+        "asset_name":  "Hydro Generator H2",
+        "asset_code":  "GEN-047-002",
+        "asset_tag":  "G-4702",
+        "manufacturer":  "Siemens",
+        "model":  "Hydro 8MW",
+        "serial_number":  "SN-SIE-027",
+        "manufacturing_year":  2002,
+        "installation_date":  "2002-06-15",
+        "commissioning_date":  "2002-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  76.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Turbine Hall",
+        "gps_coordinates":  "(37.5409, -77.4362)",
+        "bay_number":  "B-02",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-047-002",
+        "photo_url":  "https://images.company.com/assets/GEN-047-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "8MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2002-06-15",
+        "warranty_end_date":  "2007-06-15",
+        "expected_life_years":  40,
+        "remaining_life_years":  16,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  650000
+                       }
+    },
+    {
+        "plant_id":  47,
+        "asset_type":  "Transformer",
+        "asset_name":  "Hydro Step-Up T1",
+        "asset_code":  "TRF-047-001",
+        "asset_tag":  "T-4701",
+        "manufacturer":  "ABB",
+        "model":  "15MVA",
+        "serial_number":  "SN-ABB-025",
+        "manufacturing_year":  2000,
+        "installation_date":  "2000-05-15",
+        "commissioning_date":  "2000-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  72.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(37.5411, -77.4364)",
+        "bay_number":  "B-03",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-047-001",
+        "photo_url":  "https://images.company.com/assets/TRF-047-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "15MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "2000-06-15",
+        "warranty_end_date":  "2005-06-15",
+        "expected_life_years":  30,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  300000
+                       }
+    },
+    {
+        "plant_id":  47,
+        "asset_type":  "Motor",
+        "asset_name":  "Gate Motor GM1",
+        "asset_code":  "MOT-047-001",
+        "asset_tag":  "M-4701",
+        "manufacturer":  "WEG",
+        "model":  "20HP",
+        "serial_number":  "SN-WEG-015",
+        "manufacturing_year":  2000,
+        "installation_date":  "2000-06-01",
+        "commissioning_date":  "2000-06-15",
+        "operational_status":  "active",
+        "asset_health_score":  70.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Spillway",
+        "gps_coordinates":  "(37.5405, -77.4358)",
+        "bay_number":  "B-04",
+        "substation_name":  "Hydro Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-047-001",
+        "photo_url":  "https://images.company.com/assets/MOT-047-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "20HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2000-06-15",
+        "warranty_end_date":  "2005-06-15",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  4000
+                       }
+    },
+    {
+        "plant_id":  48,
+        "asset_type":  "Generator",
+        "asset_name":  "Biofuel Generator G1",
+        "asset_code":  "GEN-048-001",
+        "asset_tag":  "G-4801",
+        "manufacturer":  "Caterpillar",
+        "model":  "CAT-G3508",
+        "serial_number":  "SN-CAT-003",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-08-15",
+        "commissioning_date":  "2020-09-10",
+        "operational_status":  "active",
+        "asset_health_score":  95.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Generator Hall",
+        "gps_coordinates":  "(41.9779, -91.6656)",
+        "bay_number":  "B-01",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-048-001",
+        "photo_url":  "https://images.company.com/assets/GEN-048-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2020-09-10",
+        "warranty_end_date":  "2025-09-10",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1700000
+                       }
+    },
+    {
+        "plant_id":  48,
+        "asset_type":  "Transformer",
+        "asset_name":  "Biofuel Transformer T1",
+        "asset_code":  "TRF-048-001",
+        "asset_tag":  "T-4801",
+        "manufacturer":  "ABB",
+        "model":  "30MVA",
+        "serial_number":  "SN-ABB-026",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-08-01",
+        "commissioning_date":  "2020-09-10",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(41.9783, -91.6660)",
+        "bay_number":  "B-02",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-048-001",
+        "photo_url":  "https://images.company.com/assets/TRF-048-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2020-09-10",
+        "warranty_end_date":  "2025-09-10",
+        "expected_life_years":  30,
+        "remaining_life_years":  26,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  550000
+                       }
+    },
+    {
+        "plant_id":  48,
+        "asset_type":  "Motor",
+        "asset_name":  "Conveyor Motor M1",
+        "asset_code":  "MOT-048-001",
+        "asset_tag":  "M-4801",
+        "manufacturer":  "WEG",
+        "model":  "150HP",
+        "serial_number":  "SN-WEG-016",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-08-10",
+        "commissioning_date":  "2020-09-10",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Processing Area",
+        "gps_coordinates":  "(41.9777, -91.6654)",
+        "bay_number":  "B-03",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-048-001",
+        "photo_url":  "https://images.company.com/assets/MOT-048-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "150HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2020-09-10",
+        "warranty_end_date":  "2025-09-10",
+        "expected_life_years":  20,
+        "remaining_life_years":  16,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  12000
+                       }
+    },
+    {
+        "plant_id":  48,
+        "asset_type":  "Motor",
+        "asset_name":  "Pump Motor M2",
+        "asset_code":  "MOT-048-002",
+        "asset_tag":  "M-4802",
+        "manufacturer":  "Marathon",
+        "model":  "100HP",
+        "serial_number":  "SN-MAR-013",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-08-10",
+        "commissioning_date":  "2020-09-10",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Pump Room",
+        "gps_coordinates":  "(41.9778, -91.6655)",
+        "bay_number":  "B-04",
+        "substation_name":  "Biofuel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-048-002",
+        "photo_url":  "https://images.company.com/assets/MOT-048-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "100HP",
+                               "voltage":  "480V",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2020-09-10",
+        "warranty_end_date":  "2025-09-10",
+        "expected_life_years":  20,
+        "remaining_life_years":  16,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  8000
+                       }
+    },
+    {
+        "plant_id":  49,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T1",
+        "asset_code":  "TRF-049-001",
+        "asset_tag":  "T-4901",
+        "manufacturer":  "Schneider",
+        "model":  "12MVA",
+        "serial_number":  "SN-SCH-003",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-08-15",
+        "commissioning_date":  "2018-10-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(32.7157, -117.1611)",
+        "bay_number":  "B-01",
+        "substation_name":  "Main Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-049-001",
+        "photo_url":  "https://images.company.com/assets/TRF-049-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "12MVA",
+                               "voltage_ratio":  "13.8/69kV"
+                           },
+        "warranty_start_date":  "2018-10-01",
+        "warranty_end_date":  "2023-10-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-01"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  320000
+                       }
+    },
+    {
+        "plant_id":  49,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T2",
+        "asset_code":  "TRF-049-002",
+        "asset_tag":  "T-4902",
+        "manufacturer":  "Eaton",
+        "model":  "6MVA",
+        "serial_number":  "SN-EAT-003",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-05-15",
+        "commissioning_date":  "2019-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  90.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Substation Yard",
+        "gps_coordinates":  "(32.7159, -117.1613)",
+        "bay_number":  "B-02",
+        "substation_name":  "Secondary Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-049-002",
+        "photo_url":  "https://images.company.com/assets/TRF-049-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "6MVA",
+                               "voltage_ratio":  "69/13.8kV"
+                           },
+        "warranty_start_date":  "2019-07-01",
+        "warranty_end_date":  "2024-07-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  25,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  200000
+                       }
+    },
+    {
+        "plant_id":  49,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T3",
+        "asset_code":  "TRF-049-003",
+        "asset_tag":  "T-4903",
+        "manufacturer":  "Siemens",
+        "model":  "4MVA",
+        "serial_number":  "SN-SIE-028",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-03-15",
+        "commissioning_date":  "2020-05-01",
+        "operational_status":  "active",
+        "asset_health_score":  93.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Distribution Center",
+        "gps_coordinates":  "(32.7161, -117.1615)",
+        "bay_number":  "B-03",
+        "substation_name":  "Distribution Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-049-003",
+        "photo_url":  "https://images.company.com/assets/TRF-049-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "4MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2020-05-01",
+        "warranty_end_date":  "2025-05-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  120000
+                       }
+    },
+    {
+        "plant_id":  49,
+        "asset_type":  "Transformer",
+        "asset_name":  "Distribution Transformer T4",
+        "asset_code":  "TRF-049-004",
+        "asset_tag":  "T-4904",
+        "manufacturer":  "GE",
+        "model":  "3MVA",
+        "serial_number":  "SN-GE-023",
+        "manufacturing_year":  2020,
+        "installation_date":  "2020-06-15",
+        "commissioning_date":  "2020-08-01",
+        "operational_status":  "active",
+        "asset_health_score":  94.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Remote Substation",
+        "gps_coordinates":  "(32.7163, -117.1617)",
+        "bay_number":  "B-04",
+        "substation_name":  "Remote Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-049-004",
+        "photo_url":  "https://images.company.com/assets/TRF-049-004.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "3MVA",
+                               "voltage_ratio":  "13.8/4.16kV"
+                           },
+        "warranty_start_date":  "2020-08-01",
+        "warranty_end_date":  "2025-08-01",
+        "expected_life_years":  25,
+        "remaining_life_years":  21,
+        "metadata":  {
+                         "last_oil_test":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  90000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Generator",
+        "asset_name":  "Diesel Generator D1",
+        "asset_code":  "GEN-050-001",
+        "asset_tag":  "G-5001",
+        "manufacturer":  "Caterpillar",
+        "model":  "CAT-3516",
+        "serial_number":  "SN-CAT-004",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-09-15",
+        "commissioning_date":  "2018-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  85.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Diesel Hall",
+        "gps_coordinates":  "(64.8378, -147.7164)",
+        "bay_number":  "B-01",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-050-001",
+        "photo_url":  "https://images.company.com/assets/GEN-050-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "30MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2018-11-01",
+        "warranty_end_date":  "2023-11-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  2000000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Generator",
+        "asset_name":  "Diesel Generator D2",
+        "asset_code":  "GEN-050-002",
+        "asset_tag":  "G-5002",
+        "manufacturer":  "Caterpillar",
+        "model":  "CAT-3512",
+        "serial_number":  "SN-CAT-005",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-05-15",
+        "commissioning_date":  "2019-07-01",
+        "operational_status":  "active",
+        "asset_health_score":  87.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Diesel Hall",
+        "gps_coordinates":  "(64.8380, -147.7166)",
+        "bay_number":  "B-02",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/GEN-050-002",
+        "photo_url":  "https://images.company.com/assets/GEN-050-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "25MW",
+                               "voltage":  "13.8kV",
+                               "frequency":  "60Hz"
+                           },
+        "warranty_start_date":  "2019-07-01",
+        "warranty_end_date":  "2024-07-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-05"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  1800000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Transformer",
+        "asset_name":  "Diesel Transformer T1",
+        "asset_code":  "TRF-050-001",
+        "asset_tag":  "T-5001",
+        "manufacturer":  "ABB",
+        "model":  "35MVA",
+        "serial_number":  "SN-ABB-027",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-09-01",
+        "commissioning_date":  "2018-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "Critical",
+        "location_within_plant":  "Transformer Yard",
+        "gps_coordinates":  "(64.8382, -147.7168)",
+        "bay_number":  "B-03",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/TRF-050-001",
+        "photo_url":  "https://images.company.com/assets/TRF-050-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "35MVA",
+                               "voltage_ratio":  "13.8/138kV"
+                           },
+        "warranty_start_date":  "2018-11-01",
+        "warranty_end_date":  "2023-11-01",
+        "expected_life_years":  30,
+        "remaining_life_years":  24,
+        "metadata":  {
+                         "last_oil_test":  "2024-02-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  650000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Motor",
+        "asset_name":  "Fuel Pump M1",
+        "asset_code":  "MOT-050-001",
+        "asset_tag":  "M-5001",
+        "manufacturer":  "WEG",
+        "model":  "200HP",
+        "serial_number":  "SN-WEG-017",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-09-20",
+        "commissioning_date":  "2018-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  83.0,
+        "criticality_level":  "High",
+        "location_within_plant":  "Fuel Room",
+        "gps_coordinates":  "(64.8376, -147.7162)",
+        "bay_number":  "B-04",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-050-001",
+        "photo_url":  "https://images.company.com/assets/MOT-050-001.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "200HP",
+                               "voltage":  "480V",
+                               "speed":  "3600RPM"
+                           },
+        "warranty_start_date":  "2018-11-01",
+        "warranty_end_date":  "2023-11-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-20"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  18000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Motor",
+        "asset_name":  "Heater Motor M2",
+        "asset_code":  "MOT-050-002",
+        "asset_tag":  "M-5002",
+        "manufacturer":  "Marathon",
+        "model":  "75HP",
+        "serial_number":  "SN-MAR-014",
+        "manufacturing_year":  2019,
+        "installation_date":  "2019-01-15",
+        "commissioning_date":  "2019-03-01",
+        "operational_status":  "active",
+        "asset_health_score":  86.0,
+        "criticality_level":  "Medium",
+        "location_within_plant":  "Heater Room",
+        "gps_coordinates":  "(64.8377, -147.7163)",
+        "bay_number":  "B-05",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-050-002",
+        "photo_url":  "https://images.company.com/assets/MOT-050-002.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "75HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2019-03-01",
+        "warranty_end_date":  "2024-03-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  15,
+        "metadata":  {
+                         "last_maintenance":  "2024-02-15"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  6000
+                       }
+    },
+    {
+        "plant_id":  50,
+        "asset_type":  "Motor",
+        "asset_name":  "Blower Motor M3",
+        "asset_code":  "MOT-050-003",
+        "asset_tag":  "M-5003",
+        "manufacturer":  "GE",
+        "model":  "50HP",
+        "serial_number":  "SN-GE-024",
+        "manufacturing_year":  2018,
+        "installation_date":  "2018-10-01",
+        "commissioning_date":  "2018-11-01",
+        "operational_status":  "active",
+        "asset_health_score":  84.0,
+        "criticality_level":  "Low",
+        "location_within_plant":  "Ventilation Room",
+        "gps_coordinates":  "(64.8378, -147.7164)",
+        "bay_number":  "B-06",
+        "substation_name":  "Diesel Substation",
+        "technical_documentation_url":  "https://docs.company.com/assets/MOT-050-003",
+        "photo_url":  "https://images.company.com/assets/MOT-050-003.jpg",
+        "nameplate_data":  {
+                               "power_rating":  "50HP",
+                               "voltage":  "480V",
+                               "speed":  "1750RPM"
+                           },
+        "warranty_start_date":  "2018-11-01",
+        "warranty_end_date":  "2023-11-01",
+        "expected_life_years":  20,
+        "remaining_life_years":  14,
+        "metadata":  {
+                         "last_maintenance":  "2024-01-10"
+                     },
+        "created_by":  1,
+        "updated_by":  1,
+        "extra_data":  {
+                           "purchase_cost":  4000
+                       }
+    }
+]

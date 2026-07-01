@@ -13,6 +13,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     { path: '/assets', icon: '📦', label: 'Assets', color: '#f59e0b' },
     { path: '/tests', icon: '🔬', label: 'Tests', color: '#8b5cf6' },
     { path: '/dcs', icon: '📡', label: 'DCS Signals', color: '#06b6d4' },
+    { path: '/alarms', icon: '🚨', label: 'Alarms', color: '#dc3545' },
+    { path: '/events', icon: '📋', label: 'Events', color: '#198754' },
     { path: '/reports', icon: '📈', label: 'Reports', color: '#ef4444' },
     { path: '/settings', icon: '⚙️', label: 'Settings', color: '#6b7280' }
   ];

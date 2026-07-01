@@ -2,10 +2,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
-from app.core.security import get_current_user_id, get_password_hash, verify_password, create_access_token
+from app.core.security import get_current_user_id, get_password_hash, verify_password, create_access_token, get_current_user
 from app.models.users import Users
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
 router = APIRouter(tags=["Authentication"])
 
@@ -18,6 +19,17 @@ class UserCreate(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    full_name: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -63,3 +75,37 @@ async def login(
     token = create_access_token({"sub": str(user.id), "username": user.username})
     
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get current authenticated user information
+    """
+    result = await db.execute(
+        select(Users).where(Users.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
+
+
+@router.get("/me/mock")
+async def get_mock_user():
+    """
+    Mock endpoint for testing without authentication
+    """
+    return {
+        "id": 1,
+        "username": "testuser",
+        "email": "test@example.com",
+        "full_name": "Test User",
+        "is_active": True,
+        "created_at": datetime.now().isoformat()
+    }

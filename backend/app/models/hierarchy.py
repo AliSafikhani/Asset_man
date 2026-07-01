@@ -43,10 +43,13 @@ class Companies(Base, TimestampMixin):
     city = Column(String(100))
     state = Column(String(100))
     country = Column(String(100))
+    phone = Column(String(100))
+    email = Column(String(100))
     postal_code = Column(String(20))
+    address = Column(String(500), nullable=True)  # ADD THIS LINE
     status = Column(String(50), default="active")
     parent_company_id = Column(Integer, ForeignKey("companies.id"))
-    extra_data = Column(JSON, default={})  # renamed from metadata
+    extra_data = Column(JSON, default={})
     
     # Relationships
     centroid = relationship("Centroids", back_populates="companies")

@@ -1,7 +1,8 @@
 ﻿import axios from 'axios';
 
+// Use /api/v1 for all endpoints except algorithms
 const API = axios.create({
-  baseURL: '/api/v1',
+  baseURL: 'http://localhost:8000/api/v1',  // Back to /api/v1
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -28,6 +29,17 @@ export const assetAPI = {
   create: (data) => API.post('/assets/', data),
   update: (id, data) => API.put(`/assets/${id}`, data),
   delete: (id) => API.delete(`/assets/${id}`)
+};
+
+// Test APIs
+export const testAPI = {
+  getTestTypes: (assetType) => API.get(`/test-types/?asset_type=${assetType}`),
+  getTestFields: (testTypeId) => API.get(`/test-fields/test-type/${testTypeId}`),
+  getTestResults: (assetId, testTypeId) => API.get(`/test-results/asset/${assetId}?test_type_id=${testTypeId}`),
+  createTestResult: (data) => API.post('/test-results/', data),
+  updateTestResult: (id, data) => API.put(`/test-results/${id}`, data),
+  deleteTestResult: (id) => API.delete(`/test-results/${id}`),
+  batchDeleteTestResults: (ids) => API.delete('/test-results/batch', { data: ids })
 };
 
 // DCS Mapping APIs
@@ -62,4 +74,31 @@ export const eventAPI = {
   }
 };
 
+// Algorithm APIs - Use the full URL since algorithms are at /api
+export const algorithmAPI = {
+  analyzeDGA: (data) => {
+    // Use a separate axios instance for algorithms
+    const algoAPI = axios.create({
+      baseURL: 'http://localhost:8000/api',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return algoAPI.post('/algorithms/dga/analyze', data);
+  },
+  calculateDuvalTriangle: (samples) => {
+    const algoAPI = axios.create({
+      baseURL: 'http://localhost:8000/api',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return algoAPI.post('/algorithms/dga/duval-triangle-1/batch', samples);
+  },
+  getAlgorithmsHealth: () => {
+    const algoAPI = axios.create({
+      baseURL: 'http://localhost:8000/api',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return algoAPI.get('/algorithms/health');
+  }
+};
+
+// Export the default API instance
 export default API;

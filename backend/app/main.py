@@ -1,4 +1,4 @@
-﻿"""
+"""
 FastAPI Main Application Entry Point
 Asset Management System with Multi-Tier Hierarchy
 """
@@ -13,6 +13,7 @@ from datetime import datetime
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.api import api_router
+from app.api.algorithms import router as algorithms_router
 
 # Configure logging
 logging.basicConfig(
@@ -24,23 +25,18 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Lifespan context manager for startup and shutdown events
-    """
     # Startup
     logger.info("Starting up Asset Management System...")
     
-    # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables verified/created")
     
-    logger.info(f"Server running on http://localhost:8000")
-    logger.info(f"API Documentation available at http://localhost:8000/docs")
+    logger.info(f"🚀 Server running on http://localhost:8000")
+    logger.info(f"📚 API Documentation available at http://localhost:8000/docs")
     
     yield
     
-    # Shutdown
     logger.info("Shutting down...")
 
 
@@ -56,26 +52,28 @@ app = FastAPI(
 )
 
 
-# Configure CORS - Allow all origins for development
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Add GZip compression for responses
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # Include API routers
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# Directly include algorithms router at both /api and /api/v1
+app.include_router(algorithms_router, prefix="/api/v1/algorithms")
+app.include_router(algorithms_router, prefix="/api/algorithms")
+
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information"""
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}",
         "version": settings.VERSION,
@@ -83,14 +81,14 @@ async def root():
         "endpoints": {
             "api": f"{settings.API_V1_STR}",
             "docs": "/docs",
-            "health": "/health"
+            "health": "/health",
+            "algorithms": "/api/v1/algorithms"
         }
     }
 
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),

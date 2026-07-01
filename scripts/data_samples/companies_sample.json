@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Northeast Power Systems",
+    "code": "NPS-001",
+    "abbreviation": "NPS",
+    "company_type": "Utility Company",
+    "contact_person": "Michael Brown",
+    "contact_email": "michael.brown@northeastpower.com",
+    "contact_phone": "+1-617-555-0101",
+    "address_line1": "100 Grid Avenue",
+    "address_line2": "Floor 5",
+    "city": "Boston",
+    "state": "MA",
+    "country": "USA",
+    "postal_code": "02101",
+    "status": "active",
+    "metadata": {
+      "founded_year": 1978,
+      "employee_count": 500,
+      "website": "www.northeastpower.com",
+      "service_area": "Northeast US"
+    },
+    "address": "100 Grid Avenue, Floor 5, Boston, MA 02101",
+    "phone": "+1-617-555-0101",
+    "email": "info@northeastpower.com",
+    "extra_data": {
+      "tax_id": "TAX-NPS-001",
+      "license_number": "LIC-2024-101",
+      "regulatory_body": "FERC"
+    }
+  },
+  {
+    "name": "Southwest Energy Solutions",
+    "code": "SES-002",
+    "abbreviation": "SES",
+    "company_type": "Renewable Energy",
+    "contact_person": "Sarah Johnson",
+    "contact_email": "sarah.johnson@southwestenergy.com",
+    "contact_phone": "+1-602-555-0102",
+    "address_line1": "456 Solar Boulevard",
+    "address_line2": "Suite 200",
+    "city": "Phoenix",
+    "state": "AZ",
+    "country": "USA",
+    "postal_code": "85001",
+    "status": "active",
+    "metadata": {
+      "founded_year": 2005,
+      "employee_count": 180,
+      "website": "www.southwestenergy.com",
+      "service_area": "Southwest US"
+    },
+    "address": "456 Solar Boulevard, Suite 200, Phoenix, AZ 85001",
+    "phone": "+1-602-555-0102",
+    "email": "info@southwestenergy.com",
+    "extra_data": {
+      "tax_id": "TAX-SES-002",
+      "license_number": "LIC-2024-102",
+      "renewable_certificates": "REC-2024-001"
+    }
+  },
+  {
+    "name": "Pacific Electric & Gas",
+    "code": "PEG-003",
+    "abbreviation": "PEG",
+    "company_type": "Utility Company",
+    "contact_person": "David Chen",
+    "contact_email": "david.chen@pacificelectric.com",
+    "contact_phone": "+1-415-555-0103",
+    "address_line1": "789 Pacific Avenue",
+    "address_line2": "Floor 10",
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "USA",
+    "postal_code": "94101",
+    "status": "active",
+    "metadata": {
+      "founded_year": 1982,
+      "employee_count": 750,
+      "website": "www.pacificelectric.com",
+      "service_area": "West Coast US"
+    },
+    "address": "789 Pacific Avenue, Floor 10, San Francisco, CA 94101",
+    "phone": "+1-415-555-0103",
+    "email": "info@pacificelectric.com",
+    "extra_data": {
+      "tax_id": "TAX-PEG-003",
+      "license_number": "LIC-2024-103",
+      "regulatory_body": "CPUC"
+    }
+  },
+  {
+    "name": "Midwest Power Generation",
+    "code": "MPG-004",
+    "abbreviation": "MPG",
+    "company_type": "Power Generation",
+    "contact_person": "Robert Miller",
+    "contact_email": "robert.miller@midwestpower.com",
+    "contact_phone": "+1-312-555-0104",
+    "address_line1": "101 Wind Energy Drive",
+    "address_line2": "",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "USA",
+    "postal_code": "60601",
+    "status": "active",
+    "metadata": {
+      "founded_year": 1992,
+      "employee_count": 320,
+      "website": "www.midwestpower.com",
+      "service_area": "Midwest US"
+    },
+    "address": "101 Wind Energy Drive, Chicago, IL 60601",
+    "phone": "+1-312-555-0104",
+    "email": "info@midwestpower.com",
+    "extra_data": {
+      "tax_id": "TAX-MPG-004",
+      "license_number": "LIC-2024-104",
+      "generation_capacity": "500MW"
+    }
+  }
+]

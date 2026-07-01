@@ -1,41 +1,68 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+﻿from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
-import os
-import shutil
 
 from app.core.database import get_db
 from app.core.security import get_current_user_id
+from app.models.alarm_event_models import Event, EventChecklist, EventPart, EventComment
 from app.models.assets import Assets
-from app.models.events import MaintenanceEvent, EventAttachment
 
-router = APIRouter(prefix="/events", tags=["Maintenance Events"])
+router = APIRouter()
 
-# Pydantic models
 class EventCreate(BaseModel):
+    title: str = Field(..., max_length=500)
     asset_id: int
-    event_date: date
-    event_type: Optional[str] = None
-    title: str = Field(..., max_length=200)
+    event_type: str = Field(..., pattern="^(maintenance|failure|inspection|test|repair|replacement)$")
+    priority: str = Field(..., pattern="^(critical|high|medium|low)$")
+    reported_date: date
     description: Optional[str] = None
+    assigned_to: Optional[int] = None
+    due_date: Optional[date] = None
+
+class EventUpdate(BaseModel):
+    title: Optional[str] = None
+    status: Optional[str] = Field(None, pattern="^(open|in_progress|completed|cancelled|on_hold)$")
+    priority: Optional[str] = Field(None, pattern="^(critical|high|medium|low)$")
+    assigned_to: Optional[int] = None
+    due_date: Optional[date] = None
     actions_taken: Optional[str] = None
-    recommendations: Optional[str] = None
     cost: Optional[float] = None
     downtime_hours: Optional[float] = None
 
-class EventResponse(EventCreate):
+class EventResponse(BaseModel):
     id: int
-    created_by: Optional[int]
+    event_number: str
+    title: str
+    asset_id: int
+    event_type: str
+    priority: str
+    status: str
+    reported_date: date
+    description: Optional[str]
+    assigned_to: Optional[int]
+    due_date: Optional[date]
+    completed_date: Optional[date]
+    actions_taken: Optional[str]
+    cost: Optional[float]
+    downtime_hours: Optional[float]
     created_at: datetime
 
     class Config:
         from_attributes = True
 
-class EventDetailResponse(EventResponse):
-    attachments: List[dict] = []
+class ChecklistItemCreate(BaseModel):
+    task_name: str
+
+class PartCreate(BaseModel):
+    part_name: str
+    quantity: int = 1
+    unit_cost: Optional[float] = None
+
+class CommentCreate(BaseModel):
+    comment: str
 
 @router.post("/", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
 async def create_event(
@@ -43,148 +70,166 @@ async def create_event(
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a new maintenance event for an asset"""
+    """Create a new event/work order"""
     
     # Verify asset exists
     asset_result = await db.execute(select(Assets).where(Assets.id == event.asset_id))
     if not asset_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Asset not found")
     
-    new_event = MaintenanceEvent(
-        **event.dict(),
-        created_by=user_id
+    # Generate event number
+    year = datetime.now().year
+    result = await db.execute(select(Event).where(Event.event_number.like(f'WO-{year}-%')).order_by(desc(Event.id)))
+    last_event = result.scalar_one_or_none()
+    if last_event:
+        last_num = int(last_event.event_number.split('-')[-1])
+        next_num = last_num + 1
+    else:
+        next_num = 1
+    
+    event_number = f"WO-{year}-{next_num:04d}"
+    
+    new_event = Event(
+        event_number=event_number,
+        title=event.title,
+        asset_id=event.asset_id,
+        event_type=event.event_type,
+        priority=event.priority,
+        reported_date=event.reported_date,
+        description=event.description,
+        assigned_to=event.assigned_to,
+        due_date=event.due_date,
+        reported_by=user_id
     )
     db.add(new_event)
     await db.commit()
     await db.refresh(new_event)
-    
     return new_event
 
-@router.get("/asset/{asset_id}", response_model=List[EventResponse])
-async def get_asset_events(
-    asset_id: int,
-    limit: int = 50,
-    user_id: int = Depends(get_current_user_id),
+@router.get("/", response_model=List[EventResponse])
+async def get_events(
+    asset_id: Optional[int] = None,
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    limit: int = 100,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all maintenance events for an asset"""
+    """Get all events with filters"""
+    query = select(Event).order_by(desc(Event.created_at)).limit(limit)
+    if asset_id:
+        query = query.where(Event.asset_id == asset_id)
+    if status:
+        query = query.where(Event.status == status)
+    if priority:
+        query = query.where(Event.priority == priority)
     
-    result = await db.execute(
-        select(MaintenanceEvent)
-        .where(MaintenanceEvent.asset_id == asset_id)
-        .order_by(desc(MaintenanceEvent.event_date))
-        .limit(limit)
-    )
-    events = result.scalars().all()
-    return events
+    result = await db.execute(query)
+    return result.scalars().all()
 
-@router.get("/{event_id}", response_model=EventDetailResponse)
-async def get_event(
-    event_id: int,
-    user_id: int = Depends(get_current_user_id),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get a specific maintenance event with attachments"""
-    
-    result = await db.execute(
-        select(MaintenanceEvent).where(MaintenanceEvent.id == event_id)
-    )
+@router.get("/{event_id}", response_model=EventResponse)
+async def get_event(event_id: int, db: AsyncSession = Depends(get_db)):
+    """Get a specific event"""
+    result = await db.execute(select(Event).where(Event.id == event_id))
     event = result.scalar_one_or_none()
-    
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    
-    # Get attachments
-    attachments_result = await db.execute(
-        select(EventAttachment).where(EventAttachment.event_id == event_id)
-    )
-    attachments = attachments_result.scalars().all()
-    
-    response = EventDetailResponse.model_validate(event)
-    response.attachments = [{"id": a.id, "file_name": a.file_name, "file_size": a.file_size} for a in attachments]
-    
-    return response
+    return event
 
 @router.put("/{event_id}", response_model=EventResponse)
 async def update_event(
     event_id: int,
-    event_update: EventCreate,
+    event_update: EventUpdate,
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update a maintenance event"""
-    
-    result = await db.execute(
-        select(MaintenanceEvent).where(MaintenanceEvent.id == event_id)
-    )
+    """Update an event"""
+    result = await db.execute(select(Event).where(Event.id == event_id))
     event = result.scalar_one_or_none()
-    
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    for key, value in event_update.dict().items():
+    for key, value in event_update.dict(exclude_unset=True).items():
         setattr(event, key, value)
+    
+    if event_update.status == "completed" and not event.completed_date:
+        event.completed_date = date.today()
     
     await db.commit()
     await db.refresh(event)
-    
     return event
 
-@router.delete("/{event_id}")
-async def delete_event(
+@router.post("/{event_id}/checklist")
+async def add_checklist_item(
     event_id: int,
+    item: ChecklistItemCreate,
     user_id: int = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a maintenance event"""
-    
-    result = await db.execute(
-        select(MaintenanceEvent).where(MaintenanceEvent.id == event_id)
-    )
-    event = result.scalar_one_or_none()
-    
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-    
-    await db.delete(event)
-    await db.commit()
-    
-    return {"message": "Event deleted successfully"}
-
-@router.post("/{event_id}/attachments")
-async def upload_attachment(
-    event_id: int,
-    file: UploadFile = File(...),
-    user_id: int = Depends(get_current_user_id),
-    db: AsyncSession = Depends(get_db)
-):
-    """Upload an attachment for an event"""
-    
-    # Verify event exists
-    result = await db.execute(
-        select(MaintenanceEvent).where(MaintenanceEvent.id == event_id)
-    )
+    """Add a checklist item to an event"""
+    result = await db.execute(select(Event).where(Event.id == event_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Create upload directory if not exists
-    upload_dir = "uploads/events"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # Save file
-    file_path = f"{upload_dir}/{event_id}_{file.filename}"
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    # Save to database
-    attachment = EventAttachment(
-        event_id=event_id,
-        file_name=file.filename,
-        file_path=file_path,
-        file_size=os.path.getsize(file_path)
-    )
-    db.add(attachment)
+    checklist_item = EventChecklist(event_id=event_id, task_name=item.task_name)
+    db.add(checklist_item)
     await db.commit()
-    await db.refresh(attachment)
+    return {"message": "Checklist item added", "id": checklist_item.id}
+
+@router.put("/checklist/{item_id}")
+async def complete_checklist_item(
+    item_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark checklist item as completed"""
+    result = await db.execute(select(EventChecklist).where(EventChecklist.id == item_id))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
     
-    return {"id": attachment.id, "file_name": attachment.file_name, "message": "File uploaded successfully"}
+    item.is_completed = True
+    item.completed_by = user_id
+    item.completed_at = datetime.utcnow()
+    await db.commit()
+    return {"message": "Checklist item completed"}
+
+@router.post("/{event_id}/parts")
+async def add_part(
+    event_id: int,
+    part: PartCreate,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """Add a part to an event"""
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    total_cost = part.quantity * (part.unit_cost or 0)
+    event_part = EventPart(
+        event_id=event_id,
+        part_name=part.part_name,
+        quantity=part.quantity,
+        unit_cost=part.unit_cost,
+        total_cost=total_cost
+    )
+    db.add(event_part)
+    await db.commit()
+    return {"message": "Part added", "id": event_part.id}
+
+@router.post("/{event_id}/comments")
+async def add_comment(
+    event_id: int,
+    comment: CommentCreate,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    """Add a comment to an event"""
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    event_comment = EventComment(event_id=event_id, comment=comment.comment, created_by=user_id)
+    db.add(event_comment)
+    await db.commit()
+    return {"message": "Comment added", "id": event_comment.id}

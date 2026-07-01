@@ -40,7 +40,7 @@ function Login({ onLogin }) {
       localStorage.setItem('token', response.data.access_token);
       toast.success('Login successful!');
       if (onLogin) onLogin();
-      navigate('/companies');
+      navigate('/Dashboard');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login failed');
       generateCaptcha();
@@ -55,7 +55,7 @@ function Login({ onLogin }) {
       <div style={styles.card}>
         <div style={styles.logo}>🏭</div>
         <h1 style={styles.title}>Asset Management System</h1>
-        <p style={styles.subtitle}>Sign in to your account</p>
+        <p style={styles.subtitle}>Sign in to your account ali</p>
         
         <form onSubmit={handleSubmit}>
           <div style={styles.inputGroup}>

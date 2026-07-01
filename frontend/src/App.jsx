@@ -7,9 +7,12 @@ import Dashboard from './pages/Dashboard';
 import Companies from './pages/Companies';
 import Plants from './pages/Plants';
 import Assets from './pages/Assets';
+import Setr from './pages/Setr';
 import AssetDetail from './pages/AssetDetail';
 import TestsPage from './pages/TestsPage';
 import DCSPage from './pages/DCSPage';
+import AlarmsPage from './pages/AlarmsPage';
+import EventsPage from './pages/EventsPage';
 import './styles/global.css';
 
 function App() {
@@ -33,9 +36,12 @@ function App() {
             <Route path="/companies" element={<Companies />} />
             <Route path="/plants" element={<Plants />} />
             <Route path="/assets" element={<Assets />} />
+            <Route path="/setr" element={<Setr />} />
             <Route path="/assets/:assetId" element={<AssetDetail />} />
             <Route path="/tests" element={<TestsPage />} />
             <Route path="/dcs" element={<DCSPage />} />
+            <Route path="/alarms" element={<AlarmsPage />} />
+            <Route path="/events" element={<EventsPage />} />
           </Route>
         </Routes>
       </Router>

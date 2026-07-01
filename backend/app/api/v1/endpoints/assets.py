@@ -20,6 +20,15 @@ class AssetCreate(BaseModel):
     manufacturer: Optional[str] = None
     model: Optional[str] = None
 
+class AssetUpdate(BaseModel):
+    plant_id: Optional[int] = None
+    asset_type: Optional[str] = None
+    asset_name: Optional[str] = None
+    asset_code: Optional[str] = None
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    operational_status: Optional[str] = None
+
 class AssetResponse(AssetCreate):
     id: int
     operational_status: str
@@ -79,6 +88,40 @@ async def get_asset(asset_id: int, db: AsyncSession = Depends(get_db)):
     asset = result.scalar_one_or_none()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+    return asset
+
+@router.put("/{asset_id}", response_model=AssetResponse)
+async def update_asset(
+    asset_id: int,
+    asset_data: AssetUpdate,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    # Get existing asset
+    result = await db.execute(select(Assets).where(Assets.id == asset_id))
+    asset = result.scalar_one_or_none()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    # Verify plant exists if plant_id is being updated
+    if asset_data.plant_id is not None:
+        plant_result = await db.execute(select(Plants).where(Plants.id == asset_data.plant_id))
+        if not plant_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Plant not found")
+    
+    # Check if asset code exists (if being changed)
+    if asset_data.asset_code is not None and asset_data.asset_code != asset.asset_code:
+        existing = await db.execute(select(Assets).where(Assets.asset_code == asset_data.asset_code))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Asset code already exists")
+    
+    # Update only provided fields
+    update_data = asset_data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(asset, key, value)
+    
+    await db.commit()
+    await db.refresh(asset)
     return asset
 
 @router.delete("/{asset_id}")
