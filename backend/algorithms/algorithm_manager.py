@@ -6,6 +6,9 @@ from algorithms.transformer.dga.duval_triangle_2 import DuvalTriangle2
 from algorithms.transformer.dga.duval_triangle_4 import DuvalTriangle4
 from algorithms.transformer.dga.duval_triangle_5 import DuvalTriangle5
 from algorithms.transformer.dga.duval_triangle_6 import DuvalTriangle6
+from algorithms.transformer.dga.duval_pentagon_1 import DuvalPentagon1
+from algorithms.transformer.dga.duval_pentagon_2 import DuvalPentagon2
+from algorithms.transformer.dga.rogers_ratio import RogersRatio
 
 
 class AlgorithmManager:
@@ -14,7 +17,7 @@ class AlgorithmManager:
         self._register_algorithms()
     
     def _register_algorithms(self):
-        print("📝 Registering algorithms...")
+        print("ظ‹ع؛â€œâ€Œ Registering algorithms...")
         self.algorithms['transformer'] = {
             'dga': {
                 'duval_triangle_1': DuvalTriangle1(),
@@ -22,9 +25,12 @@ class AlgorithmManager:
                 'duval_triangle_4': DuvalTriangle4(),
                 'duval_triangle_5': DuvalTriangle5(),
                 'duval_triangle_6': DuvalTriangle6(),
+                'duval_pentagon_1': DuvalPentagon1(),
+                'duval_pentagon_2': DuvalPentagon2(),
+                'rogers_ratio': RogersRatio(),
             }
         }
-        print("✅ Registered transformer/dga algorithms")
+        print("أ¢إ“â€¦ Registered transformer/dga algorithms")
         print(f"   Algorithms: {list(self.algorithms['transformer']['dga'].keys())}")
     
     def get_algorithms(self, asset_type: str, test_type: str) -> List[Dict[str, Any]]:

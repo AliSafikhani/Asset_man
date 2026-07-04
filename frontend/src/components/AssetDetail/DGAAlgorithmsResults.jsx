@@ -4,15 +4,20 @@ import DuvalTriangle2Chart from '../DuvalTriangle2Chart';
 import DuvalTriangle4Chart from '../DuvalTriangle4Chart';
 import DuvalTriangle5Chart from '../DuvalTriangle5Chart';
 import DuvalTriangle6Chart from '../DuvalTriangle6Chart';
-
+import DuvalPentagon1Chart from '../DuvalPentagon1Chart';
+import DuvalPentagon2Chart from '../DuvalPentagon2Chart';
+import RogersRatioChart3D from '../RogersRatioChart3D';
 
 const DGAAlgorithmsResults = ({ 
   dgaResults, 
   duvalData, 
-  duval2Data,
-  duval4Data,   // Add this 
-  duval5Data,
-  duval6Data,
+  duval2Data, 
+  duval4Data, 
+  duval5Data, 
+  duval6Data, 
+  duvalPentagon1Data, 
+  duvalPentagon2Data, 
+  rogersData, 
   algoError,
   onClose 
 }) => {
@@ -20,68 +25,173 @@ const DGAAlgorithmsResults = ({
   const [selectedSubAlgorithm, setSelectedSubAlgorithm] = useState('DUVAL_TRIANGLE_1');
 
   console.log('=== DGAAlgorithmsResults Debug ===');
-  console.log('duvalData:', duvalData);
-  console.log('duval2Data:', duval2Data);
-  console.log('duval4Data:', duval4Data);
-  console.log('duval5Data:', duval5Data);
-  console.log('duval6Data:', duval6Data);
   console.log('dgaResults:', dgaResults);
+  console.log('dgaResults length:', dgaResults?.length);
+  
+  if (dgaResults && dgaResults.length > 0 && dgaResults[0].algorithms) {
+    console.log('First item algorithm keys:', Object.keys(dgaResults[0].algorithms));
+  }
 
   if (!dgaResults || dgaResults.length === 0) {
     return null;
   }
 
-  // Get the actual algorithm keys from the data
-  const getActualAlgorithmKeys = () => {
-    if (dgaResults.length === 0 || !dgaResults[0].algorithms) return [];
-    return Object.keys(dgaResults[0].algorithms);
-  };
-
-  const actualKeys = getActualAlgorithmKeys();
-  console.log('Actual algorithm keys in data:', actualKeys);
-
-  // Map display names to actual keys
+  // Get the actual key from the data with improved mapping
   const getActualKey = (displayKey) => {
+    if (dgaResults.length === 0 || !dgaResults[0].algorithms) {
+      return null;
+    }
+    const keys = Object.keys(dgaResults[0].algorithms);
+    console.log('Available keys in data:', keys);
+    console.log('Looking for display key:', displayKey);
+    
+    // Direct mapping for display keys to actual keys (case insensitive)
     const keyMap = {
-      'DUVAL_TRIANGLE_1': 'duval_triangle_1',
-      'DUVAL_TRIANGLE_2': 'duval_triangle_2',
-      'DUVAL_TRIANGLE_3': 'duval_triangle_3',
-      'DUVAL_TRIANGLE_4': 'duval_triangle_4',
-      'DUVAL_TRIANGLE_5': 'duval_triangle_5',
-      'DUVAL_TRIANGLE_6': 'duval_triangle_6',
-      'DUVAL_TRIANGLE_6': 'duval_triangle_6',
-      'DUVAL_PENTAGON_1': 'duval_pentagon_1',
-      'DUVAL_PENTAGON_2': 'duval_pentagon_2',
-      'ROGERS': 'rogers_ratio',
-      'DOERUNBERG': 'doernenburg',
-      'IEC_60599': 'iec_60599',
+      'DUVAL_TRIANGLE_1': ['duval_triangle_1', 'duvaltriangle1', 'duval1', 'triangle1'],
+      'DUVAL_TRIANGLE_2': ['duval_triangle_2', 'duvaltriangle2', 'duval2', 'triangle2'],
+      'DUVAL_TRIANGLE_4': ['duval_triangle_4', 'duvaltriangle4', 'duval4', 'triangle4'],
+      'DUVAL_TRIANGLE_5': ['duval_triangle_5', 'duvaltriangle5', 'duval5', 'triangle5'],
+      'DUVAL_TRIANGLE_6': ['duval_triangle_6', 'duvaltriangle6', 'duval6', 'triangle6'],
+      'DUVAL_PENTAGON_1': ['duval_pentagon_1', 'duvalpentagon1', 'pentagon1'],
+      'DUVAL_PENTAGON_2': ['duval_pentagon_2', 'duvalpentagon2', 'pentagon2'],
+      'ROGERS_1': ['rogers_ratio', 'rogersratio', 'rogers'],
     };
     
-    if (keyMap[displayKey]) {
-      const mapped = keyMap[displayKey];
-      if (actualKeys.includes(mapped)) {
-        return mapped;
+    // Get the list of possible keys for this display key
+    const possibleKeys = keyMap[displayKey] || [displayKey.toLowerCase()];
+    
+    // Try each possible key
+    for (const possibleKey of possibleKeys) {
+      // Exact match
+      if (keys.includes(possibleKey)) {
+        console.log(`✅ Found exact match: ${possibleKey}`);
+        return possibleKey;
+      }
+      // Case insensitive match
+      const found = keys.find(k => k.toLowerCase() === possibleKey.toLowerCase());
+      if (found) {
+        console.log(`✅ Found case-insensitive match: ${found}`);
+        return found;
       }
     }
     
-    // Try partial match
-    const lowerDisplay = displayKey.toLowerCase().replace(/_/g, '');
-    for (const key of actualKeys) {
-      const lowerKey = key.toLowerCase().replace(/_/g, '');
-      if (lowerKey.includes(lowerDisplay) || lowerDisplay.includes(lowerKey)) {
+    // Try partial match (contains)
+    const displayLower = displayKey.toLowerCase().replace(/_/g, '');
+    for (const key of keys) {
+      const keyLower = key.toLowerCase().replace(/_/g, '');
+      if (keyLower.includes(displayLower) || displayLower.includes(keyLower)) {
+        console.log(`✅ Found partial match: ${key} for ${displayKey}`);
         return key;
       }
     }
     
+    console.warn(`❌ No key found for: ${displayKey}`);
     return null;
   };
+
+  // Get filtered results for the table
+  const getFilteredResults = () => {
+    const results = [];
+    let actualKey = null;
+    
+    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
+      actualKey = getActualKey(selectedSubAlgorithm);
+    } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
+      actualKey = getActualKey(selectedSubAlgorithm);
+    } else if (selectedAlgorithm === 'ROGERS') {
+      actualKey = getActualKey('ROGERS_1');
+    } else {
+      actualKey = getActualKey(selectedAlgorithm);
+    }
+    
+    console.log('Actual key for table:', actualKey);
+    
+    // If still no key, try to find any matching key
+    if (!actualKey && dgaResults[0]?.algorithms) {
+      const allKeys = Object.keys(dgaResults[0].algorithms);
+      if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
+        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('triangle'));
+        if (found) actualKey = found;
+      } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
+        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('pentagon'));
+        if (found) actualKey = found;
+      } else if (selectedAlgorithm === 'ROGERS') {
+        const found = allKeys.find(k => k.toLowerCase().includes('rogers'));
+        if (found) actualKey = found;
+      }
+      console.log('Fallback key found:', actualKey);
+    }
+    
+    dgaResults.forEach((item, index) => {
+      if (!item.algorithms) {
+        console.log(`Item ${index} has no algorithms`);
+        return;
+      }
+      
+      console.log(`Item ${index} keys:`, Object.keys(item.algorithms));
+      
+      if (actualKey && item.algorithms[actualKey]) {
+        const result = {
+          ...item,
+          algoKey: actualKey,
+          algoResult: item.algorithms[actualKey]
+        };
+        console.log(`✅ Added result for item ${index}:`, result.algoResult);
+        results.push(result);
+      } else {
+        // Try to find any key that matches the algorithm type
+        const allItemKeys = Object.keys(item.algorithms);
+        let fallbackKey = null;
+        if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
+          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('triangle'));
+        } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
+          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('pentagon'));
+        } else if (selectedAlgorithm === 'ROGERS') {
+          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('rogers'));
+        }
+        
+        if (fallbackKey && item.algorithms[fallbackKey]) {
+          results.push({
+            ...item,
+            algoKey: fallbackKey,
+            algoResult: item.algorithms[fallbackKey]
+          });
+        }
+      }
+    });
+    
+    console.log('Filtered results count:', results.length);
+    return results;
+  };
+
+  const filteredResults = getFilteredResults();
+
+  // Get chart data
+  const getChartData = () => {
+    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
+      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_1') return duvalData;
+      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_2') return duval2Data;
+      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_4') return duval4Data;
+      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_5') return duval5Data;
+      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_6') return duval6Data;
+    } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
+      if (selectedSubAlgorithm === 'DUVAL_PENTAGON_1') return duvalPentagon1Data;
+      if (selectedSubAlgorithm === 'DUVAL_PENTAGON_2') return duvalPentagon2Data;
+    } else if (selectedAlgorithm === 'ROGERS') {
+      return rogersData;
+    }
+    return null;
+  };
+
+  const chartData = getChartData();
+  const hasValidChartData = chartData && chartData.length > 0;
 
   // Algorithm configuration
   const algorithms = {
     DUVAL_TRIANGLE: {
       label: 'DUVAL TRIANGLE',
       hasSub: true,
-      subs: ['DUVAL_TRIANGLE_1', 'DUVAL_TRIANGLE_2', 'DUVAL_TRIANGLE_3', 'DUVAL_TRIANGLE_4', 'DUVAL_TRIANGLE_5', 'DUVAL_TRIANGLE_6'],
+      subs: ['DUVAL_TRIANGLE_1', 'DUVAL_TRIANGLE_2', 'DUVAL_TRIANGLE_4', 'DUVAL_TRIANGLE_5', 'DUVAL_TRIANGLE_6'],
       implemented: true,
       getChart: (data) => {
         switch(selectedSubAlgorithm) {
@@ -94,7 +204,7 @@ const DGAAlgorithmsResults = ({
           case 'DUVAL_TRIANGLE_5':
             return <DuvalTriangle5Chart data={data} width={650} height={600} />;
           case 'DUVAL_TRIANGLE_6':
-            return <DuvalTriangle6Chart data={data} width={650} height={600} />;  // Add this!
+            return <DuvalTriangle6Chart data={data} width={650} height={600} />;
           default:
             return <div style={styles.comingSoon}>Coming Soon</div>;
         }
@@ -104,15 +214,26 @@ const DGAAlgorithmsResults = ({
       label: 'DUVAL PENTAGON',
       hasSub: true,
       subs: ['DUVAL_PENTAGON_1', 'DUVAL_PENTAGON_2'],
-      implemented: false,
-      getChart: () => <div style={styles.comingSoon}>Coming Soon</div>
+      implemented: true,
+      getChart: (data) => {
+        switch(selectedSubAlgorithm) {
+          case 'DUVAL_PENTAGON_1':
+            return <DuvalPentagon1Chart data={data} width={650} height={600} />;
+          case 'DUVAL_PENTAGON_2':
+            return <DuvalPentagon2Chart data={data} width={650} height={600} />;
+          default:
+            return <div style={styles.comingSoon}>Coming Soon</div>;
+        }
+      }
     },
     ROGERS: {
       label: 'ROGERS',
-      hasSub: false,
-      subs: [],
-      implemented: false,
-      getChart: () => <div style={styles.comingSoon}>Coming Soon</div>
+      hasSub: true,
+      subs: ['ROGERS_1'],
+      implemented: true,
+      getChart: (data) => {
+        return <RogersRatioChart3D data={data} width={650} height={550} />;
+      }
     },
     DOERUNBERG: {
       label: 'DOERUNBERG',
@@ -141,12 +262,12 @@ const DGAAlgorithmsResults = ({
     const nameMap = {
       'DUVAL_TRIANGLE_1': 'Duval Triangle 1',
       'DUVAL_TRIANGLE_2': 'Duval Triangle 2',
-      'DUVAL_TRIANGLE_3': 'Duval Triangle 3',
       'DUVAL_TRIANGLE_4': 'Duval Triangle 4',
       'DUVAL_TRIANGLE_5': 'Duval Triangle 5',
       'DUVAL_TRIANGLE_6': 'Duval Triangle 6',
       'DUVAL_PENTAGON_1': 'Duval Pentagon 1',
       'DUVAL_PENTAGON_2': 'Duval Pentagon 2',
+      'ROGERS_1': 'Rogers Ratio 3D',
       'ML_1': 'ML 1',
       'ML_2': 'ML 2',
       'ML_3': 'ML 3',
@@ -156,75 +277,6 @@ const DGAAlgorithmsResults = ({
     return nameMap[subKey] || subKey;
   };
 
-  // Get filtered results
-  const getFilteredResults = () => {
-    const results = [];
-    let actualKey = null;
-    
-    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
-      actualKey = getActualKey(selectedSubAlgorithm);
-    } else {
-      actualKey = getActualKey(selectedAlgorithm);
-    }
-    
-    // Fallback: try to find any duval_triangle key
-    if (!actualKey && selectedAlgorithm === 'DUVAL_TRIANGLE') {
-      const found = actualKeys.find(k => k.includes('duval_triangle'));
-      if (found) actualKey = found;
-    }
-    
-    dgaResults.forEach(item => {
-      if (!item.algorithms) return;
-      
-      if (actualKey && item.algorithms[actualKey]) {
-        results.push({
-          ...item,
-          algoKey: actualKey,
-          algoResult: item.algorithms[actualKey]
-        });
-      } else {
-        // Fallback: find any matching key
-        const keys = Object.keys(item.algorithms);
-        for (const key of keys) {
-          if (key.includes('duval_triangle') && selectedAlgorithm === 'DUVAL_TRIANGLE') {
-            results.push({
-              ...item,
-              algoKey: key,
-              algoResult: item.algorithms[key]
-            });
-            break;
-          }
-        }
-      }
-    });
-    
-    return results;
-  };
-
-  const filteredResults = getFilteredResults();
-
-  const getChartData = () => {
-    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
-      if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_1') {
-        return duvalData;
-      } else if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_2') {
-        return duval2Data;
-      } else if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_4') {
-        return duval4Data;
-      } else if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_5') {
-        return duval5Data;
-      } else if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_6') {
-        return duval6Data;
-      }
-      
-    }
-    return null;
-  };
-
-  const chartData = getChartData();
-  const hasValidChartData = chartData && chartData.length > 0 && 
-    chartData.some(d => d.coordinates && d.coordinates.x !== undefined && d.coordinates.y !== undefined);
-
   const currentAlgo = algorithms[selectedAlgorithm];
   const isImplemented = currentAlgo?.implemented || false;
 
@@ -232,7 +284,7 @@ const DGAAlgorithmsResults = ({
     <div style={styles.dgaAlgorithmsContainer}>
       <div style={styles.headerRow}>
         <h3>DGA Algorithm Analysis Results</h3>
-        <button onClick={onClose} style={styles.closeButton}>أ¢إ“â€¢</button>
+        <button onClick={onClose} style={styles.closeButton}>✕</button>
       </div>
       <p style={styles.algoDescription}>
         Analyzing {dgaResults.length} selected test result(s) using multiple DGA interpretation methods
@@ -240,10 +292,11 @@ const DGAAlgorithmsResults = ({
       
       {algoError && (
         <div style={styles.algoError}>
-          أ¢ع‘آ أ¯آ¸عˆ {algoError}
+          ⚠️ {algoError}
         </div>
       )}
       
+      {/* Algorithm Tabs */}
       <div style={styles.tabsContainer}>
         <div style={styles.tabs}>
           {Object.entries(algorithms).map(([key, algo]) => (
@@ -268,6 +321,7 @@ const DGAAlgorithmsResults = ({
           ))}
         </div>
         
+        {/* Sub-algorithm tabs */}
         {algorithms[selectedAlgorithm]?.hasSub && (
           <div style={styles.subTabs}>
             {algorithms[selectedAlgorithm].subs.map(sub => (
@@ -286,6 +340,7 @@ const DGAAlgorithmsResults = ({
         )}
       </div>
       
+      {/* Chart Section */}
       <div style={styles.chartSection}>
         <h4>
           {algorithms[selectedAlgorithm]?.label} 
@@ -300,12 +355,12 @@ const DGAAlgorithmsResults = ({
             </div>
           ) : (
             <div style={styles.noChartData}>
-              <p> No chart data available for the selected algorithm</p>
+              <p>⚠️ No chart data available for the selected algorithm</p>
             </div>
           )
         ) : (
           <div style={styles.comingSoonContainer}>
-            <div style={styles.comingSoonIcon}>ظ‹ع؛ع‘آ§</div>
+            <div style={styles.comingSoonIcon}>🚧</div>
             <h3 style={styles.comingSoonTitle}>Coming Soon</h3>
             <p style={styles.comingSoonText}>
               The {algorithms[selectedAlgorithm]?.label} algorithm is currently under development.
@@ -315,17 +370,21 @@ const DGAAlgorithmsResults = ({
         
         {isImplemented && hasValidChartData && (
           <div style={styles.chartLegend}>
-            <p>ظ‹ع؛â€™طŒ Hover over points for details | Color indicates fault zone</p>
+            <p>💡 Hover over points for details | Color indicates fault zone</p>
             <p style={styles.chartDataInfo}>Showing {chartData?.length || 0} data point(s)</p>
           </div>
         )}
       </div>
       
+      {/* Results Table */}
       <div style={styles.tableContainer}>
         <h4>Results Summary</h4>
         {filteredResults.length === 0 ? (
           <div style={styles.noDataMessage}>
             <p>No data available for the selected algorithm</p>
+            <p style={{fontSize: '12px', color: '#999'}}>
+              Available algorithms in data: {dgaResults[0]?.algorithms ? Object.keys(dgaResults[0].algorithms).join(', ') : 'None'}
+            </p>
           </div>
         ) : (
           <table style={styles.table}>
@@ -365,7 +424,7 @@ const DGAAlgorithmsResults = ({
                       backgroundColor: item.algoResult?.zone_color || '#95A5A6',
                       color: 'white'
                     }}>
-                      {item.algoResult?.fault_zone || 'UNK'}
+                      {item.algoResult?.fault_zone || item.algoResult?.fault_type || 'UNK'}
                     </span>
                   </td>
                   <td style={styles.tableCell}>
@@ -377,6 +436,14 @@ const DGAAlgorithmsResults = ({
                         {Object.entries(item.algoResult.percentages).map(([key, value]) => (
                           <span key={key} style={styles.percentageItem}>
                             {key}: {value}%
+                          </span>
+                        ))}
+                      </div>
+                    ) : item.algoResult?.ratios ? (
+                      <div style={styles.percentagesInline}>
+                        {Object.entries(item.algoResult.ratios).map(([key, value]) => (
+                          <span key={key} style={styles.percentageItem}>
+                            {key.replace('R', 'R')}: {value}
                           </span>
                         ))}
                       </div>
@@ -517,11 +584,6 @@ const styles = {
     borderRadius: '8px',
     border: '1px solid #ffc107',
     textAlign: 'center'
-  },
-  noChartSubtext: {
-    fontSize: '12px',
-    color: '#856404',
-    marginTop: '5px'
   },
   comingSoonContainer: {
     padding: '60px 20px',

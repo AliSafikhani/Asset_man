@@ -34,6 +34,9 @@ function AssetDetail() {
   const [duval4Data, setDuval4Data] = useState([]);
   const [duval5Data, setDuval5Data] = useState([]);
   const [duval6Data, setDuval6Data] = useState([]);
+  const [duvalPentagon1Data, setDuvalPentagon1Data] = useState([]);
+  const [duvalPentagon2Data, setDuvalPentagon2Data] = useState([]);
+  const [rogersData, setRogersData] = useState([]);
   const [algoLoading, setAlgoLoading] = useState(false);
   const [algoError, setAlgoError] = useState(null);
   
@@ -119,6 +122,13 @@ function AssetDetail() {
       setShowDgaAlgorithms(false);
       setDgaResults([]);
       setDuvalData([]);
+      setDuval2Data([]);
+      setDuval4Data([]);
+      setDuval5Data([]);
+      setDuval6Data([]);
+      setDuvalPentagon1Data([]);
+      setDuvalPentagon2Data([]);
+      setRogersData([]);
       setAlgoError(null);
       setCurrentPage(1);
     } catch (error) {
@@ -233,6 +243,13 @@ function AssetDetail() {
       setShowDgaAlgorithms(false);
       setDgaResults([]);
       setDuvalData([]);
+      setDuval2Data([]);
+      setDuval4Data([]);
+      setDuval5Data([]);
+      setDuval6Data([]);
+      setDuvalPentagon1Data([]);
+      setDuvalPentagon2Data([]);
+      setRogersData([]);
     } else {
       setSelectedRows(paginatedResults.map(r => r.id));
     }
@@ -252,6 +269,13 @@ function AssetDetail() {
         setShowDgaAlgorithms(false);
         setDgaResults([]);
         setDuvalData([]);
+        setDuval2Data([]);
+        setDuval4Data([]);
+        setDuval5Data([]);
+        setDuval6Data([]);
+        setDuvalPentagon1Data([]);
+        setDuvalPentagon2Data([]);
+        setRogersData([]);
         setAlgoError(null);
       }
       
@@ -259,224 +283,195 @@ function AssetDetail() {
     });
   };
 
-const calculateDgaAlgorithms = async () => {
-  if (selectedRows.length === 0) {
-    alert('Please select at least one test result.');
-    return;
-  }
+  const calculateDgaAlgorithms = async () => {
+    if (selectedRows.length === 0) {
+      alert('Please select at least one test result.');
+      return;
+    }
 
-  setAlgoLoading(true);
-  setAlgoError(null);
-  setDgaResults([]);
-  setDuvalData([]);
-  setDuval2Data([]);
-  
-  try {
-    const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
-    const results = [];
-    const duvalSamples = [];
+    setAlgoLoading(true);
+    setAlgoError(null);
+    setDgaResults([]);
+    setDuvalData([]);
+    setDuval2Data([]);
+    setDuval4Data([]);
+    setDuval5Data([]);
+    setDuval6Data([]);
+    setDuvalPentagon1Data([]);
+    setDuvalPentagon2Data([]);
+    setRogersData([]);
+    
+    try {
+      const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
+      const results = [];
+      const duvalSamples = [];
 
-    for (const result of selectedResults) {
-      const parameters = {};
-      result.parameters.forEach(param => {
-        if (param.field_name && param.field_value !== null) {
-          parameters[param.field_name] = param.field_value;
-        }
-      });
-      
-      try {
-        const assetType = 'transformer';
-        const testType = 'dga';
+      for (const result of selectedResults) {
+        const parameters = {};
+        result.parameters.forEach(param => {
+          if (param.field_name && param.field_value !== null) {
+            parameters[param.field_name] = param.field_value;
+          }
+        });
         
-        const algosResponse = await API.get(`/algorithms/${assetType}/${testType}`);
-        
-        const algorithmResults = {};
-        for (const algo of algosResponse.data) {
-          try {
-            let algoId = algo.id;
-            if (algoId === 'duvaltriangle1') {
-            algoId = 'duval_triangle_1';
-          }
-          if (algoId === 'duvaltriangle2') {
-            algoId = 'duval_triangle_2';
-          }
-          if (algoId === 'duvaltriangle4') {
-            algoId = 'duval_triangle_4';  // Add this!
-          }
-          if (algoId === 'duvaltriangle5') {
-            algoId = 'duval_triangle_5';
-          }
-          if (algoId === 'duvaltriangle6') {
-            algoId = 'duval_triangle_6';
-          }
-            
-            const singleSample = [{
-              id: result.id,
-              sample_date: result.test_date,
-              gas_data: {
-                ch4: parameters.ch4 || 0,
-                c2h2: parameters.c2h2 || 0,
-                c2h4: parameters.c2h4 || 0,
-                h2: parameters.h2 || 0,
-                c2h6: parameters.c2h6 || 0,
-                co: parameters.co || 0,
-                co2: parameters.co2 || 0,
-                o2: parameters.o2 || 0,
-                n2: parameters.n2 || 0
+        try {
+          const assetType = 'transformer';
+          const testType = 'dga';
+          
+          const algosResponse = await API.get(`/algorithms/${assetType}/${testType}`);
+          console.log('Available algorithms:', algosResponse.data);
+          
+          const algorithmResults = {};
+          for (const algo of algosResponse.data) {
+            try {
+              let algoId = algo.id;
+              const algoMap = {
+                'duvaltriangle1': 'duval_triangle_1',
+                'duvaltriangle2': 'duval_triangle_2',
+                'duvaltriangle4': 'duval_triangle_4',
+                'duvaltriangle5': 'duval_triangle_5',
+                'duvaltriangle6': 'duval_triangle_6',
+                'duvalpentagon1': 'duval_pentagon_1',
+                'duvalpentagon2': 'duval_pentagon_2',
+                'rogersratio': 'rogers_ratio'  // Changed from 'rogers' to 'rogersratio'
+              };
+              
+              if (algoMap[algoId]) {
+                algoId = algoMap[algoId];
               }
-            }];
-            
-            const algoResponse = await API.post(
-              `/algorithms/${assetType}/${testType}/${algoId}/batch`,
-              singleSample
-            );
-            
-            if (algoResponse.data && algoResponse.data.length > 0) {
-              algorithmResults[algo.id] = algoResponse.data[0];
+              
+              console.log(`Using algorithm ID: ${algoId} (original: ${algo.id})`);
+              
+              const singleSample = [{
+                id: result.id,
+                sample_date: result.test_date,
+                gas_data: {
+                  ch4: parameters.ch4 || 0,
+                  c2h2: parameters.c2h2 || 0,
+                  c2h4: parameters.c2h4 || 0,
+                  h2: parameters.h2 || 0,
+                  c2h6: parameters.c2h6 || 0,
+                  co: parameters.co || 0,
+                  co2: parameters.co2 || 0,
+                  o2: parameters.o2 || 0,
+                  n2: parameters.n2 || 0
+                }
+              }];
+              
+              const algoResponse = await API.post(
+                `/algorithms/${assetType}/${testType}/${algoId}/batch`,
+                singleSample
+              );
+              
+              console.log(`Response for ${algoId}:`, algoResponse.data);
+              if (algoResponse.data && algoResponse.data.length > 0) {
+                algorithmResults[algo.id] = algoResponse.data[0];
+              } else {
+                algorithmResults[algo.id] = { error: 'No data returned' };
+              }
+            } catch (algoError) {
+              console.error(`Error calculating ${algo.id}:`, algoError);
+              algorithmResults[algo.id] = { error: 'Calculation failed' };
             }
-          } catch (algoError) {
-            console.error(`Error calculating ${algo.id}:`, algoError);
-            algorithmResults[algo.id] = { error: 'Calculation failed' };
           }
-        }
-        
-        const overallStatus = determineOverallStatus(algorithmResults);
-        
-        results.push({
-          test_id: result.id,
-          test_date: result.test_date,
-          algorithms: algorithmResults,
-          overall_status: overallStatus
-        });
+          
+          const overallStatus = determineOverallStatus(algorithmResults);
+          
+          results.push({
+            test_id: result.id,
+            test_date: result.test_date,
+            algorithms: algorithmResults,
+            overall_status: overallStatus
+          });
 
-        const duvalSample = {
-          id: result.id,
-          sample_date: result.test_date,
-          gas_data: {
-            ch4: parameters.ch4 || 0,
-            c2h2: parameters.c2h2 || 0,
-            c2h4: parameters.c2h4 || 0,
-            h2: parameters.h2 || 0,
-            c2h6: parameters.c2h6 || 0,
-            co: parameters.co || 0,
-            co2: parameters.co2 || 0,
-            o2: parameters.o2 || 0,
-            n2: parameters.n2 || 0
-          }
-        };
-        duvalSamples.push(duvalSample);
-        
-      } catch (error) {
-        console.error(`Error calculating algorithms for test ${result.id}:`, error);
-        results.push({
-          test_id: result.id,
-          test_date: result.test_date,
-          error: error.response?.data?.detail || 'Error calculating algorithms'
-        });
-      }
-    }
-    
-    console.log('Duval samples to send:', duvalSamples);
-    
-    // Calculate Duval Triangle 1 for the chart
-    if (duvalSamples.length > 0) {
-      try {
-        const duvalResponse = await API.post(
-          '/algorithms/transformer/dga/duval_triangle_1/batch',
-          duvalSamples
-        );
-        console.log('Duval Triangle 1 Response:', duvalResponse.data);
-        if (duvalResponse.data && duvalResponse.data.length > 0) {
-          setDuvalData(duvalResponse.data);
+          const duvalSample = {
+            id: result.id,
+            sample_date: result.test_date,
+            gas_data: {
+              ch4: parameters.ch4 || 0,
+              c2h2: parameters.c2h2 || 0,
+              c2h4: parameters.c2h4 || 0,
+              h2: parameters.h2 || 0,
+              c2h6: parameters.c2h6 || 0,
+              co: parameters.co || 0,
+              co2: parameters.co2 || 0,
+              o2: parameters.o2 || 0,
+              n2: parameters.n2 || 0
+            }
+          };
+          duvalSamples.push(duvalSample);
+          
+        } catch (error) {
+          console.error(`Error calculating algorithms for test ${result.id}:`, error);
+          results.push({
+            test_id: result.id,
+            test_date: result.test_date,
+            error: error.response?.data?.detail || 'Error calculating algorithms'
+          });
         }
-      } catch (error) {
-        console.error('Error calculating Duval Triangle 1:', error);
       }
       
-      // Calculate Duval Triangle 2 for the chart
-      try {
-        const duval2Response = await API.post(
-          '/algorithms/transformer/dga/duval_triangle_2/batch',
-          duvalSamples
-        );
-        console.log('Duval Triangle 2 Response:', duval2Response.data);
-        if (duval2Response.data && duval2Response.data.length > 0) {
-          setDuval2Data(duval2Response.data);
+      console.log('Duval samples to send:', duvalSamples);
+      
+      if (duvalSamples.length > 0) {
+        const chartAlgorithms = [
+          { id: 'duval_triangle_1', setter: setDuvalData, name: 'Duval Triangle 1' },
+          { id: 'duval_triangle_2', setter: setDuval2Data, name: 'Duval Triangle 2' },
+          { id: 'duval_triangle_4', setter: setDuval4Data, name: 'Duval Triangle 4' },
+          { id: 'duval_triangle_5', setter: setDuval5Data, name: 'Duval Triangle 5' },
+          { id: 'duval_triangle_6', setter: setDuval6Data, name: 'Duval Triangle 6' },
+          { id: 'duval_pentagon_1', setter: setDuvalPentagon1Data, name: 'Duval Pentagon 1' },
+          { id: 'duval_pentagon_2', setter: setDuvalPentagon2Data, name: 'Duval Pentagon 2' },
+          { id: 'rogers_ratio', setter: setRogersData, name: 'Rogers Ratio' },
+        ];
+
+        for (const algo of chartAlgorithms) {
+          try {
+            console.log(`ًں“، Calling ${algo.name} API...`);
+            const response = await API.post(
+              `/algorithms/transformer/dga/${algo.id}/batch`,
+              duvalSamples
+            );
+            console.log(`ًں“، ${algo.name} Response:`, response.data);
+            if (response.data && response.data.length > 0) {
+              algo.setter(response.data);
+              console.log(`âœ… ${algo.name} data set with`, response.data.length, 'items');
+            } else {
+              console.warn(`âڑ ï¸ڈ ${algo.name} returned empty data`);
+            }
+          } catch (error) {
+            console.error(`â‌Œ Error calculating ${algo.name}:`, error);
+          }
         }
-      } catch (error) {
-        console.error('Error calculating Duval Triangle 2:', error);
-      }
-      // Calculate Duval Triangle 4 for the chart
-      try {
-        const duval4Response = await API.post(
-          '/algorithms/transformer/dga/duval_triangle_4/batch',
-          duvalSamples
-        );
-        console.log('Duval Triangle 4 Response:', duval4Response.data);
-        if (duval4Response.data && duval4Response.data.length > 0) {
-          setDuval4Data(duval4Response.data);
-        }
-      } catch (error) {
-        console.error('Error calculating Duval Triangle 4:', error);
-      }
-      // Calculate Duval Triangle 5 for the chart
-      try {
-        const duval5Response = await API.post(
-          '/algorithms/transformer/dga/duval_triangle_5/batch',
-          duvalSamples
-        );
-        console.log('Duval Triangle 5 Response:', duval5Response.data);
-        if (duval5Response.data && duval5Response.data.length > 0) {
-          setDuval5Data(duval5Response.data);
-        }
-      } catch (error) {
-        console.error('Error calculating Duval Triangle 5:', error);
       }
       
-      // Calculate Duval Triangle 6 for the chart
-      try {
-        const duval6Response = await API.post(
-          '/algorithms/transformer/dga/duval_triangle_6/batch',
-          duvalSamples
-        );
-        console.log('Duval Triangle 6 Response:', duval6Response.data);
-        if (duval6Response.data && duval6Response.data.length > 0) {
-          setDuval6Data(duval6Response.data);
-        }
-      } catch (error) {
-        console.error('Error calculating Duval Triangle 5:', error);
-      }
+      setDgaResults(results);
+      setShowDgaAlgorithms(true);
+      
+    } catch (error) {
+      console.error('Error calculating DGA algorithms:', error);
+      setAlgoError(error.response?.data?.detail || 'Error calculating DGA algorithms');
+    } finally {
+      setAlgoLoading(false);
     }
+  };
+
+  // Helper function to determine overall status
+  const determineOverallStatus = (algorithmResults) => {
+    const zones = Object.values(algorithmResults)
+      .map(r => r.fault_zone || r.fault_type || '')
+      .filter(z => z && z !== 'UNK' && z !== 'NA');
     
-    setDgaResults(results);
-    setShowDgaAlgorithms(true);
-    
-  } catch (error) {
-    console.error('Error calculating DGA algorithms:', error);
-    setAlgoError(error.response?.data?.detail || 'Error calculating DGA algorithms');
-  } finally {
-    setAlgoLoading(false);
-  }
-};
-
-// Helper function to determine overall status
-const determineOverallStatus = (algorithmResults) => {
-  const zones = Object.values(algorithmResults)
-    .map(r => r.fault_zone || '')
-    .filter(z => z && z !== 'UNK');
-  
-  if (zones.some(z => ['D2', 'T3'].includes(z))) {
-    return { status: 'Critical', color: '#f44336', level: 'Immediate Action Required' };
-  } else if (zones.some(z => ['D1', 'T2', 'PD', 'DT'].includes(z))) {
-    return { status: 'Warning', color: '#FF9800', level: 'Monitor Closely' };
-  } else if (zones.some(z => ['N'].includes(z))) {
-    return { status: 'Normal', color: '#4CAF50', level: 'Normal Operation' };
-  } else {
-    return { status: 'Unknown', color: '#95A5A6', level: 'Unable to determine' };
-  }
-};
-
-
+    if (zones.some(z => ['D2', 'T3', 'ARC'].includes(z))) {
+      return { status: 'Critical', color: '#f44336', level: 'Immediate Action Required' };
+    } else if (zones.some(z => ['D1', 'T2', 'PD', 'DT'].includes(z))) {
+      return { status: 'Warning', color: '#FF9800', level: 'Monitor Closely' };
+    } else if (zones.some(z => ['N', 'S', 'NL'].includes(z))) {
+      return { status: 'Normal', color: '#4CAF50', level: 'Normal Operation' };
+    } else {
+      return { status: 'Unknown', color: '#95A5A6', level: 'Unable to determine' };
+    }
+  };
 
   const toggleColumnVisibility = (columnKey) => {
     setVisibleColumns(prev => ({
@@ -501,10 +496,10 @@ const determineOverallStatus = (algorithmResults) => {
 
   const getAssetIcon = () => {
     switch(asset?.asset_type) {
-      case 'generator': return '';
-      case 'transformer': return '';
-      case 'motor': return '';
-      default: return '';
+      case 'generator': return 'âڑ،';
+      case 'transformer': return 'ًں”Œ';
+      case 'motor': return 'âڑ™ï¸ڈ';
+      default: return 'ًں“¦';
     }
   };
 
@@ -522,7 +517,7 @@ const determineOverallStatus = (algorithmResults) => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <button onClick={handleBack} style={styles.backButton}>Back to Assets</button>
+        <button onClick={handleBack} style={styles.backButton}>â†گ Back to Assets</button>
         <h1>{getAssetIcon()} {asset.asset_name} ({asset.asset_code})</h1>
       </div>
 
@@ -557,7 +552,7 @@ const determineOverallStatus = (algorithmResults) => {
                   onClick={() => setShowColumnSelector(!showColumnSelector)} 
                   style={styles.columnSelectorButton}
                 >
-                  Columns 
+                  Columns â–¼
                 </button>
                 <button onClick={() => {
                   setEditingResult(null);
@@ -577,7 +572,7 @@ const determineOverallStatus = (algorithmResults) => {
                     style={algoLoading ? styles.algoLoadingButton : styles.algoButton}
                     disabled={algoLoading}
                   >
-                    {algoLoading ? ' Calculating...' :  'Analyze DGA'}
+                    {algoLoading ? 'âڈ³ Calculating...' : 'ًں§ھ Analyze DGA'}
                   </button>
                 )}
               </div>
@@ -682,6 +677,9 @@ const determineOverallStatus = (algorithmResults) => {
               duval4Data={duval4Data}
               duval5Data={duval5Data}
               duval6Data={duval6Data}
+              duvalPentagon1Data={duvalPentagon1Data}
+              duvalPentagon2Data={duvalPentagon2Data}
+              rogersData={rogersData}
               algoError={algoError}
               onClose={() => {
                 setShowDgaAlgorithms(false);
@@ -690,7 +688,10 @@ const determineOverallStatus = (algorithmResults) => {
                 setDuval2Data([]);
                 setDuval4Data([]);
                 setDuval5Data([]);
-      setDuval6Data([]);
+                setDuval6Data([]);
+                setDuvalPentagon1Data([]);
+                setDuvalPentagon2Data([]);
+                setRogersData([]);
               }}
             />
           )}
