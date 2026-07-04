@@ -10,7 +10,8 @@ from .zones import (
     DuvalTriangle6Zones,
     DuvalPentagon1Zones,
     DuvalPentagon2Zones,
-    RogersStatus
+    RogersStatus,
+    DoernenburgStatus
 )
 
 from .duval_triangle_1 import DuvalTriangle1
@@ -21,6 +22,7 @@ from .duval_triangle_6 import DuvalTriangle6
 from .duval_pentagon_1 import DuvalPentagon1
 from .duval_pentagon_2 import DuvalPentagon2
 from .rogers_ratio import RogersRatio
+from .doernenburg_ratio import DoernenburgRatio
 
 __all__ = [
     'DGA_GASES',
@@ -33,12 +35,14 @@ __all__ = [
     'DuvalPentagon1Zones',
     'DuvalPentagon2Zones',
     'RogersStatus',
+    'DoernenburgStatus',
     'DuvalTriangle1',
     'DuvalTriangle2',
     'DuvalTriangle4',
     'DuvalTriangle5',
     'DuvalTriangle6',
-    'DuvalPentagon1', 
+    'DuvalPentagon1',
     'DuvalPentagon2',
-    'RogersRatio'
+    'RogersRatio',
+    'DoernenburgRatio'
 ]

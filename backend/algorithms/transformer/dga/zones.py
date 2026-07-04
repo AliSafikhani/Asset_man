@@ -1,80 +1,5 @@
 # DGA Zone Definitions
 
-
-# Duval Pentagon 2 Zones
-class DuvalPentagon2Zones:
-    PD = "PD"      # Partial Discharge
-    S = "S"        # Stray Gassing
-    O = "O"        # Overheating <250 C
-    C = "C"        # Carbonization
-    T3H = "T3H"    # Thermal Fault T3 Hot Spot
-    D1 = "D1"      # Discharge D1 (low energy)
-    D2 = "D2"      # Discharge D2 (high energy)
-    NA = "NA"      # Not Applicable
-
-    ZONE_NAMES = {
-        "PD": "Partial Discharge",
-        "S": "Stray Gassing",
-        "O": "Overheating <250 C",
-        "C": "Carbonization",
-        "T3H": "Thermal Fault T3 Hot Spot",
-        "D1": "Discharge D1 (low energy)",
-        "D2": "Discharge D2 (high energy)",
-        "NA": "Not Applicable"
-    }
-
-    ZONE_COLORS = {
-        "PD": "#FF6B6B",
-        "S": "#A8E6CF",
-        "O": "#FFB74D",
-        "C": "#A1887F",
-        "T3H": "#96CEB4",
-        "D1": "#FFEAA7",
-        "D2": "#DDA0DD",
-        "NA": "#E0E0E0"
-    }
-
-
-# Rogers Ratio Status
-class RogersStatus:
-    NORMAL = "NL"    # Normal
-    PD = "PD"        # Partial Discharge
-    ARC = "ARC"      # Arcing (Electrical Discharge)
-    T1 = "T1"        # Thermal Fault < 300 C
-    T2 = "T2"        # Thermal Fault 300-700 C
-    T3 = "T3"        # Thermal Fault > 700 C
-    UNK = "UNK"      # Unknown
-
-    ZONE_NAMES = {
-        "NL": "Normal",
-        "PD": "Partial Discharge",
-        "ARC": "Arcing (Electrical Discharge)",
-        "T1": "Thermal Fault < 300 C",
-        "T2": "Thermal Fault 300-700 C",
-        "T3": "Thermal Fault > 700 C",
-        "UNK": "Unknown"
-    }
-
-    ZONE_COLORS = {
-        "NL": "#4CAF50",
-        "PD": "#FF6B6B",
-        "ARC": "#DDA0DD",
-        "T1": "#4ECDC4",
-        "T2": "#45B7D1",
-        "T3": "#96CEB4",
-        "UNK": "#95A5A6"
-    }
-
-    # 3D plotting zones (x=R1, y=R2, z=R3)
-    ZONE_RANGES = {
-        "NL": {"x": [0, 1], "y": [0.1, 1], "z": [0, 0.1]},
-        "PD": {"x": [0, 1], "y": [0, 0.1], "z": [0, 0.1]},
-        "ARC": {"x": [3, 10], "y": [0.1, 1], "z": [0.1, 3]},
-        "T1": {"x": [0.1, 3], "y": [0.1, 1], "z": [0, 0.1]},
-        "T2": {"x": [0.1, 3], "y": [1, 10], "z": [0, 0.1]},
-        "T3": {"x": [3, 10], "y": [1, 10], "z": [0, 0.2]},
-    }
-
 # Common DGA Constants
 DGA_GASES = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2']
 
@@ -297,4 +222,110 @@ class DuvalPentagon1Zones:
         "D1": "#FFEAA7",
         "D2": "#DDA0DD",
         "ND": "#90A4AE"
+    }
+
+
+# Duval Pentagon 2 Zones
+class DuvalPentagon2Zones:
+    PD = "PD"
+    S = "S"
+    O = "O"
+    C = "C"
+    T3H = "T3H"
+    D1 = "D1"
+    D2 = "D2"
+    NA = "NA"
+
+    ZONE_NAMES = {
+        "PD": "Partial Discharge",
+        "S": "Stray Gassing",
+        "O": "Overheating <250 C",
+        "C": "Carbonization",
+        "T3H": "Thermal Fault T3 Hot Spot",
+        "D1": "Discharge D1 (low energy)",
+        "D2": "Discharge D2 (high energy)",
+        "NA": "Not Applicable"
+    }
+
+    ZONE_COLORS = {
+        "PD": "#FF6B6B",
+        "S": "#A8E6CF",
+        "O": "#FFB74D",
+        "C": "#A1887F",
+        "T3H": "#96CEB4",
+        "D1": "#FFEAA7",
+        "D2": "#DDA0DD",
+        "NA": "#E0E0E0"
+    }
+
+
+# Rogers Ratio Status
+class RogersStatus:
+    NORMAL = "NL"
+    PD = "PD"
+    ARC = "ARC"
+    T1 = "T1"
+    T2 = "T2"
+    T3 = "T3"
+    UNK = "UNK"
+
+    ZONE_NAMES = {
+        "NL": "Normal",
+        "PD": "Partial Discharge",
+        "ARC": "Arcing (Electrical Discharge)",
+        "T1": "Thermal Fault < 300 C",
+        "T2": "Thermal Fault 300-700 C",
+        "T3": "Thermal Fault > 700 C",
+        "UNK": "Unknown"
+    }
+
+    ZONE_COLORS = {
+        "NL": "#4CAF50",
+        "PD": "#FF6B6B",
+        "ARC": "#DDA0DD",
+        "T1": "#4ECDC4",
+        "T2": "#45B7D1",
+        "T3": "#96CEB4",
+        "UNK": "#95A5A6"
+    }
+
+    # 3D plotting zones (x=R1, y=R2, z=R3)
+    ZONE_RANGES = {
+        "NL": {"x": [0, 1], "y": [0.1, 1], "z": [0, 0.1]},
+        "PD": {"x": [0, 1], "y": [0, 0.1], "z": [0, 0.1]},
+        "ARC": {"x": [3, 10], "y": [0.1, 1], "z": [0.1, 3]},
+        "T1": {"x": [0.1, 3], "y": [0.1, 1], "z": [0, 0.1]},
+        "T2": {"x": [0.1, 3], "y": [1, 10], "z": [0, 0.1]},
+        "T3": {"x": [3, 10], "y": [1, 10], "z": [0, 0.2]},
+    }
+
+
+# Doernenburg Ratio Status
+class DoernenburgStatus:
+    NORMAL = "Normal"
+    THERMAL_FAULT = "Thermal Fault"
+    PARTIAL_DISCHARGE = "Partial Discharge"
+    ARCING = "Arcing"
+    NOT_DETERMINED = "Not Determined"
+    RESAMPLE = "Resample"
+    UNK = "UNK"
+
+    ZONE_NAMES = {
+        "Normal": "Normal Operation",
+        "Thermal Fault": "Thermal Fault",
+        "Partial Discharge": "Partial Discharge",
+        "Arcing": "Arcing (Electrical Discharge)",
+        "Not Determined": "Not Determined",
+        "Resample": "Resample Required",
+        "UNK": "Unknown"
+    }
+
+    ZONE_COLORS = {
+        "Normal": "#4CAF50",
+        "Thermal Fault": "#F39C12",
+        "Partial Discharge": "#FF6B6B",
+        "Arcing": "#DDA0DD",
+        "Not Determined": "#90A4AE",
+        "Resample": "#FF9800",
+        "UNK": "#95A5A6"
     }

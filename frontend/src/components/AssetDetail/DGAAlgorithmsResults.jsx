@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import DuvalTriangle1Chart from '../DuvalTriangle1Chart';
 import DuvalTriangle2Chart from '../DuvalTriangle2Chart';
 import DuvalTriangle4Chart from '../DuvalTriangle4Chart';
@@ -18,6 +18,7 @@ const DGAAlgorithmsResults = ({
   duvalPentagon1Data, 
   duvalPentagon2Data, 
   rogersData, 
+  doernenburgData,
   algoError,
   onClose 
 }) => {
@@ -25,27 +26,24 @@ const DGAAlgorithmsResults = ({
   const [selectedSubAlgorithm, setSelectedSubAlgorithm] = useState('DUVAL_TRIANGLE_1');
 
   console.log('=== DGAAlgorithmsResults Debug ===');
-  console.log('dgaResults:', dgaResults);
-  console.log('dgaResults length:', dgaResults?.length);
-  
-  if (dgaResults && dgaResults.length > 0 && dgaResults[0].algorithms) {
-    console.log('First item algorithm keys:', Object.keys(dgaResults[0].algorithms));
-  }
+  console.log('rogersData:', rogersData);
+  console.log('doernenburgData:', doernenburgData);
 
   if (!dgaResults || dgaResults.length === 0) {
     return null;
   }
 
-  // Get the actual key from the data with improved mapping
-  const getActualKey = (displayKey) => {
-    if (dgaResults.length === 0 || !dgaResults[0].algorithms) {
+  // Get the actual key from the data - optimized with useMemo
+  const getActualKey = useCallback((displayKey) => {
+    if (!dgaResults[0]?.algorithms) {
       return null;
     }
-    const keys = Object.keys(dgaResults[0].algorithms);
-    console.log('Available keys in data:', keys);
-    console.log('Looking for display key:', displayKey);
     
-    // Direct mapping for display keys to actual keys (case insensitive)
+    const keys = Object.keys(dgaResults[0].algorithms);
+    console.log('Available keys:', keys);
+    console.log('Looking for:', displayKey);
+    
+    // Direct mapping for display keys to actual keys
     const keyMap = {
       'DUVAL_TRIANGLE_1': ['duval_triangle_1', 'duvaltriangle1', 'duval1', 'triangle1'],
       'DUVAL_TRIANGLE_2': ['duval_triangle_2', 'duvaltriangle2', 'duval2', 'triangle2'],
@@ -55,19 +53,21 @@ const DGAAlgorithmsResults = ({
       'DUVAL_PENTAGON_1': ['duval_pentagon_1', 'duvalpentagon1', 'pentagon1'],
       'DUVAL_PENTAGON_2': ['duval_pentagon_2', 'duvalpentagon2', 'pentagon2'],
       'ROGERS_1': ['rogers_ratio', 'rogersratio', 'rogers'],
+      'DOERUNBERG': ['doernenburg_ratio', 'doernenburgratio', 'doernenburg', 'doernenburg_1'],
     };
     
-    // Get the list of possible keys for this display key
     const possibleKeys = keyMap[displayKey] || [displayKey.toLowerCase()];
     
-    // Try each possible key
+    // Try exact match first
     for (const possibleKey of possibleKeys) {
-      // Exact match
       if (keys.includes(possibleKey)) {
         console.log(`✅ Found exact match: ${possibleKey}`);
         return possibleKey;
       }
-      // Case insensitive match
+    }
+    
+    // Try case insensitive match
+    for (const possibleKey of possibleKeys) {
       const found = keys.find(k => k.toLowerCase() === possibleKey.toLowerCase());
       if (found) {
         console.log(`✅ Found case-insensitive match: ${found}`);
@@ -75,23 +75,52 @@ const DGAAlgorithmsResults = ({
       }
     }
     
-    // Try partial match (contains)
+    // Try partial match
     const displayLower = displayKey.toLowerCase().replace(/_/g, '');
     for (const key of keys) {
       const keyLower = key.toLowerCase().replace(/_/g, '');
       if (keyLower.includes(displayLower) || displayLower.includes(keyLower)) {
-        console.log(`✅ Found partial match: ${key} for ${displayKey}`);
+        console.log(`✅ Found partial match: ${key}`);
         return key;
       }
     }
     
     console.warn(`❌ No key found for: ${displayKey}`);
     return null;
-  };
+  }, [dgaResults]);
 
-  // Get filtered results for the table
-  const getFilteredResults = () => {
+  // Memoized filtered results
+  const filteredResults = useMemo(() => {
     const results = [];
+    
+    // Special handling for Doernenburg - use direct prop data
+    if (selectedAlgorithm === 'DOERUNBERG') {
+      console.log('Using direct doernenburgData prop:', doernenburgData);
+      
+      if (doernenburgData && doernenburgData.length > 0) {
+        // Map doernenburgData to match the expected structure
+        doernenburgData.forEach((item, index) => {
+          // Find the corresponding test date from dgaResults if available
+          let testDate = null;
+          if (dgaResults[index]) {
+            testDate = dgaResults[index].test_date;
+          }
+          
+          results.push({
+            test_date: testDate,
+            algoKey: 'doernenburg',
+            algoResult: item,
+            // Preserve overall_status if available
+            overall_status: dgaResults[index]?.overall_status || null
+          });
+        });
+      }
+      
+      console.log('Doernenburg results count:', results.length);
+      return results;
+    }
+    
+    // For other algorithms, get from dgaResults
     let actualKey = null;
     
     if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
@@ -100,13 +129,11 @@ const DGAAlgorithmsResults = ({
       actualKey = getActualKey(selectedSubAlgorithm);
     } else if (selectedAlgorithm === 'ROGERS') {
       actualKey = getActualKey('ROGERS_1');
-    } else {
-      actualKey = getActualKey(selectedAlgorithm);
     }
     
     console.log('Actual key for table:', actualKey);
     
-    // If still no key, try to find any matching key
+    // If no key found, try fallback
     if (!actualKey && dgaResults[0]?.algorithms) {
       const allKeys = Object.keys(dgaResults[0].algorithms);
       if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
@@ -122,52 +149,25 @@ const DGAAlgorithmsResults = ({
       console.log('Fallback key found:', actualKey);
     }
     
-    dgaResults.forEach((item, index) => {
-      if (!item.algorithms) {
-        console.log(`Item ${index} has no algorithms`);
-        return;
-      }
-      
-      console.log(`Item ${index} keys:`, Object.keys(item.algorithms));
+    // Build results for other algorithms
+    dgaResults.forEach((item) => {
+      if (!item.algorithms) return;
       
       if (actualKey && item.algorithms[actualKey]) {
-        const result = {
+        results.push({
           ...item,
           algoKey: actualKey,
           algoResult: item.algorithms[actualKey]
-        };
-        console.log(`✅ Added result for item ${index}:`, result.algoResult);
-        results.push(result);
-      } else {
-        // Try to find any key that matches the algorithm type
-        const allItemKeys = Object.keys(item.algorithms);
-        let fallbackKey = null;
-        if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
-          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('triangle'));
-        } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
-          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('pentagon'));
-        } else if (selectedAlgorithm === 'ROGERS') {
-          fallbackKey = allItemKeys.find(k => k.toLowerCase().includes('rogers'));
-        }
-        
-        if (fallbackKey && item.algorithms[fallbackKey]) {
-          results.push({
-            ...item,
-            algoKey: fallbackKey,
-            algoResult: item.algorithms[fallbackKey]
-          });
-        }
+        });
       }
     });
     
     console.log('Filtered results count:', results.length);
     return results;
-  };
+  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData]);
 
-  const filteredResults = getFilteredResults();
-
-  // Get chart data
-  const getChartData = () => {
+  // Memoized chart data
+  const chartData = useMemo(() => {
     if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
       if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_1') return duvalData;
       if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_2') return duval2Data;
@@ -179,12 +179,74 @@ const DGAAlgorithmsResults = ({
       if (selectedSubAlgorithm === 'DUVAL_PENTAGON_2') return duvalPentagon2Data;
     } else if (selectedAlgorithm === 'ROGERS') {
       return rogersData;
+    } else if (selectedAlgorithm === 'DOERUNBERG') {
+      return doernenburgData; // Now we actually use doernenburgData
     }
     return null;
-  };
+  }, [
+    selectedAlgorithm, 
+    selectedSubAlgorithm, 
+    duvalData, 
+    duval2Data, 
+    duval4Data, 
+    duval5Data, 
+    duval6Data,
+    duvalPentagon1Data, 
+    duvalPentagon2Data, 
+    rogersData,
+    doernenburgData
+  ]);
 
-  const chartData = getChartData();
   const hasValidChartData = chartData && chartData.length > 0;
+  const isRogersOrDoernenburg = selectedAlgorithm === 'ROGERS' || selectedAlgorithm === 'DOERUNBERG';
+  const hasChart = selectedAlgorithm !== 'DOERUNBERG'; // Doernenburg might not have a chart
+
+  // Render chart based on selected algorithm - fixed closure issue
+  const renderChart = useCallback(() => {
+    if (!chartData || !chartData.length) return null;
+    
+    switch(selectedAlgorithm) {
+      case 'DUVAL_TRIANGLE':
+        switch(selectedSubAlgorithm) {
+          case 'DUVAL_TRIANGLE_1':
+            return <DuvalTriangle1Chart data={chartData} width={650} height={600} />;
+          case 'DUVAL_TRIANGLE_2':
+            return <DuvalTriangle2Chart data={chartData} width={650} height={600} />;
+          case 'DUVAL_TRIANGLE_4':
+            return <DuvalTriangle4Chart data={chartData} width={650} height={600} />;
+          case 'DUVAL_TRIANGLE_5':
+            return <DuvalTriangle5Chart data={chartData} width={650} height={600} />;
+          case 'DUVAL_TRIANGLE_6':
+            return <DuvalTriangle6Chart data={chartData} width={650} height={600} />;
+          default:
+            return <div style={styles.comingSoon}>Coming Soon</div>;
+        }
+      
+      case 'DUVAL_PENTAGON':
+        switch(selectedSubAlgorithm) {
+          case 'DUVAL_PENTAGON_1':
+            return <DuvalPentagon1Chart data={chartData} width={650} height={600} />;
+          case 'DUVAL_PENTAGON_2':
+            return <DuvalPentagon2Chart data={chartData} width={650} height={600} />;
+          default:
+            return <div style={styles.comingSoon}>Coming Soon</div>;
+        }
+      
+      case 'ROGERS':
+        return <RogersRatioChart3D data={chartData} width={650} height={550} />;
+      
+      case 'DOERUNBERG':
+        // Doernenburg might not have a chart, or we could render a specialized chart
+        return <div style={styles.doernenburgInfo}>
+          <h4>Doernenburg Ratio Results</h4>
+          <p>Showing ratio analysis for {chartData.length} data point(s)</p>
+          {/* You could add a custom Doernenburg chart here if available */}
+        </div>;
+      
+      default:
+        return <div style={styles.comingSoon}>Coming Soon</div>;
+    }
+  }, [selectedAlgorithm, selectedSubAlgorithm, chartData]);
 
   // Algorithm configuration
   const algorithms = {
@@ -193,68 +255,36 @@ const DGAAlgorithmsResults = ({
       hasSub: true,
       subs: ['DUVAL_TRIANGLE_1', 'DUVAL_TRIANGLE_2', 'DUVAL_TRIANGLE_4', 'DUVAL_TRIANGLE_5', 'DUVAL_TRIANGLE_6'],
       implemented: true,
-      getChart: (data) => {
-        switch(selectedSubAlgorithm) {
-          case 'DUVAL_TRIANGLE_1':
-            return <DuvalTriangle1Chart data={data} width={650} height={600} />;
-          case 'DUVAL_TRIANGLE_2':
-            return <DuvalTriangle2Chart data={data} width={650} height={600} />;
-          case 'DUVAL_TRIANGLE_4':
-            return <DuvalTriangle4Chart data={data} width={650} height={600} />;
-          case 'DUVAL_TRIANGLE_5':
-            return <DuvalTriangle5Chart data={data} width={650} height={600} />;
-          case 'DUVAL_TRIANGLE_6':
-            return <DuvalTriangle6Chart data={data} width={650} height={600} />;
-          default:
-            return <div style={styles.comingSoon}>Coming Soon</div>;
-        }
-      }
     },
     DUVAL_PENTAGON: {
       label: 'DUVAL PENTAGON',
       hasSub: true,
       subs: ['DUVAL_PENTAGON_1', 'DUVAL_PENTAGON_2'],
       implemented: true,
-      getChart: (data) => {
-        switch(selectedSubAlgorithm) {
-          case 'DUVAL_PENTAGON_1':
-            return <DuvalPentagon1Chart data={data} width={650} height={600} />;
-          case 'DUVAL_PENTAGON_2':
-            return <DuvalPentagon2Chart data={data} width={650} height={600} />;
-          default:
-            return <div style={styles.comingSoon}>Coming Soon</div>;
-        }
-      }
     },
     ROGERS: {
       label: 'ROGERS',
       hasSub: true,
       subs: ['ROGERS_1'],
       implemented: true,
-      getChart: (data) => {
-        return <RogersRatioChart3D data={data} width={650} height={550} />;
-      }
     },
     DOERUNBERG: {
       label: 'DOERUNBERG',
       hasSub: false,
       subs: [],
-      implemented: false,
-      getChart: () => <div style={styles.comingSoon}>Coming Soon</div>
+      implemented: true,
     },
     IEC_60599: {
       label: 'IEC 60599',
       hasSub: false,
       subs: [],
       implemented: false,
-      getChart: () => <div style={styles.comingSoon}>Coming Soon</div>
     },
     ML: {
       label: 'ML',
       hasSub: true,
       subs: ['ML_1', 'ML_2', 'ML_3', 'ML_4', 'ML_5'],
       implemented: false,
-      getChart: () => <div style={styles.comingSoon}>Coming Soon</div>
     }
   };
 
@@ -280,6 +310,109 @@ const DGAAlgorithmsResults = ({
   const currentAlgo = algorithms[selectedAlgorithm];
   const isImplemented = currentAlgo?.implemented || false;
 
+  // Helper function to format ratio values
+  const formatRatioValue = (value) => {
+    if (typeof value === 'number') {
+      // Format based on magnitude
+      if (Math.abs(value) < 0.01) return value.toExponential(2);
+      if (Math.abs(value) < 1) return value.toFixed(3);
+      if (Math.abs(value) < 100) return value.toFixed(2);
+      return value.toFixed(1);
+    }
+    return value;
+  };
+
+  // Helper function to render Doernenburg results in table
+  const renderDoernenburgDisplay = (algoResult) => {
+    if (!algoResult) return null;
+    
+    // Check if we have ratios data
+    if (algoResult.ratios) {
+      return (
+        <div style={styles.percentagesInline}>
+          {Object.entries(algoResult.ratios).map(([key, value]) => {
+            // Clean up key names for display
+            let displayKey = key;
+            if (key === 'CH4/H2') displayKey = 'CH4/H2';
+            else if (key === 'C2H2/CH4') displayKey = 'C2H2/CH4';
+            else if (key === 'C2H4/C2H6') displayKey = 'C2H4/C2H6';
+            else if (key === 'C2H2/C2H4') displayKey = 'C2H2/C2H4';
+            
+            return (
+              <span key={key} style={styles.ratioItem}>
+                {displayKey}: {formatRatioValue(value)}
+              </span>
+            );
+          })}
+        </div>
+      );
+    }
+    
+    // Check if we have raw values
+    if (algoResult.raw_values) {
+      return (
+        <div style={styles.percentagesInline}>
+          {Object.entries(algoResult.raw_values).map(([key, value]) => (
+            <span key={key} style={styles.valueItem}>
+              {key}: {typeof value === 'number' ? value.toFixed(2) : value}
+            </span>
+          ))}
+        </div>
+      );
+    }
+    
+    // Check for specific Doernenburg fields
+    const doernenburgFields = ['CH4_H2', 'C2H2_CH4', 'C2H4_C2H6', 'C2H2_C2H4'];
+    const hasDoernenburgData = doernenburgFields.some(field => algoResult[field] !== undefined);
+    
+    if (hasDoernenburgData) {
+      return (
+        <div style={styles.percentagesInline}>
+          {doernenburgFields.map(field => {
+            if (algoResult[field] !== undefined) {
+              const displayKey = field.replace('_', '/');
+              return (
+                <span key={field} style={styles.ratioItem}>
+                  {displayKey}: {formatRatioValue(algoResult[field])}
+                </span>
+              );
+            }
+            return null;
+          }).filter(Boolean)}
+        </div>
+      );
+    }
+    
+    return <span style={{color: '#999', fontSize: '12px'}}>No ratio data available</span>;
+  };
+
+  // Get fault display info
+  const getFaultDisplay = (algoResult) => {
+    let faultType = 'UNK';
+    let faultName = 'Unknown';
+    let zoneColor = '#95A5A6';
+    
+    if (algoResult.fault_type) {
+      faultType = algoResult.fault_type;
+    } else if (algoResult.zone) {
+      faultType = algoResult.zone;
+    }
+    
+    if (algoResult.fault_name) {
+      faultName = algoResult.fault_name;
+    } else if (algoResult.zone_name) {
+      faultName = algoResult.zone_name;
+    }
+    
+    if (algoResult.zone_color) {
+      zoneColor = algoResult.zone_color;
+    } else if (algoResult.color) {
+      zoneColor = algoResult.color;
+    }
+    
+    return { faultType, faultName, zoneColor };
+  };
+
   return (
     <div style={styles.dgaAlgorithmsContainer}>
       <div style={styles.headerRow}>
@@ -296,7 +429,6 @@ const DGAAlgorithmsResults = ({
         </div>
       )}
       
-      {/* Algorithm Tabs */}
       <div style={styles.tabsContainer}>
         <div style={styles.tabs}>
           {Object.entries(algorithms).map(([key, algo]) => (
@@ -321,7 +453,6 @@ const DGAAlgorithmsResults = ({
           ))}
         </div>
         
-        {/* Sub-algorithm tabs */}
         {algorithms[selectedAlgorithm]?.hasSub && (
           <div style={styles.subTabs}>
             {algorithms[selectedAlgorithm].subs.map(sub => (
@@ -341,118 +472,168 @@ const DGAAlgorithmsResults = ({
       </div>
       
       {/* Chart Section */}
-      <div style={styles.chartSection}>
-        <h4>
-          {algorithms[selectedAlgorithm]?.label} 
-          {selectedSubAlgorithm ? ` - ${getSubDisplayName(selectedSubAlgorithm)}` : ''}
-          {!isImplemented && <span style={styles.comingSoonBadge}> Coming Soon</span>}
-        </h4>
-        
-        {isImplemented ? (
-          hasValidChartData ? (
-            <div style={{ minHeight: '400px', border: '1px solid #ddd', padding: '10px' }}>
-              {currentAlgo.getChart(chartData)}
-            </div>
+      {hasChart && (
+        <div style={styles.chartSection}>
+          <h4>
+            {algorithms[selectedAlgorithm]?.label} 
+            {selectedSubAlgorithm && algorithms[selectedAlgorithm]?.hasSub ? ` - ${getSubDisplayName(selectedSubAlgorithm)}` : ''}
+            {!isImplemented && <span style={styles.comingSoonBadge}> Coming Soon</span>}
+          </h4>
+          
+          {isImplemented ? (
+            hasValidChartData ? (
+              <div style={{ minHeight: '400px', border: '1px solid #ddd', padding: '10px' }}>
+                {renderChart()}
+              </div>
+            ) : (
+              <div style={styles.noChartData}>
+                <p>⚠️ No chart data available for the selected algorithm</p>
+              </div>
+            )
           ) : (
-            <div style={styles.noChartData}>
-              <p>⚠️ No chart data available for the selected algorithm</p>
+            <div style={styles.comingSoonContainer}>
+              <div style={styles.comingSoonIcon}>🚧</div>
+              <h3 style={styles.comingSoonTitle}>Coming Soon</h3>
+              <p style={styles.comingSoonText}>
+                The {algorithms[selectedAlgorithm]?.label} algorithm is currently under development.
+              </p>
             </div>
-          )
-        ) : (
-          <div style={styles.comingSoonContainer}>
-            <div style={styles.comingSoonIcon}>🚧</div>
-            <h3 style={styles.comingSoonTitle}>Coming Soon</h3>
-            <p style={styles.comingSoonText}>
-              The {algorithms[selectedAlgorithm]?.label} algorithm is currently under development.
-            </p>
-          </div>
-        )}
-        
-        {isImplemented && hasValidChartData && (
-          <div style={styles.chartLegend}>
-            <p>💡 Hover over points for details | Color indicates fault zone</p>
-            <p style={styles.chartDataInfo}>Showing {chartData?.length || 0} data point(s)</p>
-          </div>
-        )}
-      </div>
+          )}
+          
+          {isImplemented && hasValidChartData && (
+            <div style={styles.chartLegend}>
+              <p>💡 Hover over points for details | Color indicates fault zone</p>
+              <p style={styles.chartDataInfo}>Showing {chartData?.length || 0} data point(s)</p>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Results Table */}
       <div style={styles.tableContainer}>
-        <h4>Results Summary</h4>
+        <h4>
+          Results Summary 
+          {selectedAlgorithm === 'DOERUNBERG' && ' - Doernenburg Ratio'}
+          {selectedAlgorithm === 'ROGERS' && ' - Rogers Ratio'}
+        </h4>
+        
         {filteredResults.length === 0 ? (
           <div style={styles.noDataMessage}>
             <p>No data available for the selected algorithm</p>
             <p style={{fontSize: '12px', color: '#999'}}>
-              Available algorithms in data: {dgaResults[0]?.algorithms ? Object.keys(dgaResults[0].algorithms).join(', ') : 'None'}
+              {selectedAlgorithm === 'DOERUNBERG' 
+                ? 'Doernenburg data: ' + (doernenburgData ? `${doernenburgData.length} items` : 'None')
+                : `Available algorithms in data: ${dgaResults[0]?.algorithms ? Object.keys(dgaResults[0].algorithms).join(', ') : 'None'}`
+              }
             </p>
           </div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
+                <th style={styles.tableHeaderCell}>#</th>
                 <th style={styles.tableHeaderCell}>Test Date</th>
                 <th style={styles.tableHeaderCell}>Status</th>
                 <th style={styles.tableHeaderCell}>Algorithm</th>
-                <th style={styles.tableHeaderCell}>Fault Zone</th>
-                <th style={styles.tableHeaderCell}>Fault Description</th>
-                <th style={styles.tableHeaderCell}>Gas Percentages</th>
+                <th style={styles.tableHeaderCell}>Fault Type</th>
+                <th style={styles.tableHeaderCell}>
+                  {isRogersOrDoernenburg ? 'Ratios / Values' : 'Gas %'}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredResults.map((item, index) => (
-                <tr key={index} style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}>
-                  <td style={styles.tableCell}>
-                    {new Date(item.test_date).toLocaleDateString()}
-                  </td>
-                  <td style={styles.tableCell}>
-                    {item.overall_status && (
+              {filteredResults.map((item, index) => {
+                const algoResult = item.algoResult || {};
+                
+                // Get fault display info
+                const { faultType, faultName, zoneColor } = getFaultDisplay(algoResult);
+                
+                // Get display data based on algorithm type
+                let displayData = null;
+                let displayType = 'percentages';
+                
+                if (selectedAlgorithm === 'DOERUNBERG') {
+                  // Special handling for Doernenburg - use renderDoernenburgDisplay
+                  displayData = algoResult;
+                  displayType = 'doernenburg';
+                } else if (selectedAlgorithm === 'ROGERS') {
+                  if (algoResult.ratios) {
+                    displayData = algoResult.ratios;
+                    displayType = 'ratios';
+                  }
+                } else if (algoResult.percentages) {
+                  displayData = algoResult.percentages;
+                  displayType = 'percentages';
+                } else if (algoResult.gas_percentages) {
+                  displayData = algoResult.gas_percentages;
+                  displayType = 'percentages';
+                }
+                
+                return (
+                  <tr key={`${item.test_date || index}-${index}`} style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}>
+                    <td style={styles.tableCell}>{index + 1}</td>
+                    <td style={styles.tableCell}>
+                      {item.test_date ? new Date(item.test_date).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td style={styles.tableCell}>
+                      {item.overall_status && (
+                        <span style={{
+                          ...styles.statusBadge,
+                          backgroundColor: item.overall_status.color + '20',
+                          color: item.overall_status.color
+                        }}>
+                          {item.overall_status.level || item.overall_status.status || 'N/A'}
+                        </span>
+                      )}
+                    </td>
+                    <td style={styles.tableCell}>
+                      <strong>
+                        {selectedAlgorithm === 'DOERUNBERG' 
+                          ? 'Doernenburg' 
+                          : item.algoKey?.replace(/_/g, ' ').toUpperCase() || 'N/A'}
+                      </strong>
+                    </td>
+                    <td style={styles.tableCell}>
                       <span style={{
-                        ...styles.statusBadge,
-                        backgroundColor: item.overall_status.color + '20',
-                        color: item.overall_status.color
+                        ...styles.zoneBadge,
+                        backgroundColor: zoneColor || '#95A5A6',
+                        color: 'white'
                       }}>
-                        {item.overall_status.level}
+                        {faultType || 'UNK'}
                       </span>
-                    )}
-                  </td>
-                  <td style={styles.tableCell}>
-                    <strong>{item.algoKey?.replace(/_/g, ' ').toUpperCase() || 'N/A'}</strong>
-                  </td>
-                  <td style={styles.tableCell}>
-                    <span style={{
-                      ...styles.zoneBadge,
-                      backgroundColor: item.algoResult?.zone_color || '#95A5A6',
-                      color: 'white'
-                    }}>
-                      {item.algoResult?.fault_zone || item.algoResult?.fault_type || 'UNK'}
-                    </span>
-                  </td>
-                  <td style={styles.tableCell}>
-                    {item.algoResult?.fault_name || 'Unknown'}
-                  </td>
-                  <td style={styles.tableCell}>
-                    {item.algoResult?.percentages ? (
-                      <div style={styles.percentagesInline}>
-                        {Object.entries(item.algoResult.percentages).map(([key, value]) => (
-                          <span key={key} style={styles.percentageItem}>
-                            {key}: {value}%
-                          </span>
-                        ))}
+                      <div style={{fontSize: '11px', color: '#888', marginTop: '2px'}}>
+                        {faultName || 'Unknown'}
                       </div>
-                    ) : item.algoResult?.ratios ? (
-                      <div style={styles.percentagesInline}>
-                        {Object.entries(item.algoResult.ratios).map(([key, value]) => (
-                          <span key={key} style={styles.percentageItem}>
-                            {key.replace('R', 'R')}: {value}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      'N/A'
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td style={styles.tableCell}>
+                      {displayData ? (
+                        displayType === 'doernenburg' ? (
+                          renderDoernenburgDisplay(displayData)
+                        ) : (
+                          <div style={styles.percentagesInline}>
+                            {Object.entries(displayData).map(([key, value]) => {
+                              // Format the value based on type
+                              let displayValue = value;
+                              if (typeof value === 'number') {
+                                displayValue = displayType === 'ratios' ? value.toFixed(3) : value.toFixed(1);
+                              }
+                              // Clean up key names
+                              const cleanKey = key.replace(/_/g, '/').toUpperCase();
+                              return (
+                                <span key={key} style={styles.percentageItem}>
+                                  {cleanKey}: {displayValue}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )
+                      ) : (
+                        <span style={{color: '#999', fontSize: '12px'}}>No data available</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -606,6 +787,12 @@ const styles = {
     maxWidth: '400px',
     margin: '0 auto'
   },
+  doernenburgInfo: {
+    padding: '20px',
+    textAlign: 'center',
+    backgroundColor: '#e3f2fd',
+    borderRadius: '8px'
+  },
   tableContainer: {
     overflowX: 'auto',
     marginTop: '15px'
@@ -664,6 +851,22 @@ const styles = {
     padding: '2px 8px',
     borderRadius: '3px',
     whiteSpace: 'nowrap'
+  },
+  ratioItem: {
+    fontSize: '12px',
+    backgroundColor: '#e3f2fd',
+    padding: '2px 8px',
+    borderRadius: '3px',
+    whiteSpace: 'nowrap',
+    color: '#0d47a1'
+  },
+  valueItem: {
+    fontSize: '12px',
+    backgroundColor: '#f3e5f5',
+    padding: '2px 8px',
+    borderRadius: '3px',
+    whiteSpace: 'nowrap',
+    color: '#4a148c'
   },
   noDataMessage: {
     padding: '30px',

@@ -37,6 +37,7 @@ function AssetDetail() {
   const [duvalPentagon1Data, setDuvalPentagon1Data] = useState([]);
   const [duvalPentagon2Data, setDuvalPentagon2Data] = useState([]);
   const [rogersData, setRogersData] = useState([]);
+  const [doernenburgData, setDoernenburgData] = useState([]); // SINGLE DECLARATION
   const [algoLoading, setAlgoLoading] = useState(false);
   const [algoError, setAlgoError] = useState(null);
   
@@ -129,6 +130,7 @@ function AssetDetail() {
       setDuvalPentagon1Data([]);
       setDuvalPentagon2Data([]);
       setRogersData([]);
+      setDoernenburgData([]);
       setAlgoError(null);
       setCurrentPage(1);
     } catch (error) {
@@ -250,6 +252,7 @@ function AssetDetail() {
       setDuvalPentagon1Data([]);
       setDuvalPentagon2Data([]);
       setRogersData([]);
+      setDoernenburgData([]);
     } else {
       setSelectedRows(paginatedResults.map(r => r.id));
     }
@@ -276,6 +279,7 @@ function AssetDetail() {
         setDuvalPentagon1Data([]);
         setDuvalPentagon2Data([]);
         setRogersData([]);
+        setDoernenburgData([]);
         setAlgoError(null);
       }
       
@@ -300,6 +304,7 @@ function AssetDetail() {
     setDuvalPentagon1Data([]);
     setDuvalPentagon2Data([]);
     setRogersData([]);
+    setDoernenburgData([]);
     
     try {
       const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
@@ -333,7 +338,8 @@ function AssetDetail() {
                 'duvaltriangle6': 'duval_triangle_6',
                 'duvalpentagon1': 'duval_pentagon_1',
                 'duvalpentagon2': 'duval_pentagon_2',
-                'rogersratio': 'rogers_ratio'  // Changed from 'rogers' to 'rogersratio'
+                'rogers': 'rogers_ratio',
+                'doernenburg': 'doernenburg_ratio'
               };
               
               if (algoMap[algoId]) {
@@ -423,24 +429,25 @@ function AssetDetail() {
           { id: 'duval_pentagon_1', setter: setDuvalPentagon1Data, name: 'Duval Pentagon 1' },
           { id: 'duval_pentagon_2', setter: setDuvalPentagon2Data, name: 'Duval Pentagon 2' },
           { id: 'rogers_ratio', setter: setRogersData, name: 'Rogers Ratio' },
+          { id: 'doernenburg_ratio', setter: setDoernenburgData, name: 'Doernenburg Ratio' },
         ];
 
         for (const algo of chartAlgorithms) {
           try {
-            console.log(`ًں“، Calling ${algo.name} API...`);
+            console.log(`📡 Calling ${algo.name} API...`);
             const response = await API.post(
               `/algorithms/transformer/dga/${algo.id}/batch`,
               duvalSamples
             );
-            console.log(`ًں“، ${algo.name} Response:`, response.data);
+            console.log(`📡 ${algo.name} Response:`, response.data);
             if (response.data && response.data.length > 0) {
               algo.setter(response.data);
-              console.log(`âœ… ${algo.name} data set with`, response.data.length, 'items');
+              console.log(`✅ ${algo.name} data set with`, response.data.length, 'items');
             } else {
-              console.warn(`âڑ ï¸ڈ ${algo.name} returned empty data`);
+              console.warn(`⚠️ ${algo.name} returned empty data`);
             }
           } catch (error) {
-            console.error(`â‌Œ Error calculating ${algo.name}:`, error);
+            console.error(`❌ Error calculating ${algo.name}:`, error);
           }
         }
       }
@@ -462,11 +469,11 @@ function AssetDetail() {
       .map(r => r.fault_zone || r.fault_type || '')
       .filter(z => z && z !== 'UNK' && z !== 'NA');
     
-    if (zones.some(z => ['D2', 'T3', 'ARC'].includes(z))) {
+    if (zones.some(z => ['D2', 'T3', 'ARC', 'Arcing'].includes(z))) {
       return { status: 'Critical', color: '#f44336', level: 'Immediate Action Required' };
-    } else if (zones.some(z => ['D1', 'T2', 'PD', 'DT'].includes(z))) {
+    } else if (zones.some(z => ['D1', 'T2', 'PD', 'DT', 'Partial Discharge'].includes(z))) {
       return { status: 'Warning', color: '#FF9800', level: 'Monitor Closely' };
-    } else if (zones.some(z => ['N', 'S', 'NL'].includes(z))) {
+    } else if (zones.some(z => ['N', 'S', 'NL', 'Normal'].includes(z))) {
       return { status: 'Normal', color: '#4CAF50', level: 'Normal Operation' };
     } else {
       return { status: 'Unknown', color: '#95A5A6', level: 'Unable to determine' };
@@ -496,10 +503,10 @@ function AssetDetail() {
 
   const getAssetIcon = () => {
     switch(asset?.asset_type) {
-      case 'generator': return 'âڑ،';
-      case 'transformer': return 'ًں”Œ';
-      case 'motor': return 'âڑ™ï¸ڈ';
-      default: return 'ًں“¦';
+      case 'generator': return '⚡';
+      case 'transformer': return '🔌';
+      case 'motor': return '⚙️';
+      default: return '📦';
     }
   };
 
@@ -517,7 +524,7 @@ function AssetDetail() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <button onClick={handleBack} style={styles.backButton}>â†گ Back to Assets</button>
+        <button onClick={handleBack} style={styles.backButton}>← Back to Assets</button>
         <h1>{getAssetIcon()} {asset.asset_name} ({asset.asset_code})</h1>
       </div>
 
@@ -552,7 +559,7 @@ function AssetDetail() {
                   onClick={() => setShowColumnSelector(!showColumnSelector)} 
                   style={styles.columnSelectorButton}
                 >
-                  Columns â–¼
+                  Columns ▼
                 </button>
                 <button onClick={() => {
                   setEditingResult(null);
@@ -572,7 +579,7 @@ function AssetDetail() {
                     style={algoLoading ? styles.algoLoadingButton : styles.algoButton}
                     disabled={algoLoading}
                   >
-                    {algoLoading ? 'âڈ³ Calculating...' : 'ًں§ھ Analyze DGA'}
+                    {algoLoading ? '⏳ Calculating...' : '🧪 Analyze DGA'}
                   </button>
                 )}
               </div>
@@ -680,6 +687,7 @@ function AssetDetail() {
               duvalPentagon1Data={duvalPentagon1Data}
               duvalPentagon2Data={duvalPentagon2Data}
               rogersData={rogersData}
+              doernenburgData={doernenburgData}
               algoError={algoError}
               onClose={() => {
                 setShowDgaAlgorithms(false);
@@ -692,6 +700,7 @@ function AssetDetail() {
                 setDuvalPentagon1Data([]);
                 setDuvalPentagon2Data([]);
                 setRogersData([]);
+                setDoernenburgData([]);
               }}
             />
           )}
