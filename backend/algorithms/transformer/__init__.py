@@ -1,2 +1,1 @@
-# transformer algorithms package
-from .dga import *
+# Transformer algorithms

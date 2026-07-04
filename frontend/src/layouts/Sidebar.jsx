@@ -7,13 +7,13 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const menuItems = [
-    { path: '/dashboard', icon: '📊', label: 'Dashboard', color: '#4f46e5' },
-    { path: '/companies', icon: '🏢', label: 'Companies', color: '#10b981' },
-    { path: '/plants', icon: '📍', label: 'Plants', color: '#3b82f6' },
-    { path: '/assets', icon: '📦', label: 'Assets', color: '#f59e0b' },
-    { path: '/tests', icon: '🔬', label: 'Tests', color: '#8b5cf6' },
-    { path: '/dcs', icon: '📡', label: 'DCS Signals', color: '#06b6d4' },
-    { path: '/alarms', icon: '🚨', label: 'Alarms', color: '#dc3545' },
+    { path: '/dashboard', icon: '', label: 'Dashboard', color: '#4f46e5' },
+    { path: '/companies', icon: '', label: 'Companies', color: '#10b981' },
+    { path: '/plants', icon: '', label: 'Plants', color: '#3b82f6' },
+    { path: '/assets', icon: '', label: 'Assets', color: '#f59e0b' },
+    { path: '/tests', icon: '', label: 'Tests', color: '#8b5cf6' },
+    { path: '/dcs', icon: '', label: 'DCS Signals', color: '#06b6d4' },
+    { path: '/alarms', icon: '', label: 'Alarms', color: '#dc3545' },
     { path: '/events', icon: '📋', label: 'Events', color: '#198754' },
     { path: '/reports', icon: '📈', label: 'Reports', color: '#ef4444' },
     { path: '/settings', icon: '⚙️', label: 'Settings', color: '#6b7280' }
@@ -55,7 +55,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         justifyContent: isCollapsed && !isHovered ? 'center' : 'flex-start',
         gap: '12px'
       }}>
-        <span style={{ fontSize: '28px' }}>🏭</span>
+        <span style={{ fontSize: '28px' }}></span>
         {showLabels && (
           <span style={{ fontWeight: 'bold', fontSize: '18px' }}>AMS</span>
         )}

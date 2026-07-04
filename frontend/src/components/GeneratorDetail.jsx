@@ -73,7 +73,7 @@ function GeneratorDetail({ generatorId, onBack }) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
           <div>
-            <h1 style={{ margin: 0, color: '#333' }}>⚡ {generator.asset_name}</h1>
+            <h1 style={{ margin: 0, color: '#333' }}> {generator.asset_name}</h1>
             <code style={{ fontSize: '14px', color: '#666' }}>{generator.asset_code}</code>
           </div>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -162,7 +162,7 @@ function GeneratorDetail({ generatorId, onBack }) {
       {/* Electrical Tab */}
       {activeTab === 'electrical' && (
         <div style={{ background: 'white', borderRadius: '10px', padding: '25px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-          <h3>⚡ Electrical Parameters</h3>
+          <h3> Electrical Parameters</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '15px', marginBottom: '30px' }}>
             <InfoRow label="Voltage" value={generator.voltage_kv ? `${generator.voltage_kv} kV` : '-'} />
             <InfoRow label="Current" value={generator.current_a ? `${generator.current_a} A` : '-'} />

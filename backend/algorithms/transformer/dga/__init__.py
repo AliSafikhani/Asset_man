@@ -1,21 +1,158 @@
 # DGA algorithms for transformer
-from .duval_triangle import DuvalTriangle11
-from .duval_pentagon import DuvalPentagon
-from .rogers_ratio import RogersRatio
-from .key_gas import KeyGas
-from .iec_ratio import IECRatio
 
-__all__ = ['DuvalTriangle11', 'DuvalPentagon', 'RogersRatio', 'KeyGas', 'IECRatio']
 
-# DGA algorithms for transformer
+# Common DGA Constants
+DGA_GASES = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2']
+
+DGA_GAS_NAMES = {
+    'h2': 'Hydrogen',
+    'ch4': 'Methane',
+    'c2h2': 'Acetylene',
+    'c2h4': 'Ethylene',
+    'c2h6': 'Ethane',
+    'co': 'Carbon Monoxide',
+    'co2': 'Carbon Dioxide',
+    'o2': 'Oxygen',
+    'n2': 'Nitrogen'
+}
+
+# Duval Triangle 1 Zones
+class DuvalTriangle1Zones:
+    PD = "PD"; T1 = "T1"; T2 = "T2"; T3 = "T3"; D1 = "D1"; D2 = "D2"; DT = "DT"; N = "N"; S = "S"; O = "O"; UNK = "UNK"
+    ZONE_NAMES = {
+        "PD": "Partial Discharge", "T1": "Thermal Fault T1 (<300 C)",
+        "T2": "Thermal Fault T2 (300-700 C)", "T3": "Thermal Fault T3 (>700 C)",
+        "D1": "Discharge D1 (low energy)", "D2": "Discharge D2 (high energy)",
+        "DT": "Mixed Fault (DT)", "N": "Normal Operation",
+        "S": "Stray Gassing", "O": "Overheating", "UNK": "Unknown"
+    }
+    ZONE_COLORS = {
+        "PD": "#FF6B6B", "T1": "#4ECDC4", "T2": "#45B7D1", "T3": "#96CEB4",
+        "D1": "#FFEAA7", "D2": "#DDA0DD", "DT": "#F39C12",
+        "N": "#4CAF50", "S": "#A8E6CF", "O": "#F39C12", "UNK": "#95A5A6"
+    }
+
+
+# Duval Triangle 2 Zones
+class DuvalTriangle2Zones:
+    N = "N"; T3 = "T3"; X3 = "X3"; T2 = "T2"; D1 = "D1"; X1 = "X1"; UNK = "UNK"
+    ZONE_NAMES = {
+        "N": "Normal", "T3": "Thermal Fault T3 (>700 C)",
+        "X3": "Unknown Fault X3", "T2": "Thermal Fault T2 (300-700 C)",
+        "D1": "Discharge D1 (low energy)", "X1": "Unknown Fault X1",
+        "UNK": "Unknown"
+    }
+    ZONE_COLORS = {
+        "N": "#4CAF50", "T3": "#96CEB4", "X3": "#FFD93D",
+        "T2": "#45B7D1", "D1": "#FFEAA7", "X1": "#FF6B6B",
+        "UNK": "#95A5A6"
+    }
+
+
+# Duval Triangle 4 Zones
+class DuvalTriangle4Zones:
+    O = "O"; C = "C"; ND = "ND"; S = "S"; PD = "PD"; NA = "NA"
+    ZONE_NAMES = {
+        "O": "Overheating <250 C",
+        "C": "Carbonization >250 C",
+        "ND": "Not Determined",
+        "S": "Stray Gassing",
+        "PD": "Partial Discharge",
+        "NA": "Not Applicable"
+    }
+    ZONE_COLORS = {
+        "O": "#FFB74D",
+        "C": "#A1887F",
+        "ND": "#90A4AE",
+        "S": "#A8E6CF",
+        "PD": "#FF6B6B",
+        "NA": "#E0E0E0"
+    }
+
+
+# Duval Triangle 5 Zones
+class DuvalTriangle5Zones:
+    O = "O"          # Overheating <250 C
+    O2 = "O2"        # Overheating >250 C
+    S = "S"          # Stray Gassing
+    PD = "PD"        # Partial Discharge
+    T2 = "T2"        # Thermal Fault T2
+    C = "C"          # Carbonization
+    T31 = "T31"      # Thermal Fault T3 Type 1
+    T32 = "T32"      # Thermal Fault T3 Type 2
+    ND = "ND"        # Not Determined
+    NA = "NA"        # Not Applicable
+
+    ZONE_NAMES = {
+        "O": "Overheating <250 C",
+        "O2": "Overheating >250 C",
+        "S": "Stray Gassing",
+        "PD": "Partial Discharge",
+        "T2": "Thermal Fault T2 (300-700 C)",
+        "C": "Carbonization",
+        "T31": "Thermal Fault T3 Type 1",
+        "T32": "Thermal Fault T3 Type 2",
+        "ND": "Not Determined",
+        "NA": "Not Applicable"
+    }
+
+    ZONE_COLORS = {
+        "O": "#FFB74D",
+        "O2": "#FF8A65",
+        "S": "#A8E6CF",
+        "PD": "#FF6B6B",
+        "T2": "#45B7D1",
+        "C": "#A1887F",
+        "T31": "#96CEB4",
+        "T32": "#81C784",
+        "ND": "#90A4AE",
+        "NA": "#E0E0E0"
+    }
+
+
+
+
+# Duval Triangle 6 Zones
+class DuvalTriangle6Zones:
+    D1 = "D1"      # Discharge D1 (low energy)
+    D2 = "D2"      # Discharge D2 (high energy)
+    DT = "DT"      # Mixed Fault (DT)
+    PD = "PD"      # Partial Discharge
+    T1 = "T1"      # Thermal Fault T1 (<300 C)
+    T2 = "T2"      # Thermal Fault T2 (300-700 C)
+    T3 = "T3"      # Thermal Fault T3 (>700 C)
+    UNK = "UNK"    # Unknown
+
+    ZONE_NAMES = {
+        "D1": "Discharge D1 (low energy)",
+        "D2": "Discharge D2 (high energy)",
+        "DT": "Mixed Fault (DT)",
+        "PD": "Partial Discharge",
+        "T1": "Thermal Fault T1 (<300 C)",
+        "T2": "Thermal Fault T2 (300-700 C)",
+        "T3": "Thermal Fault T3 (>700 C)",
+        "UNK": "Unknown"
+    }
+
+    ZONE_COLORS = {
+        "D1": "#FFEAA7",
+        "D2": "#DDA0DD",
+        "DT": "#F39C12",
+        "PD": "#FF6B6B",
+        "T1": "#4ECDC4",
+        "T2": "#45B7D1",
+        "T3": "#96CEB4",
+        "UNK": "#95A5A6"
+    }
+
 from .duval_triangle_1 import DuvalTriangle1
-from .duval_triangle_1 import DuvalTriangle1Zones
-from .duval_triangle_1 import calculate_duval_triangle1_for_sample
-from .duval_triangle_1 import run_duval_analysis
+from .duval_triangle_2 import DuvalTriangle2
+from .duval_triangle_4 import DuvalTriangle4
+from .duval_triangle_5 import DuvalTriangle5
+from .duval_triangle_6 import DuvalTriangle6
 
 __all__ = [
-    'DuvalTriangle1',
-    'DuvalTriangle1Zones',
-    'calculate_duval_triangle1_for_sample',
-    'run_duval_analysis'
+    'DGA_GASES', 'DGA_GAS_NAMES',
+    'DuvalTriangle1Zones', 'DuvalTriangle2Zones', 'DuvalTriangle4Zones', 'DuvalTriangle5Zones', 'DuvalTriangle6Zones',
+    'DuvalTriangle1', 'DuvalTriangle2', 'DuvalTriangle4', 'DuvalTriangle5', 'DuvalTriangle6'
 ]

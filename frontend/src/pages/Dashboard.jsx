@@ -50,9 +50,9 @@ function Dashboard() {
       
       // Asset type distribution for pie chart
       const assetTypeData = [
-        { name: 'Generators', value: generators, color: '#f59e0b', icon: '⚡' },
-        { name: 'Transformers', value: transformers, color: '#8b5cf6', icon: '🔌' },
-        { name: 'Motors', value: motors, color: '#06b6d4', icon: '⚙️' }
+        { name: 'Generators', value: generators, color: '#f59e0b', icon: '' },
+        { name: 'Transformers', value: transformers, color: '#8b5cf6', icon: '' },
+        { name: 'Motors', value: motors, color: '#06b6d4', icon: '' }
       ];
       
       // Recent assets (last 5)
@@ -117,12 +117,12 @@ function Dashboard() {
   const COLORS = ['#f59e0b', '#8b5cf6', '#06b6d4'];
 
   const statCards = [
-    { title: 'Companies', value: stats.companies, icon: '🏢', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', path: '/companies' },
-    { title: 'Plants / Sites', value: stats.plants, icon: '📍', color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', path: '/plants' },
-    { title: 'Total Assets', value: stats.assets, icon: '📦', color: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', path: '/assets' },
-    { title: 'Generators', value: stats.generators, icon: '⚡', color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', path: '/assets?asset_type=generator' },
-    { title: 'Transformers', value: stats.transformers, icon: '🔌', color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', path: '/assets?asset_type=transformer' },
-    { title: 'Motors', value: stats.motors, icon: '⚙️', color: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', path: '/assets?asset_type=motor' }
+    { title: 'Companies', value: stats.companies, icon: '', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', path: '/companies' },
+    { title: 'Plants / Sites', value: stats.plants, icon: '', color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', path: '/plants' },
+    { title: 'Total Assets', value: stats.assets, icon: '', color: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', path: '/assets' },
+    { title: 'Generators', value: stats.generators, icon: '', color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', path: '/assets?asset_type=generator' },
+    { title: 'Transformers', value: stats.transformers, icon: '', color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', path: '/assets?asset_type=transformer' },
+    { title: 'Motors', value: stats.motors, icon: '', color: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', path: '/assets?asset_type=motor' }
   ];
 
   if (loading) {
@@ -193,7 +193,7 @@ function Dashboard() {
       {/* Charts Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '32px' }}>
         {/* Asset Type Distribution - Pie Chart */}
-        <Card title="Asset Type Distribution" icon="🥧">
+        <Card title="Asset Type Distribution" icon="">
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -216,7 +216,7 @@ function Dashboard() {
         </Card>
         
         {/* Company vs Plants/Assets - Bar Chart */}
-        <Card title="Company Statistics" icon="📊">
+        <Card title="Company Statistics" icon="">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stats.companyPlantData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -257,7 +257,7 @@ function Dashboard() {
                     <td style={{ padding: '12px' }}><strong>{asset.name}</strong></td>
                     <td style={{ padding: '12px' }}>{asset.code}</td>
                     <td style={{ padding: '12px' }}>
-                      {asset.type === 'generator' ? '⚡ Generator' : asset.type === 'transformer' ? '🔌 Transformer' : '⚙️ Motor'}
+                      {asset.type === 'generator' ? ' Generator' : asset.type === 'transformer' ? ' Transformer' : '⚙️ Motor'}
                     </td>
                     <td style={{ padding: '12px' }}>{asset.created_at ? new Date(asset.created_at).toLocaleDateString() : '-'}</td>
                     <td style={{ padding: '12px' }}>
@@ -296,7 +296,7 @@ function Dashboard() {
                   <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={{ padding: '12px' }}><strong>{test.asset_name}</strong></td>
                     <td style={{ padding: '12px' }}>
-                      {test.asset_type === 'generator' ? '⚡' : test.asset_type === 'transformer' ? '🔌' : '⚙️'}
+                      {test.asset_type === 'generator' ? '' : test.asset_type === 'transformer' ? '' : ''}
                     </td>
                     <td style={{ padding: '12px' }}>{new Date(test.test_date).toLocaleDateString()}</td>
                     <td style={{ padding: '12px' }}>{test.lab_name || '-'}</td>
@@ -312,14 +312,14 @@ function Dashboard() {
       </Card>
       
       {/* Quick Actions */}
-      <Card title="Quick Actions" icon="⚡" style={{ marginTop: '20px' }}>
+      <Card title="Quick Actions" icon="" style={{ marginTop: '20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-          <Button onClick={() => navigate('/companies')}>🏢 Manage Companies</Button>
-          <Button onClick={() => navigate('/plants')}>📍 Manage Plants</Button>
-          <Button onClick={() => navigate('/assets')}>📦 Manage Assets</Button>
-          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=generator')}>⚡ View Generators</Button>
-          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=transformer')}>🔌 View Transformers</Button>
-          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=motor')}>⚙️ View Motors</Button>
+          <Button onClick={() => navigate('/companies')}> Manage Companies</Button>
+          <Button onClick={() => navigate('/plants')}> Manage Plants</Button>
+          <Button onClick={() => navigate('/assets')}> Manage Assets</Button>
+          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=generator')}> View Generators</Button>
+          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=transformer')}> View Transformers</Button>
+          <Button variant="secondary" onClick={() => navigate('/assets?asset_type=motor')}> View Motors</Button>
         </div>
       </Card>
     </div>

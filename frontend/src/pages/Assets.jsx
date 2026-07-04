@@ -177,7 +177,7 @@ function Assets() {
     id: asset.id,
     name: asset.asset_name,
     code: asset.asset_code,
-    type: asset.asset_type === 'generator' ? '⚡ Generator' : asset.asset_type === 'transformer' ? '🔌 Transformer' : '⚙️ Motor',
+    type: asset.asset_type === 'generator' ? ' Generator' : asset.asset_type === 'transformer' ? ' Transformer' : ' Motor',
     plant: getPlantName(asset.plant_id),
     manufacturer: asset.manufacturer || '-',
     model: asset.model || '-',
@@ -200,10 +200,10 @@ function Assets() {
   };
 
   const getIcon = () => {
-    if (selectedAssetType === 'generator') return '⚡';
-    if (selectedAssetType === 'transformer') return '🔌';
-    if (selectedAssetType === 'motor') return '⚙️';
-    return '📦';
+    if (selectedAssetType === 'generator') return '';
+    if (selectedAssetType === 'transformer') return '';
+    if (selectedAssetType === 'motor') return '';
+    return '';
   };
 
   return (
@@ -255,9 +255,9 @@ function Assets() {
               }}
             >
               <option value="">All Types</option>
-              <option value="generator">⚡ Generators</option>
-              <option value="transformer">🔌 Transformers</option>
-              <option value="motor">⚙️ Motors</option>
+              <option value="generator"> Generators</option>
+              <option value="transformer"> Transformers</option>
+              <option value="motor"> Motors</option>
             </select>
           </div>
           
@@ -325,9 +325,9 @@ function Assets() {
                   disabled={editingAsset}
                   style={styles.input}
                 >
-                  <option value="generator">⚡ Generator</option>
-                  <option value="transformer">🔌 Transformer</option>
-                  <option value="motor">⚙️ Motor</option>
+                  <option value="generator"> Generator</option>
+                  <option value="transformer"> Transformer</option>
+                  <option value="motor"> Motor</option>
                 </select>
               </div>
               

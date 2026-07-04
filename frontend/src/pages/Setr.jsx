@@ -209,7 +209,7 @@ function Setr() {
       </Card>
 
       {/* Plants Table */}
-      <Card title={`Plants List (${plants.length})`} icon="📍">
+      <Card title={`Plants List (${plants.length})`} icon="">
         <Table columns={columns} data={tableData} loading={loading} />
       </Card>
 

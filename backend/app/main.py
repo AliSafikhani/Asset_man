@@ -13,7 +13,6 @@ from datetime import datetime
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.api import api_router
-from app.api.algorithms import router as algorithms_router
 
 # Configure logging
 logging.basicConfig(
@@ -25,18 +24,41 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for startup and shutdown events
+    """
     # Startup
     logger.info("Starting up Asset Management System...")
     
+    # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables verified/created")
     
-    logger.info(f"🚀 Server running on http://localhost:8000")
-    logger.info(f"📚 API Documentation available at http://localhost:8000/docs")
+    # Initialize Algorithm Manager
+    try:
+        from algorithms import AlgorithmManager
+        algorithm_manager = AlgorithmManager()
+        app.state.algorithm_manager = algorithm_manager
+        logger.info("? Algorithm Manager initialized successfully")
+        logger.info(f"?? Available assets: {list(algorithm_manager.algorithms.keys())}")
+        for asset_type, test_types in algorithm_manager.algorithms.items():
+            logger.info(f"   - {asset_type}: {list(test_types.keys())}")
+            for test_type, algos in test_types.items():
+                logger.info(f"       - {test_type}: {list(algos.keys())}")
+    except ImportError as e:
+        logger.warning(f"??  Algorithm Manager import failed: {e}")
+        app.state.algorithm_manager = None
+    except Exception as e:
+        logger.warning(f"??  Algorithm Manager initialization failed: {e}")
+        app.state.algorithm_manager = None
+    
+    logger.info(f"?? Server running on http://localhost:8000")
+    logger.info(f"?? API Documentation available at http://localhost:8000/docs")
     
     yield
     
+    # Shutdown
     logger.info("Shutting down...")
 
 
@@ -52,7 +74,7 @@ app = FastAPI(
 )
 
 
-# Configure CORS
+# Configure CORS - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -61,38 +83,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add GZip compression for responses
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 # Include API routers
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Directly include algorithms router at both /api and /api/v1
-app.include_router(algorithms_router, prefix="/api/v1/algorithms")
-app.include_router(algorithms_router, prefix="/api/algorithms")
-
 
 @app.get("/")
 async def root():
+    """Root endpoint with API information"""
+    algo_status = "available" if hasattr(app.state, 'algorithm_manager') and app.state.algorithm_manager else "unavailable"
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}",
         "version": settings.VERSION,
         "status": "running",
+        "algorithms": algo_status,
         "endpoints": {
             "api": f"{settings.API_V1_STR}",
             "docs": "/docs",
             "health": "/health",
-            "algorithms": "/api/v1/algorithms"
+            "algorithms": f"{settings.API_V1_STR}/algorithms"
         }
     }
 
 
 @app.get("/health")
 async def health_check():
+    """Health check endpoint for monitoring"""
+    algo_status = "healthy" if (hasattr(app.state, 'algorithm_manager') and app.state.algorithm_manager) else "unavailable"
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": settings.VERSION
+        "version": settings.VERSION,
+        "components": {
+            "database": "healthy",
+            "algorithms": algo_status
+        }
     }
 
 

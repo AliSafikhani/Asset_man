@@ -74,30 +74,28 @@ export const eventAPI = {
   }
 };
 
-// Algorithm APIs - Use the full URL since algorithms are at /api
 export const algorithmAPI = {
-  analyzeDGA: (data) => {
-    // Use a separate axios instance for algorithms
-    const algoAPI = axios.create({
-      baseURL: 'http://localhost:8000/api',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    return algoAPI.post('/algorithms/dga/analyze', data);
-  },
-  calculateDuvalTriangle: (samples) => {
-    const algoAPI = axios.create({
-      baseURL: 'http://localhost:8000/api',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    return algoAPI.post('/algorithms/dga/duval-triangle-1/batch', samples);
-  },
-  getAlgorithmsHealth: () => {
-    const algoAPI = axios.create({
-      baseURL: 'http://localhost:8000/api',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    return algoAPI.get('/algorithms/health');
-  }
+  // Get algorithms for a specific asset and test type
+  getAlgorithms: (assetType, testType) => 
+    API.get(`/algorithms/${assetType}/${testType}`),
+  
+  // Calculate a specific algorithm for a single sample
+  calculateAlgorithm: (assetType, testType, algorithmId, parameters) => 
+    API.post(`/algorithms/${assetType}/${testType}/${algorithmId}`, parameters),
+  
+  // Calculate a specific algorithm for multiple samples (batch)
+  calculateAlgorithmBatch: (assetType, testType, algorithmId, samples) => 
+    API.post(`/algorithms/${assetType}/${testType}/${algorithmId}/batch`, samples),
+  
+  // Duval Triangle 1 - specific helper
+  calculateDuvalTriangle1: (samples) => 
+    API.post('/algorithms/transformer/dga/duval_triangle_1/batch', samples),
+  
+  // Get all algorithms info
+  getAlgorithmsInfo: () => API.get('/algorithms/info'),
+  
+  // Health check
+  getAlgorithmsHealth: () => API.get('/algorithms/health'),
 };
 
 // Export the default API instance

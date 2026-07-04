@@ -178,7 +178,7 @@ function Companies() {
       </Card>
 
       {/* Companies Table */}
-      <Card title={`Companies List (${companies.length})`} icon="🏢">
+      <Card title={`Companies List (${companies.length})`} icon="">
         <Table columns={columns} data={tableData} loading={loading} />
       </Card>
 

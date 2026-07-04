@@ -387,7 +387,7 @@ function AlarmsPage() {
                   <option value="">Select Asset</option>
                   {assets.map(a => (
                     <option key={a.id} value={a.id}>
-                      {a.asset_type === 'generator' ? '⚡' : a.asset_type === 'transformer' ? '🔌' : '⚙️'} {a.asset_name}
+                      {a.asset_type === 'generator' ? '' : a.asset_type === 'transformer' ? '' : ''} {a.asset_name}
                     </option>
                   ))}
                 </select>

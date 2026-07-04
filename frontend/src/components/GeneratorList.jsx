@@ -108,7 +108,7 @@ function GeneratorList({ onViewGenerator }) {
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>⚡ Generators</h2>
+        <h2 style={{ margin: 0 }}> Generators</h2>
         <div style={{ fontSize: '14px', color: '#666' }}>
           Total: {generators.length} units
         </div>
