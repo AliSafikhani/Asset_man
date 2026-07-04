@@ -199,52 +199,112 @@ const DGAAlgorithmsResults = ({
       console.log('IEC 60599 results count:', results.length);
       return results;
     }
-    
-    // For other algorithms, get from dgaResults
-    let actualKey = null;
-    
-    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
-      actualKey = getActualKey(selectedSubAlgorithm);
-    } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
-      actualKey = getActualKey(selectedSubAlgorithm);
-    } else if (selectedAlgorithm === 'ROGERS') {
-      actualKey = getActualKey('ROGERS_1');
-    }
-    
-    console.log('Actual key for table:', actualKey);
-    
-    if (!actualKey && dgaResults[0]?.algorithms) {
-      const allKeys = Object.keys(dgaResults[0].algorithms);
-      if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
-        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('triangle'));
-        if (found) actualKey = found;
-      } else if (selectedAlgorithm === 'DUVAL_PENTAGON') {
-        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('pentagon'));
-        if (found) actualKey = found;
-      } else if (selectedAlgorithm === 'ROGERS') {
-        const found = allKeys.find(k => k.toLowerCase().includes('rogers'));
-        if (found) actualKey = found;
-      }
-      console.log('Fallback key found:', actualKey);
-    }
-    
-    dgaResults.forEach((item) => {
-      if (!item.algorithms) return;
+
+    // Special handling for Rogers - use direct prop data
+    if (selectedAlgorithm === 'ROGERS') {
+      console.log('Using direct rogersData prop:', rogersData);
       
-      if (actualKey && item.algorithms[actualKey]) {
-        results.push({
-          ...item,
-          algoKey: actualKey,
-          algoResult: item.algorithms[actualKey]
+      if (rogersData && rogersData.length > 0) {
+        rogersData.forEach((item, index) => {
+          let testDate = null;
+          if (dgaResults[index]) {
+            testDate = dgaResults[index].test_date;
+          }
+          
+          results.push({
+            test_date: testDate,
+            algoKey: 'rogers',
+            algoResult: item,
+            overall_status: dgaResults[index]?.overall_status || null
+          });
         });
       }
-    });
+      
+      console.log('Rogers results count:', results.length);
+      return results;
+    }
+    
+    // For Duval Triangle algorithms - get from dgaResults
+    if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
+      const actualKey = getActualKey(selectedSubAlgorithm);
+      console.log('Actual key for Duval Triangle:', actualKey);
+      
+      if (!actualKey && dgaResults[0]?.algorithms) {
+        const allKeys = Object.keys(dgaResults[0].algorithms);
+        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('triangle'));
+        if (found) {
+          console.log('Fallback Duval Triangle key found:', found);
+          dgaResults.forEach((item) => {
+            if (!item.algorithms) return;
+            if (item.algorithms[found]) {
+              results.push({
+                ...item,
+                algoKey: found,
+                algoResult: item.algorithms[found]
+              });
+            }
+          });
+        }
+      } else if (actualKey) {
+        dgaResults.forEach((item) => {
+          if (!item.algorithms) return;
+          if (item.algorithms[actualKey]) {
+            results.push({
+              ...item,
+              algoKey: actualKey,
+              algoResult: item.algorithms[actualKey]
+            });
+          }
+        });
+      }
+      
+      console.log('Duval Triangle results count:', results.length);
+      return results;
+    }
+
+    // For Duval Pentagon algorithms - get from dgaResults
+    if (selectedAlgorithm === 'DUVAL_PENTAGON') {
+      const actualKey = getActualKey(selectedSubAlgorithm);
+      console.log('Actual key for Duval Pentagon:', actualKey);
+      
+      if (!actualKey && dgaResults[0]?.algorithms) {
+        const allKeys = Object.keys(dgaResults[0].algorithms);
+        const found = allKeys.find(k => k.toLowerCase().includes('duval') && k.toLowerCase().includes('pentagon'));
+        if (found) {
+          console.log('Fallback Duval Pentagon key found:', found);
+          dgaResults.forEach((item) => {
+            if (!item.algorithms) return;
+            if (item.algorithms[found]) {
+              results.push({
+                ...item,
+                algoKey: found,
+                algoResult: item.algorithms[found]
+              });
+            }
+          });
+        }
+      } else if (actualKey) {
+        dgaResults.forEach((item) => {
+          if (!item.algorithms) return;
+          if (item.algorithms[actualKey]) {
+            results.push({
+              ...item,
+              algoKey: actualKey,
+              algoResult: item.algorithms[actualKey]
+            });
+          }
+        });
+      }
+      
+      console.log('Duval Pentagon results count:', results.length);
+      return results;
+    }
     
     console.log('Filtered results count:', results.length);
     return results;
-  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData, iec60599Data]);
-
-  // Memoized chart data
+  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData, iec60599Data, rogersData]);
+ 
+// Memoized chart data
   const chartData = useMemo(() => {
     console.log('=== Computing chartData ===');
     console.log('Selected algorithm:', selectedAlgorithm);
@@ -484,30 +544,81 @@ const DGAAlgorithmsResults = ({
     return <span style={{color: '#999', fontSize: '12px'}}>No ratio data available</span>;
   };
 
-  // Get fault display info
+  // Get fault display info - FIXED VERSION
   const getFaultDisplay = (algoResult) => {
     let faultType = 'UNK';
     let faultName = 'Unknown';
     let zoneColor = '#95A5A6';
     
+    // First, try to get the fault type
     if (algoResult.fault_type) {
       faultType = algoResult.fault_type;
     } else if (algoResult.zone) {
       faultType = algoResult.zone;
     }
     
+    // Get fault name
     if (algoResult.fault_name) {
       faultName = algoResult.fault_name;
     } else if (algoResult.zone_name) {
       faultName = algoResult.zone_name;
     }
     
+    // Get color
     if (algoResult.zone_color) {
       zoneColor = algoResult.zone_color;
     } else if (algoResult.color) {
       zoneColor = algoResult.color;
     }
     
+    // FIX: If fault_type is "UNK" but we have a valid fault_name, 
+    // try to extract the actual fault type from the name
+    if (faultType === 'UNK' && faultName && faultName !== 'Unknown') {
+      // Try to map from fault name to fault type
+      const nameToTypeMap = {
+        'Partial Discharge': 'PD',
+        'Thermal Fault T1 (<300 C)': 'T1',
+        'Thermal Fault T2 (300-700 C)': 'T2',
+        'Thermal Fault T3 (>700 C)': 'T3',
+        'Discharge D1 (low energy)': 'D1',
+        'Discharge D2 (high energy)': 'D2',
+        'Mixed Fault (DT)': 'DT',
+        'Normal Operation': 'N',
+        'Stray Gassing': 'S',
+        'Overheating': 'O',
+        'Low Energy Discharge': 'D1',
+        'High Energy Discharge': 'D2',
+        'Low/High Energy Discharge': 'D1D2',
+        'No Diagnosis': 'ND',
+        'Arcing (Electrical Discharge)': 'ARC',
+        'Arcing': 'ARC',
+        'Normal': 'NL',
+        'Thermal Fault < 300 C': 'T1',
+        'Thermal Fault 300-700 C': 'T2',
+        'Thermal Fault > 700 C': 'T3',
+        'Not Determined': 'ND',
+        'Resample Required': 'RESAMPLE'
+      };
+      
+      // Check if we have a mapping for this fault name
+      for (const [name, type] of Object.entries(nameToTypeMap)) {
+        if (faultName.includes(name) || name.includes(faultName)) {
+          faultType = type;
+          break;
+        }
+      }
+      
+      // If still UNK, try to extract from the fault_name itself
+      if (faultType === 'UNK') {
+        // Try to match patterns like "T1", "T2", "D1", "D2", "PD", etc.
+        const matches = faultName.match(/\b(PD|T1|T2|T3|D1|D2|DT|ND|ARC|NL|S|O|D1D2)\b/);
+        if (matches && matches[1]) {
+          faultType = matches[1];
+        }
+      }
+    }
+    
+    console.log('getFaultDisplay result:', { faultType, faultName, zoneColor });
     return { faultType, faultName, zoneColor };
   };
 

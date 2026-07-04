@@ -74,7 +74,7 @@ class DuvalTriangle2Zones:
         "X3": "Unknown Fault X3",
         "T2": "Thermal Fault T2 (300-700 C)",
         "D1": "Discharge D1 (low energy)",
-        "X1": "Unknown Fault X1",
+        "X1": "Unknown Fault X1 ",
         "UNK": "Unknown"
     }
     
