@@ -1,3 +1,4 @@
+// frontend/src/components/AssetDetail/DGAAlgorithmsResults.jsx
 import React, { useState, useMemo, useCallback } from 'react';
 import DuvalTriangle1Chart from '../DuvalTriangle1Chart';
 import DuvalTriangle2Chart from '../DuvalTriangle2Chart';
@@ -7,6 +8,7 @@ import DuvalTriangle6Chart from '../DuvalTriangle6Chart';
 import DuvalPentagon1Chart from '../DuvalPentagon1Chart';
 import DuvalPentagon2Chart from '../DuvalPentagon2Chart';
 import RogersRatioChart3D from '../RogersRatioChart3D';
+import IEC60599Chart3D from '../IEC60599Chart3D';
 
 const DGAAlgorithmsResults = ({ 
   dgaResults, 
@@ -19,6 +21,7 @@ const DGAAlgorithmsResults = ({
   duvalPentagon2Data, 
   rogersData, 
   doernenburgData,
+  iec60599Data,
   algoError,
   onClose 
 }) => {
@@ -28,10 +31,68 @@ const DGAAlgorithmsResults = ({
   console.log('=== DGAAlgorithmsResults Debug ===');
   console.log('rogersData:', rogersData);
   console.log('doernenburgData:', doernenburgData);
+  console.log('iec60599Data:', iec60599Data);
 
   if (!dgaResults || dgaResults.length === 0) {
     return null;
   }
+
+  // Helper function to determine overall status
+  const determineOverallStatus = useCallback((algorithmResults) => {
+    const zones = [];
+    
+    if (algorithmResults && typeof algorithmResults === 'object') {
+      const results = Array.isArray(algorithmResults) ? algorithmResults : Object.values(algorithmResults);
+      
+      results.forEach(r => {
+        if (r) {
+          const zone = r.fault_zone || r.fault_type || r.zone || '';
+          if (zone && zone !== 'UNK' && zone !== 'NA' && zone !== 'Not Determined' && zone !== 'ND') {
+            zones.push(zone);
+          }
+        }
+      });
+    }
+    
+    console.log('Determining status from zones:', zones);
+    
+    // Critical faults - Immediate Action Required
+    if (zones.some(z => ['D2', 'T3', 'ARC', 'Arcing', 'D2/T3', 'D1D2'].includes(z))) {
+      return { 
+        status: 'Critical', 
+        color: '#f44336', 
+        level: 'Immediate Action Required',
+        priority: 1
+      };
+    } 
+    // Warning faults - Monitor Closely
+    else if (zones.some(z => ['D1', 'T2', 'PD', 'DT', 'Partial Discharge', 'T1', 'D1/T2'].includes(z))) {
+      return { 
+        status: 'Warning', 
+        color: '#FF9800', 
+        level: 'Monitor Closely',
+        priority: 2
+      };
+    } 
+    // Normal operation
+    else if (zones.some(z => ['N', 'S', 'NL', 'Normal', 'Normal Operation'].includes(z))) {
+      return { 
+        status: 'Normal', 
+        color: '#4CAF50', 
+        level: 'Normal Operation',
+        priority: 3
+      };
+    } 
+    // Unknown or not determined
+    else {
+      return { 
+        status: 'Unknown', 
+        color: '#95A5A6', 
+        level: 'Unable to determine',
+        priority: 4
+      };
+    }
+  }, []);
 
   // Get the actual key from the data - optimized with useMemo
   const getActualKey = useCallback((displayKey) => {
@@ -54,11 +115,11 @@ const DGAAlgorithmsResults = ({
       'DUVAL_PENTAGON_2': ['duval_pentagon_2', 'duvalpentagon2', 'pentagon2'],
       'ROGERS_1': ['rogers_ratio', 'rogersratio', 'rogers'],
       'DOERUNBERG': ['doernenburg_ratio', 'doernenburgratio', 'doernenburg', 'doernenburg_1'],
+      'IEC60599': ['iec60599_ratio', 'iec60599ratio', 'iec60599', 'iec_60599'],
     };
     
     const possibleKeys = keyMap[displayKey] || [displayKey.toLowerCase()];
     
-    // Try exact match first
     for (const possibleKey of possibleKeys) {
       if (keys.includes(possibleKey)) {
         console.log(`✅ Found exact match: ${possibleKey}`);
@@ -66,7 +127,6 @@ const DGAAlgorithmsResults = ({
       }
     }
     
-    // Try case insensitive match
     for (const possibleKey of possibleKeys) {
       const found = keys.find(k => k.toLowerCase() === possibleKey.toLowerCase());
       if (found) {
@@ -75,7 +135,6 @@ const DGAAlgorithmsResults = ({
       }
     }
     
-    // Try partial match
     const displayLower = displayKey.toLowerCase().replace(/_/g, '');
     for (const key of keys) {
       const keyLower = key.toLowerCase().replace(/_/g, '');
@@ -98,9 +157,7 @@ const DGAAlgorithmsResults = ({
       console.log('Using direct doernenburgData prop:', doernenburgData);
       
       if (doernenburgData && doernenburgData.length > 0) {
-        // Map doernenburgData to match the expected structure
         doernenburgData.forEach((item, index) => {
-          // Find the corresponding test date from dgaResults if available
           let testDate = null;
           if (dgaResults[index]) {
             testDate = dgaResults[index].test_date;
@@ -110,13 +167,36 @@ const DGAAlgorithmsResults = ({
             test_date: testDate,
             algoKey: 'doernenburg',
             algoResult: item,
-            // Preserve overall_status if available
             overall_status: dgaResults[index]?.overall_status || null
           });
         });
       }
       
       console.log('Doernenburg results count:', results.length);
+      return results;
+    }
+
+    // Special handling for IEC 60599 - use direct prop data
+    if (selectedAlgorithm === 'IEC60599') {
+      console.log('Using direct iec60599Data prop:', iec60599Data);
+      
+      if (iec60599Data && iec60599Data.length > 0) {
+        iec60599Data.forEach((item, index) => {
+          let testDate = null;
+          if (dgaResults[index]) {
+            testDate = dgaResults[index].test_date;
+          }
+          
+          results.push({
+            test_date: testDate,
+            algoKey: 'iec60599',
+            algoResult: item,
+            overall_status: dgaResults[index]?.overall_status || null
+          });
+        });
+      }
+      
+      console.log('IEC 60599 results count:', results.length);
       return results;
     }
     
@@ -133,7 +213,6 @@ const DGAAlgorithmsResults = ({
     
     console.log('Actual key for table:', actualKey);
     
-    // If no key found, try fallback
     if (!actualKey && dgaResults[0]?.algorithms) {
       const allKeys = Object.keys(dgaResults[0].algorithms);
       if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
@@ -149,7 +228,6 @@ const DGAAlgorithmsResults = ({
       console.log('Fallback key found:', actualKey);
     }
     
-    // Build results for other algorithms
     dgaResults.forEach((item) => {
       if (!item.algorithms) return;
       
@@ -164,10 +242,14 @@ const DGAAlgorithmsResults = ({
     
     console.log('Filtered results count:', results.length);
     return results;
-  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData]);
+  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData, iec60599Data]);
 
   // Memoized chart data
   const chartData = useMemo(() => {
+    console.log('=== Computing chartData ===');
+    console.log('Selected algorithm:', selectedAlgorithm);
+    console.log('Selected sub algorithm:', selectedSubAlgorithm);
+    
     if (selectedAlgorithm === 'DUVAL_TRIANGLE') {
       if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_1') return duvalData;
       if (selectedSubAlgorithm === 'DUVAL_TRIANGLE_2') return duval2Data;
@@ -180,7 +262,10 @@ const DGAAlgorithmsResults = ({
     } else if (selectedAlgorithm === 'ROGERS') {
       return rogersData;
     } else if (selectedAlgorithm === 'DOERUNBERG') {
-      return doernenburgData; // Now we actually use doernenburgData
+      return doernenburgData;
+    } else if (selectedAlgorithm === 'IEC60599') {
+      console.log('Returning IEC 60599 data:', iec60599Data);
+      return iec60599Data;
     }
     return null;
   }, [
@@ -194,16 +279,32 @@ const DGAAlgorithmsResults = ({
     duvalPentagon1Data, 
     duvalPentagon2Data, 
     rogersData,
-    doernenburgData
+    doernenburgData,
+    iec60599Data
   ]);
+
+  console.log('chartData:', chartData);
 
   const hasValidChartData = chartData && chartData.length > 0;
   const isRogersOrDoernenburg = selectedAlgorithm === 'ROGERS' || selectedAlgorithm === 'DOERUNBERG';
-  const hasChart = selectedAlgorithm !== 'DOERUNBERG'; // Doernenburg might not have a chart
+  const isIEC60599 = selectedAlgorithm === 'IEC60599';
+  const hasChart = selectedAlgorithm !== 'DOERUNBERG';
 
-  // Render chart based on selected algorithm - fixed closure issue
+  // Render chart based on selected algorithm
   const renderChart = useCallback(() => {
-    if (!chartData || !chartData.length) return null;
+    console.log('=== Rendering Chart ===');
+    console.log('Selected algorithm:', selectedAlgorithm);
+    console.log('Chart data:', chartData);
+    console.log('Has valid chart data:', hasValidChartData);
+    
+    if (!chartData || !chartData.length) {
+      return <div style={styles.noChartData}>
+        <p>⚠️ No chart data available for the selected algorithm</p>
+        <p style={{fontSize: '12px', color: '#999'}}>
+          Data length: {chartData?.length || 0}
+        </p>
+      </div>;
+    }
     
     switch(selectedAlgorithm) {
       case 'DUVAL_TRIANGLE':
@@ -235,20 +336,22 @@ const DGAAlgorithmsResults = ({
       case 'ROGERS':
         return <RogersRatioChart3D data={chartData} width={650} height={550} />;
       
+      case 'IEC60599':
+        console.log('Rendering IEC 60599 chart with data:', chartData);
+        return <IEC60599Chart3D data={chartData} width={650} height={550} />;
+      
       case 'DOERUNBERG':
-        // Doernenburg might not have a chart, or we could render a specialized chart
         return <div style={styles.doernenburgInfo}>
           <h4>Doernenburg Ratio Results</h4>
           <p>Showing ratio analysis for {chartData.length} data point(s)</p>
-          {/* You could add a custom Doernenburg chart here if available */}
         </div>;
       
       default:
         return <div style={styles.comingSoon}>Coming Soon</div>;
     }
-  }, [selectedAlgorithm, selectedSubAlgorithm, chartData]);
+  }, [selectedAlgorithm, selectedSubAlgorithm, chartData, hasValidChartData]);
 
-  // Algorithm configuration
+  // Algorithm configuration - add IEC60599
   const algorithms = {
     DUVAL_TRIANGLE: {
       label: 'DUVAL TRIANGLE',
@@ -274,11 +377,11 @@ const DGAAlgorithmsResults = ({
       subs: [],
       implemented: true,
     },
-    IEC_60599: {
+    IEC60599: {
       label: 'IEC 60599',
       hasSub: false,
       subs: [],
-      implemented: false,
+      implemented: true,
     },
     ML: {
       label: 'ML',
@@ -313,7 +416,6 @@ const DGAAlgorithmsResults = ({
   // Helper function to format ratio values
   const formatRatioValue = (value) => {
     if (typeof value === 'number') {
-      // Format based on magnitude
       if (Math.abs(value) < 0.01) return value.toExponential(2);
       if (Math.abs(value) < 1) return value.toFixed(3);
       if (Math.abs(value) < 100) return value.toFixed(2);
@@ -326,12 +428,10 @@ const DGAAlgorithmsResults = ({
   const renderDoernenburgDisplay = (algoResult) => {
     if (!algoResult) return null;
     
-    // Check if we have ratios data
     if (algoResult.ratios) {
       return (
         <div style={styles.percentagesInline}>
           {Object.entries(algoResult.ratios).map(([key, value]) => {
-            // Clean up key names for display
             let displayKey = key;
             if (key === 'CH4/H2') displayKey = 'CH4/H2';
             else if (key === 'C2H2/CH4') displayKey = 'C2H2/CH4';
@@ -348,7 +448,6 @@ const DGAAlgorithmsResults = ({
       );
     }
     
-    // Check if we have raw values
     if (algoResult.raw_values) {
       return (
         <div style={styles.percentagesInline}>
@@ -361,7 +460,6 @@ const DGAAlgorithmsResults = ({
       );
     }
     
-    // Check for specific Doernenburg fields
     const doernenburgFields = ['CH4_H2', 'C2H2_CH4', 'C2H4_C2H6', 'C2H2_C2H4'];
     const hasDoernenburgData = doernenburgFields.some(field => algoResult[field] !== undefined);
     
@@ -488,6 +586,9 @@ const DGAAlgorithmsResults = ({
             ) : (
               <div style={styles.noChartData}>
                 <p>⚠️ No chart data available for the selected algorithm</p>
+                <p style={{fontSize: '12px', color: '#999'}}>
+                  Data: {chartData ? `${chartData.length} items` : 'null'}
+                </p>
               </div>
             )
           ) : (
@@ -515,6 +616,7 @@ const DGAAlgorithmsResults = ({
           Results Summary 
           {selectedAlgorithm === 'DOERUNBERG' && ' - Doernenburg Ratio'}
           {selectedAlgorithm === 'ROGERS' && ' - Rogers Ratio'}
+          {selectedAlgorithm === 'IEC60599' && ' - IEC 60599 Ratio'}
         </h4>
         
         {filteredResults.length === 0 ? (
@@ -523,6 +625,8 @@ const DGAAlgorithmsResults = ({
             <p style={{fontSize: '12px', color: '#999'}}>
               {selectedAlgorithm === 'DOERUNBERG' 
                 ? 'Doernenburg data: ' + (doernenburgData ? `${doernenburgData.length} items` : 'None')
+                : selectedAlgorithm === 'IEC60599'
+                ? 'IEC 60599 data: ' + (iec60599Data ? `${iec60599Data.length} items` : 'None')
                 : `Available algorithms in data: ${dgaResults[0]?.algorithms ? Object.keys(dgaResults[0].algorithms).join(', ') : 'None'}`
               }
             </p>
@@ -537,7 +641,7 @@ const DGAAlgorithmsResults = ({
                 <th style={styles.tableHeaderCell}>Algorithm</th>
                 <th style={styles.tableHeaderCell}>Fault Type</th>
                 <th style={styles.tableHeaderCell}>
-                  {isRogersOrDoernenburg ? 'Ratios / Values' : 'Gas %'}
+                  {isRogersOrDoernenburg || isIEC60599 ? 'Ratios / Values' : 'Gas %'}
                 </th>
               </tr>
             </thead>
@@ -545,18 +649,15 @@ const DGAAlgorithmsResults = ({
               {filteredResults.map((item, index) => {
                 const algoResult = item.algoResult || {};
                 
-                // Get fault display info
                 const { faultType, faultName, zoneColor } = getFaultDisplay(algoResult);
                 
-                // Get display data based on algorithm type
                 let displayData = null;
                 let displayType = 'percentages';
                 
                 if (selectedAlgorithm === 'DOERUNBERG') {
-                  // Special handling for Doernenburg - use renderDoernenburgDisplay
                   displayData = algoResult;
                   displayType = 'doernenburg';
-                } else if (selectedAlgorithm === 'ROGERS') {
+                } else if (selectedAlgorithm === 'IEC60599' || selectedAlgorithm === 'ROGERS') {
                   if (algoResult.ratios) {
                     displayData = algoResult.ratios;
                     displayType = 'ratios';
@@ -589,7 +690,9 @@ const DGAAlgorithmsResults = ({
                     <td style={styles.tableCell}>
                       <strong>
                         {selectedAlgorithm === 'DOERUNBERG' 
-                          ? 'Doernenburg' 
+                          ? 'Doernenburg'
+                          : selectedAlgorithm === 'IEC60599'
+                          ? 'IEC 60599'
                           : item.algoKey?.replace(/_/g, ' ').toUpperCase() || 'N/A'}
                       </strong>
                     </td>
@@ -612,12 +715,10 @@ const DGAAlgorithmsResults = ({
                         ) : (
                           <div style={styles.percentagesInline}>
                             {Object.entries(displayData).map(([key, value]) => {
-                              // Format the value based on type
                               let displayValue = value;
                               if (typeof value === 'number') {
                                 displayValue = displayType === 'ratios' ? value.toFixed(3) : value.toFixed(1);
                               }
-                              // Clean up key names
                               const cleanKey = key.replace(/_/g, '/').toUpperCase();
                               return (
                                 <span key={key} style={styles.percentageItem}>
@@ -642,6 +743,7 @@ const DGAAlgorithmsResults = ({
   );
 };
 
+// Styles remain the same as before
 const styles = {
   dgaAlgorithmsContainer: {
     marginTop: '30px',

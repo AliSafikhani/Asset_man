@@ -329,3 +329,51 @@ class DoernenburgStatus:
         "Resample": "#FF9800",
         "UNK": "#95A5A6"
     }
+
+
+# ============================================
+# IEC 60599 Algorithm Zones
+# ============================================
+class IEC60599Status:
+    """IEC 60599 Fault Types"""
+    PD = "PD"           # Partial Discharge
+    D1 = "D1"           # Low Energy Discharge
+    D2 = "D2"           # High Energy Discharge
+    D1D2 = "D1D2"       # Low/High Energy Discharge
+    T1 = "T1"           # Thermal Fault < 300°C
+    T2 = "T2"           # Thermal Fault 300-700°C
+    T3 = "T3"           # Thermal Fault > 700°C
+    ND = "ND"           # No Diagnosis
+    
+    ZONE_NAMES = {
+        "PD": "Partial Discharge",
+        "D1": "Low Energy Discharge",
+        "D2": "High Energy Discharge",
+        "D1D2": "Low/High Energy Discharge",
+        "T1": "Thermal Fault < 300°C",
+        "T2": "Thermal Fault 300-700°C",
+        "T3": "Thermal Fault > 700°C",
+        "ND": "No Diagnosis"
+    }
+    
+    ZONE_COLORS = {
+        "PD": "#FF6B6B",      # Red
+        "D1": "#FFEAA7",      # Yellow
+        "D2": "#DDA0DD",      # Plum
+        "D1D2": "#FFD93D",    # Gold
+        "T1": "#4ECDC4",      # Teal
+        "T2": "#45B7D1",      # Blue
+        "T3": "#96CEB4",      # Green
+        "ND": "#90A4AE"       # Gray
+    }
+    
+    # Zone ranges for 3D plotting (x=C2H4/C2H6, y=CH4/H2, z=C2H2/C2H4)
+    ZONE_RANGES = {
+        "PD": {"x": [0, 0.2], "y": [0, 0.1], "z": [0, 0.01]},
+        "D1": {"x": [1, 10], "y": [0.1, 0.5], "z": [1, 10]},
+        "D2": {"x": [2, 10], "y": [0.1, 1], "z": [0.6, 2.5]},
+        "D1D2": {"x": [2, 10], "y": [0.1, 0.5], "z": [1, 2.5]},
+        "T1": {"x": [0, 1], "y": [1, 10], "z": [0, 0.01]},
+        "T2": {"x": [1, 4], "y": [1, 10], "z": [0, 0.1]},
+        "T3": {"x": [4, 10], "y": [1, 10], "z": [0, 0.2]},
+    }

@@ -10,6 +10,7 @@ from algorithms.transformer.dga.duval_pentagon_1 import DuvalPentagon1
 from algorithms.transformer.dga.duval_pentagon_2 import DuvalPentagon2
 from algorithms.transformer.dga.rogers_ratio import RogersRatio
 from algorithms.transformer.dga.doernenburg_ratio import DoernenburgRatio
+from algorithms.transformer.dga.iec60599_ratio import IEC60599Ratio  # Added
 
 
 class AlgorithmManager:
@@ -30,6 +31,7 @@ class AlgorithmManager:
                 'duval_pentagon_2': DuvalPentagon2(),
                 'rogers_ratio': RogersRatio(),
                 'doernenburg_ratio': DoernenburgRatio(),
+                'iec60599_ratio': IEC60599Ratio(),  # Added
             }
         }
         print("ط£آ¢ط¥â€œأ¢â‚¬آ¦ Registered transformer/dga algorithms")

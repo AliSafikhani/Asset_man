@@ -38,6 +38,7 @@ function AssetDetail() {
   const [duvalPentagon2Data, setDuvalPentagon2Data] = useState([]);
   const [rogersData, setRogersData] = useState([]);
   const [doernenburgData, setDoernenburgData] = useState([]); // SINGLE DECLARATION
+  const [iec60599Data, setIec60599Data] = useState(null);
   const [algoLoading, setAlgoLoading] = useState(false);
   const [algoError, setAlgoError] = useState(null);
   
@@ -305,6 +306,7 @@ function AssetDetail() {
     setDuvalPentagon2Data([]);
     setRogersData([]);
     setDoernenburgData([]);
+    setIec60599Data(null); // Reset IEC data
     
     try {
       const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
@@ -339,7 +341,9 @@ function AssetDetail() {
                 'duvalpentagon1': 'duval_pentagon_1',
                 'duvalpentagon2': 'duval_pentagon_2',
                 'rogers': 'rogers_ratio',
-                'doernenburg': 'doernenburg_ratio'
+                'doernenburg': 'doernenburg_ratio',
+                'iec60599': 'iec60599_ratio',
+                'iec60599ratio': 'iec60599_ratio', // ADD THIS TOO
               };
               
               if (algoMap[algoId]) {
@@ -430,6 +434,7 @@ function AssetDetail() {
           { id: 'duval_pentagon_2', setter: setDuvalPentagon2Data, name: 'Duval Pentagon 2' },
           { id: 'rogers_ratio', setter: setRogersData, name: 'Rogers Ratio' },
           { id: 'doernenburg_ratio', setter: setDoernenburgData, name: 'Doernenburg Ratio' },
+          { id: 'iec60599_ratio', setter: setIec60599Data, name: 'IEC 60599' }, // ADD THIS
         ];
 
         for (const algo of chartAlgorithms) {
@@ -688,6 +693,7 @@ function AssetDetail() {
               duvalPentagon2Data={duvalPentagon2Data}
               rogersData={rogersData}
               doernenburgData={doernenburgData}
+              iec60599Data={iec60599Data}  // Add this
               algoError={algoError}
               onClose={() => {
                 setShowDgaAlgorithms(false);
