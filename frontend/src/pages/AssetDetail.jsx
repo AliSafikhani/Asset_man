@@ -37,8 +37,13 @@ function AssetDetail() {
   const [duvalPentagon1Data, setDuvalPentagon1Data] = useState([]);
   const [duvalPentagon2Data, setDuvalPentagon2Data] = useState([]);
   const [rogersData, setRogersData] = useState([]);
-  const [doernenburgData, setDoernenburgData] = useState([]); // SINGLE DECLARATION
+  const [doernenburgData, setDoernenburgData] = useState([]);
   const [iec60599Data, setIec60599Data] = useState(null);
+  const [mlData1, setMlData1] = useState([]);
+  const [mlData2, setMlData2] = useState([]);
+  const [mlData3, setMlData3] = useState([]);
+  const [mlData4, setMlData4] = useState([]);
+  const [mlData5, setMlData5] = useState([]);
   const [algoLoading, setAlgoLoading] = useState(false);
   const [algoError, setAlgoError] = useState(null);
   
@@ -132,6 +137,12 @@ function AssetDetail() {
       setDuvalPentagon2Data([]);
       setRogersData([]);
       setDoernenburgData([]);
+      setIec60599Data(null);
+      setMlData1([]);
+      setMlData2([]);
+      setMlData3([]);
+      setMlData4([]);
+      setMlData5([]);
       setAlgoError(null);
       setCurrentPage(1);
     } catch (error) {
@@ -254,6 +265,12 @@ function AssetDetail() {
       setDuvalPentagon2Data([]);
       setRogersData([]);
       setDoernenburgData([]);
+      setIec60599Data(null);
+      setMlData1([]);
+      setMlData2([]);
+      setMlData3([]);
+      setMlData4([]);
+      setMlData5([]);
     } else {
       setSelectedRows(paginatedResults.map(r => r.id));
     }
@@ -281,6 +298,12 @@ function AssetDetail() {
         setDuvalPentagon2Data([]);
         setRogersData([]);
         setDoernenburgData([]);
+        setIec60599Data(null);
+        setMlData1([]);
+        setMlData2([]);
+        setMlData3([]);
+        setMlData4([]);
+        setMlData5([]);
         setAlgoError(null);
       }
       
@@ -306,7 +329,12 @@ function AssetDetail() {
     setDuvalPentagon2Data([]);
     setRogersData([]);
     setDoernenburgData([]);
-    setIec60599Data(null); // Reset IEC data
+    setIec60599Data(null);
+    setMlData1([]);
+    setMlData2([]);
+    setMlData3([]);
+    setMlData4([]);
+    setMlData5([]);
     
     try {
       const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
@@ -343,7 +371,12 @@ function AssetDetail() {
                 'rogers': 'rogers_ratio',
                 'doernenburg': 'doernenburg_ratio',
                 'iec60599': 'iec60599_ratio',
-                'iec60599ratio': 'iec60599_ratio', // ADD THIS TOO
+                'iec60599ratio': 'iec60599_ratio',
+                'ml_dga_1': 'ml_dga_1',
+                'ml_dga_2': 'ml_dga_2',
+                'ml_dga_3': 'ml_dga_3',
+                'ml_dga_4': 'ml_dga_4',
+                'ml_dga_5': 'ml_dga_5',
               };
               
               if (algoMap[algoId]) {
@@ -434,7 +467,9 @@ function AssetDetail() {
           { id: 'duval_pentagon_2', setter: setDuvalPentagon2Data, name: 'Duval Pentagon 2' },
           { id: 'rogers_ratio', setter: setRogersData, name: 'Rogers Ratio' },
           { id: 'doernenburg_ratio', setter: setDoernenburgData, name: 'Doernenburg Ratio' },
-          { id: 'iec60599_ratio', setter: setIec60599Data, name: 'IEC 60599' }, // ADD THIS
+          { id: 'iec60599_ratio', setter: setIec60599Data, name: 'IEC 60599' },
+          { id: 'ml_dga_1', setter: setMlData1, name: 'ML DGA 1' },
+
         ];
 
         for (const algo of chartAlgorithms) {
@@ -693,7 +728,12 @@ function AssetDetail() {
               duvalPentagon2Data={duvalPentagon2Data}
               rogersData={rogersData}
               doernenburgData={doernenburgData}
-              iec60599Data={iec60599Data}  // Add this
+              iec60599Data={iec60599Data}
+              mlData1={mlData1}
+              mlData2={mlData2}
+              mlData3={mlData3}
+              mlData4={mlData4}
+              mlData5={mlData5}
               algoError={algoError}
               onClose={() => {
                 setShowDgaAlgorithms(false);
@@ -707,6 +747,12 @@ function AssetDetail() {
                 setDuvalPentagon2Data([]);
                 setRogersData([]);
                 setDoernenburgData([]);
+                setIec60599Data(null);
+                setMlData1([]);
+                setMlData2([]);
+                setMlData3([]);
+                setMlData4([]);
+                setMlData5([]);
               }}
             />
           )}

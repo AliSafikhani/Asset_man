@@ -1,3 +1,5 @@
+# backend/algorithms/algorithm_manager.py
+
 from typing import Dict, Any, List, Optional
 from algorithms.base import BaseAlgorithm
 
@@ -10,7 +12,8 @@ from algorithms.transformer.dga.duval_pentagon_1 import DuvalPentagon1
 from algorithms.transformer.dga.duval_pentagon_2 import DuvalPentagon2
 from algorithms.transformer.dga.rogers_ratio import RogersRatio
 from algorithms.transformer.dga.doernenburg_ratio import DoernenburgRatio
-from algorithms.transformer.dga.iec60599_ratio import IEC60599Ratio  # Added
+from algorithms.transformer.dga.iec60599_ratio import IEC60599Ratio
+from algorithms.transformer.dga.ml_dga_algorithm import MLDGA1  # Only import ML_1
 
 
 class AlgorithmManager:
@@ -19,7 +22,7 @@ class AlgorithmManager:
         self._register_algorithms()
     
     def _register_algorithms(self):
-        print("ط¸â€¹ط¹ط›أ¢â‚¬إ“أ¢â‚¬إ’ Registering algorithms...")
+        print("🔄 Registering algorithms...")
         self.algorithms['transformer'] = {
             'dga': {
                 'duval_triangle_1': DuvalTriangle1(),
@@ -31,10 +34,12 @@ class AlgorithmManager:
                 'duval_pentagon_2': DuvalPentagon2(),
                 'rogers_ratio': RogersRatio(),
                 'doernenburg_ratio': DoernenburgRatio(),
-                'iec60599_ratio': IEC60599Ratio(),  # Added
+                'iec60599_ratio': IEC60599Ratio(),
+                'ml_dga_1': MLDGA1(),  # Only register ML_1
+                # ML_2 through ML_5 are not available yet
             }
         }
-        print("ط£آ¢ط¥â€œأ¢â‚¬آ¦ Registered transformer/dga algorithms")
+        print("✅ Registered transformer/dga algorithms")
         print(f"   Algorithms: {list(self.algorithms['transformer']['dga'].keys())}")
     
     def get_algorithms(self, asset_type: str, test_type: str) -> List[Dict[str, Any]]:

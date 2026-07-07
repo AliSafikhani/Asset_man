@@ -377,3 +377,39 @@ class IEC60599Status:
         "T2": {"x": [1, 4], "y": [1, 10], "z": [0, 0.1]},
         "T3": {"x": [4, 10], "y": [1, 10], "z": [0, 0.2]},
     }
+
+# ============================================
+# ML DGA Algorithm Zones - Multiple Models
+# ============================================
+class MLDGAFaultStatus:
+    """ML DGA Fault Types - Common across all ML models"""
+    PD = "PD"           # Partial Discharge
+    T1 = "T1"           # Thermal Fault < 300°C
+    T2 = "T2"           # Thermal Fault 300-700°C
+    T3 = "T3"           # Thermal Fault > 700°C
+    D1 = "D1"           # Low Energy Discharge
+    D2 = "D2"           # High Energy Discharge
+    N = "N"             # Normal
+    UNK = "UNK"         # Unknown
+    
+    ZONE_NAMES = {
+        "PD": "Partial Discharge",
+        "T1": "Thermal Fault < 300°C",
+        "T2": "Thermal Fault 300-700°C",
+        "T3": "Thermal Fault > 700°C",
+        "D1": "Low Energy Discharge",
+        "D2": "High Energy Discharge",
+        "N": "Normal",
+        "UNK": "Unknown"
+    }
+    
+    ZONE_COLORS = {
+        "PD": "#FF6B6B",      # Red
+        "T1": "#4ECDC4",      # Teal
+        "T2": "#45B7D1",      # Blue
+        "T3": "#96CEB4",      # Green
+        "D1": "#FFEAA7",      # Yellow
+        "D2": "#DDA0DD",      # Plum
+        "N": "#4CAF50",       # Green
+        "UNK": "#95A5A6"      # Gray
+    }

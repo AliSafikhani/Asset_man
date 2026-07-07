@@ -9,6 +9,7 @@ import DuvalPentagon1Chart from '../DuvalPentagon1Chart';
 import DuvalPentagon2Chart from '../DuvalPentagon2Chart';
 import RogersRatioChart3D from '../RogersRatioChart3D';
 import IEC60599Chart3D from '../IEC60599Chart3D';
+import MLDGAChart from '../MLDGAChart';
 
 const DGAAlgorithmsResults = ({ 
   dgaResults, 
@@ -22,6 +23,11 @@ const DGAAlgorithmsResults = ({
   rogersData, 
   doernenburgData,
   iec60599Data,
+  mlData1,
+  mlData2,
+  mlData3,
+  mlData4,
+  mlData5,
   algoError,
   onClose 
 }) => {
@@ -32,6 +38,7 @@ const DGAAlgorithmsResults = ({
   console.log('rogersData:', rogersData);
   console.log('doernenburgData:', doernenburgData);
   console.log('iec60599Data:', iec60599Data);
+  console.log('mlData1:', mlData1);
 
   if (!dgaResults || dgaResults.length === 0) {
     return null;
@@ -116,6 +123,11 @@ const DGAAlgorithmsResults = ({
       'ROGERS_1': ['rogers_ratio', 'rogersratio', 'rogers'],
       'DOERUNBERG': ['doernenburg_ratio', 'doernenburgratio', 'doernenburg', 'doernenburg_1'],
       'IEC60599': ['iec60599_ratio', 'iec60599ratio', 'iec60599', 'iec_60599'],
+      'ML_1': ['ml_dga_1', 'ml_dga1', 'ml1'],
+      'ML_2': ['ml_dga_2', 'ml_dga2', 'ml2'],
+      'ML_3': ['ml_dga_3', 'ml_dga3', 'ml3'],
+      'ML_4': ['ml_dga_4', 'ml_dga4', 'ml4'],
+      'ML_5': ['ml_dga_5', 'ml_dga5', 'ml5'],
     };
     
     const possibleKeys = keyMap[displayKey] || [displayKey.toLowerCase()];
@@ -147,6 +159,29 @@ const DGAAlgorithmsResults = ({
     console.warn(`❌ No key found for: ${displayKey}`);
     return null;
   }, [dgaResults]);
+
+  // Check if a sub-algorithm is implemented
+// Check if a sub-algorithm is implemented
+// Check if a sub-algorithm is implemented
+const isSubImplemented = useCallback((subKey) => {
+  // All Duval Triangle and Pentagon sub-algorithms are implemented
+  if (subKey.startsWith('DUVAL_TRIANGLE_') || subKey.startsWith('DUVAL_PENTAGON_')) {
+    return true;
+  }
+  // Rogers is implemented
+  if (subKey === 'ROGERS_1') {
+    return true;
+  }
+  // ML: Only ML_1 is implemented for now
+  if (subKey === 'ML_1') {
+    return true;
+  }
+  // ML_2 through ML_5 are not implemented yet
+  if (subKey.startsWith('ML_')) {
+    return false;
+  }
+  return true;
+}, []);
 
   // Memoized filtered results
   const filteredResults = useMemo(() => {
@@ -221,6 +256,60 @@ const DGAAlgorithmsResults = ({
       }
       
       console.log('Rogers results count:', results.length);
+      return results;
+    }
+
+    // Special handling for ML - use direct prop data
+    if (selectedAlgorithm === 'ML') {
+      let mlData = null;
+      let mlKey = '';
+      
+      // Determine which ML model to use
+      switch(selectedSubAlgorithm) {
+        case 'ML_1':
+          mlData = mlData1;
+          mlKey = 'ml_1';
+          break;
+        case 'ML_2':
+          mlData = mlData2;
+          mlKey = 'ml_2';
+          break;
+        case 'ML_3':
+          mlData = mlData3;
+          mlKey = 'ml_3';
+          break;
+        case 'ML_4':
+          mlData = mlData4;
+          mlKey = 'ml_4';
+          break;
+        case 'ML_5':
+          mlData = mlData5;
+          mlKey = 'ml_5';
+          break;
+        default:
+          mlData = mlData1;
+          mlKey = 'ml_1';
+      }
+      
+      console.log(`Using direct ${mlKey}Data prop:`, mlData);
+      
+      if (mlData && mlData.length > 0) {
+        mlData.forEach((item, index) => {
+          let testDate = null;
+          if (dgaResults[index]) {
+            testDate = dgaResults[index].test_date;
+          }
+          
+          results.push({
+            test_date: testDate,
+            algoKey: mlKey,
+            algoResult: item,
+            overall_status: dgaResults[index]?.overall_status || null
+          });
+        });
+      }
+      
+      console.log('ML results count:', results.length);
       return results;
     }
     
@@ -302,9 +391,9 @@ const DGAAlgorithmsResults = ({
     
     console.log('Filtered results count:', results.length);
     return results;
-  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData, iec60599Data, rogersData]);
- 
-// Memoized chart data
+  }, [dgaResults, selectedAlgorithm, selectedSubAlgorithm, getActualKey, doernenburgData, iec60599Data, rogersData, mlData1, mlData2, mlData3, mlData4, mlData5]);
+
+  // Memoized chart data
   const chartData = useMemo(() => {
     console.log('=== Computing chartData ===');
     console.log('Selected algorithm:', selectedAlgorithm);
@@ -326,6 +415,22 @@ const DGAAlgorithmsResults = ({
     } else if (selectedAlgorithm === 'IEC60599') {
       console.log('Returning IEC 60599 data:', iec60599Data);
       return iec60599Data;
+    } else if (selectedAlgorithm === 'ML') {
+      // Determine which ML model data to use
+      switch(selectedSubAlgorithm) {
+        case 'ML_1':
+          return mlData1;
+        case 'ML_2':
+          return mlData2;
+        case 'ML_3':
+          return mlData3;
+        case 'ML_4':
+          return mlData4;
+        case 'ML_5':
+          return mlData5;
+        default:
+          return mlData1;
+      }
     }
     return null;
   }, [
@@ -340,7 +445,12 @@ const DGAAlgorithmsResults = ({
     duvalPentagon2Data, 
     rogersData,
     doernenburgData,
-    iec60599Data
+    iec60599Data,
+    mlData1,
+    mlData2,
+    mlData3,
+    mlData4,
+    mlData5
   ]);
 
   console.log('chartData:', chartData);
@@ -348,6 +458,7 @@ const DGAAlgorithmsResults = ({
   const hasValidChartData = chartData && chartData.length > 0;
   const isRogersOrDoernenburg = selectedAlgorithm === 'ROGERS' || selectedAlgorithm === 'DOERUNBERG';
   const isIEC60599 = selectedAlgorithm === 'IEC60599';
+  const isML = selectedAlgorithm === 'ML';
   const hasChart = selectedAlgorithm !== 'DOERUNBERG';
 
   // Render chart based on selected algorithm
@@ -400,6 +511,10 @@ const DGAAlgorithmsResults = ({
         console.log('Rendering IEC 60599 chart with data:', chartData);
         return <IEC60599Chart3D data={chartData} width={650} height={550} />;
       
+      case 'ML':
+        console.log('Rendering ML chart with data:', chartData);
+        return <MLDGAChart data={chartData} width={650} height={550} />;
+      
       case 'DOERUNBERG':
         return <div style={styles.doernenburgInfo}>
           <h4>Doernenburg Ratio Results</h4>
@@ -411,7 +526,7 @@ const DGAAlgorithmsResults = ({
     }
   }, [selectedAlgorithm, selectedSubAlgorithm, chartData, hasValidChartData]);
 
-  // Algorithm configuration - add IEC60599
+  // Algorithm configuration
   const algorithms = {
     DUVAL_TRIANGLE: {
       label: 'DUVAL TRIANGLE',
@@ -447,7 +562,7 @@ const DGAAlgorithmsResults = ({
       label: 'ML',
       hasSub: true,
       subs: ['ML_1', 'ML_2', 'ML_3', 'ML_4', 'ML_5'],
-      implemented: false,
+      implemented: true,
     }
   };
 
@@ -461,11 +576,11 @@ const DGAAlgorithmsResults = ({
       'DUVAL_PENTAGON_1': 'Duval Pentagon 1',
       'DUVAL_PENTAGON_2': 'Duval Pentagon 2',
       'ROGERS_1': 'Rogers Ratio 3D',
-      'ML_1': 'ML 1',
-      'ML_2': 'ML 2',
-      'ML_3': 'ML 3',
-      'ML_4': 'ML 4',
-      'ML_5': 'ML 5'
+      'ML_1': 'ML Model 1 ✅',
+      'ML_2': 'ML Model 2 🚧',
+      'ML_3': 'ML Model 3 🚧',
+      'ML_4': 'ML Model 4 🚧',
+      'ML_5': 'ML Model 5 🚧'
     };
     return nameMap[subKey] || subKey;
   };
@@ -544,7 +659,7 @@ const DGAAlgorithmsResults = ({
     return <span style={{color: '#999', fontSize: '12px'}}>No ratio data available</span>;
   };
 
-  // Get fault display info - FIXED VERSION
+  // Get fault display info
   const getFaultDisplay = (algoResult) => {
     let faultType = 'UNK';
     let faultName = 'Unknown';
@@ -574,7 +689,6 @@ const DGAAlgorithmsResults = ({
     // FIX: If fault_type is "UNK" but we have a valid fault_name, 
     // try to extract the actual fault type from the name
     if (faultType === 'UNK' && faultName && faultName !== 'Unknown') {
-      // Try to map from fault name to fault type
       const nameToTypeMap = {
         'Partial Discharge': 'PD',
         'Thermal Fault T1 (<300 C)': 'T1',
@@ -600,7 +714,6 @@ const DGAAlgorithmsResults = ({
         'Resample Required': 'RESAMPLE'
       };
       
-      // Check if we have a mapping for this fault name
       for (const [name, type] of Object.entries(nameToTypeMap)) {
         if (faultName.includes(name) || name.includes(faultName)) {
           faultType = type;
@@ -608,9 +721,7 @@ const DGAAlgorithmsResults = ({
         }
       }
       
-      // If still UNK, try to extract from the fault_name itself
       if (faultType === 'UNK') {
-        // Try to match patterns like "T1", "T2", "D1", "D2", "PD", etc.
         const matches = faultName.match(/\b(PD|T1|T2|T3|D1|D2|DT|ND|ARC|NL|S|O|D1D2)\b/);
         if (matches && matches[1]) {
           faultType = matches[1];
@@ -618,8 +729,39 @@ const DGAAlgorithmsResults = ({
       }
     }
     
-    console.log('getFaultDisplay result:', { faultType, faultName, zoneColor });
     return { faultType, faultName, zoneColor };
+  };
+
+  // Render sub-tabs with status indicators
+  const renderSubTabs = () => {
+    const subs = algorithms[selectedAlgorithm]?.subs || [];
+    
+    return (
+      <div style={styles.subTabs}>
+        {subs.map(sub => {
+          const implemented = isSubImplemented(sub);
+          return (
+            <button
+              key={sub}
+              style={{
+                ...styles.subTab,
+                ...(selectedSubAlgorithm === sub ? styles.subTabActive : {}),
+                ...(!implemented ? styles.subTabDisabled : {})
+              }}
+              onClick={() => {
+                if (implemented) {
+                  setSelectedSubAlgorithm(sub);
+                }
+              }}
+              disabled={!implemented}
+              title={!implemented ? 'Coming Soon' : ''}
+            >
+              {getSubDisplayName(sub)}
+            </button>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -651,7 +793,9 @@ const DGAAlgorithmsResults = ({
               onClick={() => {
                 setSelectedAlgorithm(key);
                 if (algo.hasSub && algo.subs.length > 0) {
-                  setSelectedSubAlgorithm(algo.subs[0]);
+                  // Select the first implemented sub-algorithm
+                  const firstImplemented = algo.subs.find(sub => isSubImplemented(sub));
+                  setSelectedSubAlgorithm(firstImplemented || algo.subs[0]);
                 }
               }}
               disabled={!algo.implemented}
@@ -662,22 +806,7 @@ const DGAAlgorithmsResults = ({
           ))}
         </div>
         
-        {algorithms[selectedAlgorithm]?.hasSub && (
-          <div style={styles.subTabs}>
-            {algorithms[selectedAlgorithm].subs.map(sub => (
-              <button
-                key={sub}
-                style={{
-                  ...styles.subTab,
-                  ...(selectedSubAlgorithm === sub ? styles.subTabActive : {})
-                }}
-                onClick={() => setSelectedSubAlgorithm(sub)}
-              >
-                {getSubDisplayName(sub)}
-              </button>
-            ))}
-          </div>
-        )}
+        {algorithms[selectedAlgorithm]?.hasSub && renderSubTabs()}
       </div>
       
       {/* Chart Section */}
@@ -689,7 +818,7 @@ const DGAAlgorithmsResults = ({
             {!isImplemented && <span style={styles.comingSoonBadge}> Coming Soon</span>}
           </h4>
           
-          {isImplemented ? (
+          {isImplemented && isSubImplemented(selectedSubAlgorithm) ? (
             hasValidChartData ? (
               <div style={{ minHeight: '400px', border: '1px solid #ddd', padding: '10px' }}>
                 {renderChart()}
@@ -707,12 +836,15 @@ const DGAAlgorithmsResults = ({
               <div style={styles.comingSoonIcon}>🚧</div>
               <h3 style={styles.comingSoonTitle}>Coming Soon</h3>
               <p style={styles.comingSoonText}>
-                The {algorithms[selectedAlgorithm]?.label} algorithm is currently under development.
+                {selectedAlgorithm === 'ML' 
+                  ? `The ${getSubDisplayName(selectedSubAlgorithm)} is currently under development.`
+                  : `The ${algorithms[selectedAlgorithm]?.label} algorithm is currently under development.`
+                }
               </p>
             </div>
           )}
           
-          {isImplemented && hasValidChartData && (
+          {isImplemented && isSubImplemented(selectedSubAlgorithm) && hasValidChartData && (
             <div style={styles.chartLegend}>
               <p>💡 Hover over points for details | Color indicates fault zone</p>
               <p style={styles.chartDataInfo}>Showing {chartData?.length || 0} data point(s)</p>
@@ -728,6 +860,7 @@ const DGAAlgorithmsResults = ({
           {selectedAlgorithm === 'DOERUNBERG' && ' - Doernenburg Ratio'}
           {selectedAlgorithm === 'ROGERS' && ' - Rogers Ratio'}
           {selectedAlgorithm === 'IEC60599' && ' - IEC 60599 Ratio'}
+          {selectedAlgorithm === 'ML' && ` - ${getSubDisplayName(selectedSubAlgorithm)}`}
         </h4>
         
         {filteredResults.length === 0 ? (
@@ -738,6 +871,8 @@ const DGAAlgorithmsResults = ({
                 ? 'Doernenburg data: ' + (doernenburgData ? `${doernenburgData.length} items` : 'None')
                 : selectedAlgorithm === 'IEC60599'
                 ? 'IEC 60599 data: ' + (iec60599Data ? `${iec60599Data.length} items` : 'None')
+                : selectedAlgorithm === 'ML'
+                ? 'ML data: ' + (chartData ? `${chartData.length} items` : 'None')
                 : `Available algorithms in data: ${dgaResults[0]?.algorithms ? Object.keys(dgaResults[0].algorithms).join(', ') : 'None'}`
               }
             </p>
@@ -752,7 +887,7 @@ const DGAAlgorithmsResults = ({
                 <th style={styles.tableHeaderCell}>Algorithm</th>
                 <th style={styles.tableHeaderCell}>Fault Type</th>
                 <th style={styles.tableHeaderCell}>
-                  {isRogersOrDoernenburg || isIEC60599 ? 'Ratios / Values' : 'Gas %'}
+                  {isRogersOrDoernenburg || isIEC60599 || isML ? 'Probabilities / Values' : 'Gas %'}
                 </th>
               </tr>
             </thead>
@@ -772,6 +907,13 @@ const DGAAlgorithmsResults = ({
                   if (algoResult.ratios) {
                     displayData = algoResult.ratios;
                     displayType = 'ratios';
+                  }
+                } else if (selectedAlgorithm === 'ML') {
+                  // Show top 3 probabilities
+                  const top3 = algoResult.top_3 || [];
+                  if (top3.length > 0) {
+                    displayData = top3;
+                    displayType = 'ml';
                   }
                 } else if (algoResult.percentages) {
                   displayData = algoResult.percentages;
@@ -804,6 +946,8 @@ const DGAAlgorithmsResults = ({
                           ? 'Doernenburg'
                           : selectedAlgorithm === 'IEC60599'
                           ? 'IEC 60599'
+                          : selectedAlgorithm === 'ML'
+                          ? `ML ${selectedSubAlgorithm.replace('ML_', '')}`
                           : item.algoKey?.replace(/_/g, ' ').toUpperCase() || 'N/A'}
                       </strong>
                     </td>
@@ -823,6 +967,20 @@ const DGAAlgorithmsResults = ({
                       {displayData ? (
                         displayType === 'doernenburg' ? (
                           renderDoernenburgDisplay(displayData)
+                        ) : displayType === 'ml' ? (
+                          <div style={styles.percentagesInline}>
+                            {displayData.map((pred, idx) => (
+                              <span key={idx} style={{
+                                ...styles.percentageItem,
+                                backgroundColor: idx === 0 ? '#e8f5e9' : '#f5f5f5',
+                                fontWeight: idx === 0 ? 'bold' : 'normal',
+                                border: idx === 0 ? '2px solid #4CAF50' : 'none'
+                              }}>
+                                {pred.fault}: {pred.percentage}
+                                {idx === 0 && ' ★'}
+                              </span>
+                            ))}
+                          </div>
                         ) : (
                           <div style={styles.percentagesInline}>
                             {Object.entries(displayData).map(([key, value]) => {
@@ -854,7 +1012,7 @@ const DGAAlgorithmsResults = ({
   );
 };
 
-// Styles remain the same as before
+// Styles
 const styles = {
   dgaAlgorithmsContainer: {
     marginTop: '30px',
@@ -950,6 +1108,12 @@ const styles = {
   subTabActive: {
     backgroundColor: '#4CAF50',
     color: 'white'
+  },
+  subTabDisabled: {
+    backgroundColor: '#e0e0e0',
+    color: '#999',
+    cursor: 'not-allowed',
+    opacity: 0.6
   },
   chartSection: {
     marginTop: '20px',
