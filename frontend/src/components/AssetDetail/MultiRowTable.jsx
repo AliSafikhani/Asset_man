@@ -1,9 +1,12 @@
 // frontend/src/components/AssetDetail/MultiRowTable.jsx
 
 import React, { useState } from 'react';
+import API from '../../services/api';
 
-const MultiRowTable = ({ onBack, onCancel, onSuccess }) => {
+const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => {
   const [rows, setRows] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [samples, setSamples] = useState(
     Array(5).fill().map((_, i) => ({
       id: i + 1,
@@ -72,14 +75,57 @@ const MultiRowTable = ({ onBack, onCancel, onSuccess }) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validSamples = samples.filter(s => s.date && (s.h2 || s.ch4 || s.c2h2 || s.c2h4 || s.c2h6));
     if (validSamples.length === 0) {
-      alert('Please fill in at least one sample with a date and gas values.');
+      setError('Please fill in at least one sample with a date and gas values.');
       return;
     }
-    console.log('Submitting samples:', validSamples);
-    onSuccess(validSamples);
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const batchData = {
+        samples: validSamples.map(s => ({
+          asset_id: parseInt(assetId),
+          test_type_id: parseInt(testTypeId),
+          test_date: s.date,
+          lab_name: 'Default Lab',
+          notes: '',
+          parameters: [
+            { field_name: 'h2', field_value: parseFloat(s.h2) || 0 },
+            { field_name: 'ch4', field_value: parseFloat(s.ch4) || 0 },
+            { field_name: 'c2h2', field_value: parseFloat(s.c2h2) || 0 },
+            { field_name: 'c2h4', field_value: parseFloat(s.c2h4) || 0 },
+            { field_name: 'c2h6', field_value: parseFloat(s.c2h6) || 0 },
+            { field_name: 'co', field_value: parseFloat(s.co) || 0 },
+            { field_name: 'co2', field_value: parseFloat(s.co2) || 0 },
+            { field_name: 'o2', field_value: parseFloat(s.o2) || 0 },
+            { field_name: 'n2', field_value: parseFloat(s.n2) || 0 },
+            { field_name: 'sample_temp', field_value: parseFloat(s.temp) || 61 }
+          ]
+        }))
+      };
+
+      console.log('📤 Submitting batch data:', batchData);
+
+      const response = await API.post('/test-results/batch', batchData);
+      
+      console.log('📥 Batch response:', response.data);
+      
+      if (response.data.success > 0) {
+        // Pass the API response to parent
+        onSuccess(response.data);
+      } else {
+        setError('No samples were inserted. Please check your data.');
+      }
+    } catch (err) {
+      console.error('❌ Batch insert error:', err);
+      setError(err.response?.data?.detail || 'Error inserting samples');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const gasFields = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2'];
@@ -91,6 +137,8 @@ const MultiRowTable = ({ onBack, onCancel, onSuccess }) => {
           <h2>📋 Multi-Row Table Entry</h2>
           <button style={styles.closeButton} onClick={onCancel}>✕</button>
         </div>
+
+        {error && <div style={styles.error}>{error}</div>}
 
         <div style={styles.controls}>
           <div style={styles.rowControl}>
@@ -164,7 +212,9 @@ const MultiRowTable = ({ onBack, onCancel, onSuccess }) => {
           <button onClick={onBack} style={styles.backButton}>← Back</button>
           <div style={styles.actions}>
             <button onClick={onCancel} style={styles.cancelButton}>Cancel</button>
-            <button onClick={handleSubmit} style={styles.submitButton}>✅ Insert All</button>
+            <button onClick={handleSubmit} disabled={loading} style={styles.submitButton}>
+              {loading ? '⏳ Inserting...' : '✅ Insert All'}
+            </button>
           </div>
         </div>
       </div>
@@ -206,6 +256,14 @@ const styles = {
     fontSize: '24px',
     cursor: 'pointer',
     color: '#666'
+  },
+  error: {
+    padding: '12px 16px',
+    background: '#ffebee',
+    color: '#c62828',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    border: '1px solid #f44336'
   },
   controls: {
     display: 'flex',

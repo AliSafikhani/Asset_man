@@ -95,6 +95,14 @@ function AssetDetail() {
   const loadTestFields = async (testTypeId) => {
     try {
       const res = await API.get(`/test-fields/test-type/${testTypeId}`);
+      
+      // Add debug logs here
+      console.log('🔍 Test Fields loaded:', res.data);
+      console.log('📊 Number of fields:', res.data.length);
+      if (res.data.length > 0) {
+        console.log('📋 First field:', res.data[0]);
+      }
+      
       setTestFields(res.data);
       
       const initialVisibility = {
@@ -124,7 +132,16 @@ function AssetDetail() {
 
   const loadTestResults = async (testTypeId) => {
     try {
-      const res = await API.get(`/test-results/asset/${assetId}?test_type_id=${testTypeId}`);
+      // FIX: Use the correct endpoint with query parameters
+      const res = await API.get(`/test-results/?asset_id=${assetId}&test_type_id=${testTypeId}`);
+      
+      console.log('🔍 Test Results loaded:', res.data);
+      console.log('📊 Number of results:', res.data.length);
+      if (res.data.length > 0) {
+        console.log('📋 First result:', res.data[0]);
+        console.log('📋 Parameters:', res.data[0].parameters);
+      }
+      
       setTestResults(res.data);
       setSelectedRows([]);
       setSelectAll(false);
