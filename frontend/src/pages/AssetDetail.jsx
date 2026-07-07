@@ -9,6 +9,7 @@ import TestResultForm from '../components/AssetDetail/TestResultForm';
 import Pagination from '../components/AssetDetail/Pagination';
 import ColumnSelector from '../components/AssetDetail/ColumnSelector';
 import DGAAlgorithmsResults from '../components/AssetDetail/DGAAlgorithmsResults';
+import AddResultMenu from '../components/AssetDetail/AddResultMenu';
 
 function AssetDetail() {
   const { assetId } = useParams();
@@ -46,6 +47,7 @@ function AssetDetail() {
   const [mlData5, setMlData5] = useState([]);
   const [algoLoading, setAlgoLoading] = useState(false);
   const [algoError, setAlgoError] = useState(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -601,11 +603,10 @@ function AssetDetail() {
                 >
                   Columns ▼
                 </button>
-                <button onClick={() => {
-                  setEditingResult(null);
-                  setTestFormData({ test_date: new Date().toISOString().split('T')[0] });
-                  setShowTestForm(true);
-                }} style={styles.addButton}>
+                <button 
+                  onClick={() => setShowAddMenu(true)} 
+                  style={styles.addButton}
+                >
                   + Add Test Result
                 </button>
                 {selectedRows.length > 0 && (
@@ -771,6 +772,20 @@ function AssetDetail() {
           onCancel={() => {
             setShowTestForm(false);
             setEditingResult(null);
+          }}
+        />
+      )}
+      {/* Add Result Menu Modal */}
+      {/* Add Result Menu Modal */}
+      {showAddMenu && selectedTestType && (
+        <AddResultMenu
+          assetId={assetId}
+          testTypeId={selectedTestType}
+          testFields={testFields}  // MAKE SURE THIS IS PASSED
+          onClose={() => setShowAddMenu(false)}
+          onSuccess={() => {
+            loadTestResults(selectedTestType);
+            setShowAddMenu(false);
           }}
         />
       )}

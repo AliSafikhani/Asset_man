@@ -1,3 +1,5 @@
+# backend/app/api/v1/api.py
+
 from fastapi import APIRouter
 from app.api.v1.endpoints import auth
 from app.api.v1.endpoints import companies
@@ -13,6 +15,7 @@ from app.api.v1.endpoints import dcs_signals
 from app.api.v1.endpoints import alarms
 from app.api.v1.endpoints import events
 from app.api.algorithms import router as algorithms_router
+from app.api import upload  # ADD THIS LINE
 
 api_router = APIRouter()
 
@@ -32,3 +35,6 @@ api_router.include_router(events.router, prefix="/events")
 
 # Algorithms router - available at /api/v1/algorithms
 api_router.include_router(algorithms_router, prefix="/algorithms")
+
+# Upload router - available at /api/v1/upload
+api_router.include_router(upload.router, prefix="/upload")  # ADD THIS LINE
