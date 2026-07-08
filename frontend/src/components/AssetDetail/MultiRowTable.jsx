@@ -7,6 +7,7 @@ const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => 
   const [rows, setRows] = useState(5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [samples, setSamples] = useState(
     Array(5).fill().map((_, i) => ({
       id: i + 1,
@@ -84,6 +85,7 @@ const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => 
 
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const batchData = {
@@ -108,20 +110,17 @@ const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => 
         }))
       };
 
-      console.log('📤 Submitting batch data:', batchData);
-
       const response = await API.post('/test-results/batch', batchData);
       
-      console.log('📥 Batch response:', response.data);
-      
       if (response.data.success > 0) {
-        // Pass the API response to parent
-        onSuccess(response.data);
+        setSuccessMessage(`✅ ${response.data.success} sample(s) inserted successfully!`);
+        setTimeout(() => {
+          onSuccess(response.data);
+        }, 1500);
       } else {
         setError('No samples were inserted. Please check your data.');
       }
     } catch (err) {
-      console.error('❌ Batch insert error:', err);
       setError(err.response?.data?.detail || 'Error inserting samples');
     } finally {
       setLoading(false);
@@ -134,15 +133,19 @@ const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => 
     <div style={styles.overlay} onClick={onCancel}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.header}>
-          <h2>📋 Multi-Row Table Entry</h2>
+          <div>
+            <span style={styles.headerIcon}>📋</span>
+            <h2 style={styles.headerTitle}>Multi-Row Table Entry</h2>
+          </div>
           <button style={styles.closeButton} onClick={onCancel}>✕</button>
         </div>
 
         {error && <div style={styles.error}>{error}</div>}
+        {successMessage && <div style={styles.success}>{successMessage}</div>}
 
         <div style={styles.controls}>
           <div style={styles.rowControl}>
-            <label>Number of rows (max 10):</label>
+            <label style={styles.rowLabel}>Number of rows (max 10):</label>
             <input
               type="number"
               min="1"
@@ -153,59 +156,62 @@ const MultiRowTable = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) => 
             />
           </div>
           <div style={styles.tip}>
-            💡 Copy from Excel and paste into columns
+            <span style={styles.tipIcon}>💡</span>
+            <span>Copy from Excel and paste into columns</span>
           </div>
         </div>
 
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>#</th>
-                <th>Date</th>
-                {gasFields.map(gas => (
-                  <th key={gas} style={{ minWidth: '65px' }}>{gas.toUpperCase()}</th>
-                ))}
-                <th>Temp</th>
-              </tr>
-            </thead>
-            <tbody>
-              {samples.map((sample, index) => (
-                <tr key={sample.id}>
-                  <td style={styles.rowNumber}>{sample.id}</td>
-                  <td>
-                    <input
-                      type="date"
-                      value={sample.date}
-                      onChange={(e) => handleCellChange(index, 'date', e.target.value)}
-                      style={styles.cellInput}
-                    />
-                  </td>
+        <div style={styles.tableWrapper}>
+          <div style={styles.tableScroll}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.thNumber}>#</th>
+                  <th style={styles.thDate}>Date</th>
                   {gasFields.map(gas => (
-                    <td key={gas}>
+                    <th key={gas} style={styles.thGas}>{gas.toUpperCase()}</th>
+                  ))}
+                  <th style={styles.thTemp}>Temp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {samples.map((sample, index) => (
+                  <tr key={sample.id} style={styles.tr}>
+                    <td style={styles.tdNumber}>{sample.id}</td>
+                    <td style={styles.tdDate}>
                       <input
-                        type="text"
-                        value={sample[gas]}
-                        onChange={(e) => handleCellChange(index, gas, e.target.value)}
-                        onPaste={(e) => handlePaste(e, index, gas)}
+                        type="date"
+                        value={sample.date}
+                        onChange={(e) => handleCellChange(index, 'date', e.target.value)}
                         style={styles.cellInput}
-                        placeholder="ppm"
                       />
                     </td>
-                  ))}
-                  <td>
-                    <input
-                      type="text"
-                      value={sample.temp}
-                      onChange={(e) => handleCellChange(index, 'temp', e.target.value)}
-                      style={styles.cellInputSmall}
-                      placeholder="°C"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {gasFields.map(gas => (
+                      <td key={gas} style={styles.tdGas}>
+                        <input
+                          type="text"
+                          value={sample[gas]}
+                          onChange={(e) => handleCellChange(index, gas, e.target.value)}
+                          onPaste={(e) => handlePaste(e, index, gas)}
+                          style={styles.cellInput}
+                          placeholder="ppm"
+                        />
+                      </td>
+                    ))}
+                    <td style={styles.tdTemp}>
+                      <input
+                        type="text"
+                        value={sample.temp}
+                        onChange={(e) => handleCellChange(index, 'temp', e.target.value)}
+                        style={styles.cellInputSmall}
+                        placeholder="°C"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div style={styles.footer}>
@@ -229,41 +235,77 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0,0,0,0.6)',
+    background: 'rgba(0, 0, 0, 0.6)',
+    backdropFilter: 'blur(4px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1000
+    zIndex: 1000,
   },
   modal: {
     background: 'white',
-    borderRadius: '16px',
-    padding: '24px',
+    borderRadius: '20px',
+    padding: '28px',
     maxWidth: '95vw',
     width: '100%',
     maxHeight: '90vh',
-    overflowY: 'auto'
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 24px 80px rgba(0,0,0,0.3)',
+    animation: 'slideUp 0.3s ease'
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '16px'
+    marginBottom: '16px',
+    flexShrink: 0
+  },
+  headerIcon: {
+    fontSize: '24px',
+    marginRight: '12px'
+  },
+  headerTitle: {
+    margin: 0,
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#1a1a2e',
+    display: 'inline-block'
   },
   closeButton: {
     background: 'none',
     border: 'none',
     fontSize: '24px',
     cursor: 'pointer',
-    color: '#666'
+    color: '#999',
+    padding: '4px 8px',
+    borderRadius: '8px',
+    transition: 'all 0.2s',
+    ':hover': {
+      background: '#f0f0f0',
+      color: '#333'
+    }
   },
   error: {
     padding: '12px 16px',
     background: '#ffebee',
     color: '#c62828',
     borderRadius: '8px',
-    marginBottom: '16px',
-    border: '1px solid #f44336'
+    marginBottom: '12px',
+    border: '1px solid #f44336',
+    fontSize: '14px',
+    flexShrink: 0
+  },
+  success: {
+    padding: '12px 16px',
+    background: '#e8f5e9',
+    color: '#2e7d32',
+    borderRadius: '8px',
+    marginBottom: '12px',
+    border: '1px solid #4CAF50',
+    fontSize: '14px',
+    fontWeight: '500',
+    flexShrink: 0
   },
   controls: {
     display: 'flex',
@@ -273,54 +315,148 @@ const styles = {
     marginBottom: '16px',
     padding: '12px 16px',
     background: '#f8f9fa',
-    borderRadius: '8px'
+    borderRadius: '10px',
+    flexShrink: 0
   },
   rowControl: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px'
   },
+  rowLabel: {
+    fontSize: '14px',
+    color: '#555',
+    fontWeight: '500'
+  },
   rowInput: {
     width: '60px',
     padding: '6px 8px',
     border: '1px solid #ddd',
-    borderRadius: '4px',
+    borderRadius: '6px',
+    fontSize: '14px',
     textAlign: 'center'
   },
   tip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
     fontSize: '13px',
     color: '#666',
     flex: 1,
-    textAlign: 'right'
+    justifyContent: 'flex-end'
   },
-  tableContainer: {
-    overflowX: 'auto',
-    marginBottom: '16px'
+  tipIcon: {
+    fontSize: '16px'
+  },
+  tableWrapper: {
+    overflow: 'hidden',
+    borderRadius: '12px',
+    border: '1px solid #e0e0e0',
+    flex: 1
+  },
+  tableScroll: {
+    overflow: 'auto',
+    maxHeight: '400px'
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     fontSize: '13px'
   },
+  thNumber: {
+    padding: '10px 8px',
+    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    fontWeight: '600',
+    fontSize: '12px',
+    color: '#555',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    width: '40px'
+  },
+  thDate: {
+    padding: '10px 8px',
+    textAlign: 'left',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    fontWeight: '600',
+    fontSize: '12px',
+    color: '#555',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    minWidth: '120px'
+  },
+  thGas: {
+    padding: '10px 8px',
+    textAlign: 'left',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    fontWeight: '600',
+    fontSize: '11px',
+    color: '#555',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    minWidth: '70px'
+  },
+  thTemp: {
+    padding: '10px 8px',
+    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    fontWeight: '600',
+    fontSize: '12px',
+    color: '#555',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    width: '70px'
+  },
+  tdNumber: {
+    padding: '6px 4px',
+    borderBottom: '1px solid #eee',
+    textAlign: 'center',
+    fontWeight: '600',
+    color: '#888',
+    fontSize: '12px'
+  },
+  tdDate: {
+    padding: '4px 4px',
+    borderBottom: '1px solid #eee'
+  },
+  tdGas: {
+    padding: '4px 4px',
+    borderBottom: '1px solid #eee'
+  },
+  tdTemp: {
+    padding: '4px 4px',
+    borderBottom: '1px solid #eee',
+    textAlign: 'center'
+  },
+  tr: {
+    transition: 'background-color 0.2s',
+    ':hover': {
+      backgroundColor: '#f8f9fa'
+    }
+  },
   cellInput: {
     width: '100%',
     padding: '4px 6px',
     border: '1px solid #e0e0e0',
-    borderRadius: '3px',
-    fontSize: '13px'
+    borderRadius: '4px',
+    fontSize: '13px',
+    transition: 'border-color 0.2s',
+    background: 'white'
   },
   cellInputSmall: {
     width: '60px',
     padding: '4px 6px',
     border: '1px solid #e0e0e0',
-    borderRadius: '3px',
+    borderRadius: '4px',
     fontSize: '13px',
-    textAlign: 'center'
-  },
-  rowNumber: {
-    fontWeight: '600',
-    color: '#888',
-    fontSize: '12px',
     textAlign: 'center'
   },
   footer: {
@@ -328,34 +464,61 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: '16px',
-    borderTop: '1px solid #e0e0e0'
+    borderTop: '1px solid #e0e0e0',
+    marginTop: '16px',
+    flexShrink: 0
   },
   backButton: {
-    padding: '8px 16px',
+    padding: '10px 24px',
     background: '#f0f0f0',
     border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer'
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#555',
+    transition: 'all 0.2s',
+    ':hover': {
+      background: '#e0e0e0'
+    }
   },
   actions: {
     display: 'flex',
     gap: '10px'
   },
   cancelButton: {
-    padding: '8px 20px',
+    padding: '10px 24px',
     background: '#f0f0f0',
     border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer'
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#555',
+    transition: 'all 0.2s',
+    ':hover': {
+      background: '#e0e0e0'
+    }
   },
   submitButton: {
-    padding: '8px 24px',
+    padding: '10px 28px',
     background: '#4CAF50',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontWeight: '500'
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'all 0.3s ease',
+    ':hover:not(:disabled)': {
+      background: '#43A047',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(76,175,80,0.4)'
+    },
+    ':disabled': {
+      opacity: 0.6,
+      cursor: 'not-allowed'
+    }
   }
 };
 
