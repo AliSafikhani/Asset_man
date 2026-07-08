@@ -74,19 +74,10 @@ const AddResultMenu = ({ assetId, testTypeId, testFields, onClose, onSuccess }) 
     }
   };
 
-// In AddResultMenu.jsx, update handleTableSuccess:
-
+  // Handle table entry success
   const handleTableSuccess = (data) => {
-    console.log('✅ Table API response received:', data);
-    if (data.success > 0) {
-      alert(`✅ ${data.success} sample(s) inserted successfully!`);
-      if (data.errors && data.errors.length > 0) {
-        console.warn('⚠️ Some samples failed:', data.errors);
-      }
-      handleSuccess();
-    } else {
-      alert('❌ No samples were inserted. Check console for errors.');
-    }
+    console.log('✅ Table data received:', data);
+    handleSuccess();
   };
 
   // Show Manual Single form
@@ -112,7 +103,7 @@ const AddResultMenu = ({ assetId, testTypeId, testFields, onClose, onSuccess }) 
         testTypeId={testTypeId}
         onBack={handleBack}
         onCancel={onClose}
-        onSuccess={handleTableSuccess}  // Use this instead of handleSuccess
+        onSuccess={handleTableSuccess}
       />
     );
   }

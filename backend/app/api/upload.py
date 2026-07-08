@@ -9,22 +9,10 @@ import tempfile
 import os
 from pathlib import Path
 
-# Try to import PDF parser with proper error handling
-try:
-    # Try direct import from algorithms
-    import sys
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../algorithms/transformer/dga'))
-    from pdf_parser import extract_pdf_tables
-    logger = logging.getLogger(__name__)
-    logger.info("✅ PDF parser loaded successfully")
-except ImportError as e:
-    logger = logging.getLogger(__name__)
-    logger.warning(f"⚠️ PDF parser not found: {e}")
-    logger.warning("⚠️ PDF upload will not work. Install pdfplumber and camelot-py")
-    # Fallback function
-    def extract_pdf_tables(pdf_path):
-        logger.warning("PDF parser not available - returning empty data")
-        return {}
+# Import your PDF parser
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../algorithms/transformer/dga'))
+from pdf_parser import extract_pdf_tables
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -47,15 +35,15 @@ async def upload_excel(file: UploadFile = File(...)):
         
         # Define expected gas columns and their aliases
         gas_columns = {
-            'h2': ['h2', 'hydrogen'],
-            'ch4': ['ch4', 'methane'],
-            'c2h2': ['c2h2', 'acetylene'],
-            'c2h4': ['c2h4', 'ethylene'],
-            'c2h6': ['c2h6', 'ethane'],
-            'co': ['co', 'carbon monoxide'],
-            'co2': ['co2', 'carbon dioxide'],
-            'o2': ['o2', 'oxygen'],
-            'n2': ['n2', 'nitrogen']
+            'h2': ['h2', 'hydrogen', 'h2(ppm)'],
+            'ch4': ['ch4', 'methane', 'ch4(ppm)'],
+            'c2h2': ['c2h2', 'acetylene', 'c2h2(ppm)'],
+            'c2h4': ['c2h4', 'ethylene', 'c2h4(ppm)'],
+            'c2h6': ['c2h6', 'ethane', 'c2h6(ppm)'],
+            'co': ['co', 'carbon monoxide', 'co(ppm)'],
+            'co2': ['co2', 'carbon dioxide', 'co2(ppm)'],
+            'o2': ['o2', 'oxygen', 'o2(ppm)'],
+            'n2': ['n2', 'nitrogen', 'n2(ppm)']
         }
         
         # Map columns
@@ -146,12 +134,17 @@ async def upload_pdf(file: UploadFile = File(...)):
         # Call your PDF parser
         parsed_data = extract_pdf_tables(temp_path)
         
+        logger.info(f"PDF Parser returned {len(parsed_data)} rows")
+        
         # Convert parsed data to samples format
         samples = []
         for idx, (row_num, row_data) in enumerate(parsed_data.items(), 1):
+            # Get the date
+            date_value = row_data.get('date')
+            
             sample = {
                 'id': idx,
-                'date': row_data.get('date'),
+                'date': date_value,  # The date is already standardized by the parser
                 'h2': row_data.get('H2'),
                 'ch4': row_data.get('CH4'),
                 'c2h2': row_data.get('C2H2'),
@@ -163,7 +156,13 @@ async def upload_pdf(file: UploadFile = File(...)):
                 'n2': row_data.get('N2'),
                 'temp': 61  # default temperature
             }
+            # Remove None values
+            sample = {k: v for k, v in sample.items() if v is not None}
             samples.append(sample)
+        
+        logger.info(f"Created {len(samples)} samples from PDF data")
+        if samples:
+            logger.info(f"First sample: {samples[0]}")
         
         return {
             "success": True,
