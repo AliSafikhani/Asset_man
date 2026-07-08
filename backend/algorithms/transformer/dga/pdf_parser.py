@@ -11,6 +11,12 @@ import jdatetime
 from datetime import date as GregorianDate
 from typing import List, Dict, Any, Union
 
+# --- Configuration Constants ---
+DEFAULT_X_TOLERANCE = 3
+DEFAULT_Y_TOLERANCE = 8
+ROW_GAP_THRESHOLD = 40
+PRINT_MAX_ROWS = 8
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Define the DGA gas columns we are interested in.
@@ -30,13 +36,18 @@ def normalize_header_token(tok: str) -> str:
 
 def contains_target_gases_only(headers: List[str]) -> bool:
     gas_pattern = re.compile(r"\b(h2|ch4|co|co2|o2|n2|c2h2|c2h4|c2h6)\b", re.IGNORECASE)
+    ratio_pattern = re.compile(r"(h2|ch4|co2|co|c2h2|c2h4|c2h6)\s*/\s*(h2|ch4|co2|co|c2h2|c2h4|c2h6)", re.IGNORECASE)
 
+    has_target_gas = False
     for tok in headers:
         tok_norm = normalize_header_token(tok)
+        if ratio_pattern.search(tok_norm):
+            return False
         if gas_pattern.search(tok_norm):
-            return True
-    
-    return False
+            has_target_gas = True
+
+    has_date = any('date' in str(h).lower() for h in headers)
+    return has_target_gas or has_date
 
 def ensure_valid_headers(headers: List[str]) -> List[str]:
     valid_headers = []
@@ -88,26 +99,26 @@ def jalali_to_gregorian(jy: int, jm: int, jd: int) -> Union[str, None]:
 
 def standardize_date(date_str: str) -> Union[str, None]:
     """
-    Standardize date format - finds date by value, not by column name
+    Standardize date format - finds date by value pattern
     """
     date_str = str(date_str).strip()
     if not date_str or date_str.lower() in ['na', 'n/a', '-', '']:
         return None
 
-    # Remove time part if exists (e.g., "16/04/2023 00:00")
-    date_str = re.sub(r'\s+\d{2}:\d{2}', '', date_str)
-    date_str = date_str.strip()
-
     # Try different date formats
     patterns = [
-        (r'(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})', 'dmy'),      # 16/04/2023
-        (r'(\d{4})[/\-](\d{1,2})[/\-](\d{1,2})', 'ymd'),      # 2023/04/16
-        (r'(\d{1,2})[/\-](\d{1,2})[/\-](\d{2})', 'dmy_yy'),   # 16/04/23
-        (r'(\d{2})[/\-](\d{2})[/\-](\d{4})', 'mdy'),          # 04/16/2023
+        # DD/MM/YYYY or DD-MM-YYYY
+        (r'^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$', 'dmy'),
+        # YYYY/MM/DD or YYYY-MM-DD
+        (r'^(\d{4})[/\-](\d{1,2})[/\-](\d{1,2})$', 'ymd'),
+        # DD/MM/YY or DD-MM-YY
+        (r'^(\d{1,2})[/\-](\d{1,2})[/\-](\d{2})$', 'dmy_yy'),
+        # MM/DD/YYYY or MM-DD-YYYY
+        (r'^(\d{2})[/\-](\d{2})[/\-](\d{4})$', 'mdy'),
     ]
     
     for pattern, format_type in patterns:
-        match = re.search(pattern, date_str)
+        match = re.match(pattern, date_str)
         if match:
             try:
                 if format_type == 'dmy':
@@ -177,6 +188,7 @@ def extract_numeric_value(value_str: str) -> Union[float, None]:
         try:
             return float(match.group(0))
         except ValueError:
+            logging.debug(f"Regex match failed float conversion for: {match.group(0)}")
             return None
     return None
 
@@ -188,112 +200,88 @@ def dataframes_to_final_dict(dataframes: List[pd.DataFrame]) -> List[Dict[str, A
         if df.empty or len(df.columns) < 2:
             continue
 
-        # CRITICAL: Find date column by looking at VALUES, not column name
-        date_column = None
+        # --- FIND DATE COLUMN BY VALUES (not by name) ---
+        key_column_name = None
         
-        # Check each column for date-like values
+        # First try to find date column by looking at values
         for col in df.columns:
-            # Check first few rows for date patterns
+            # Check first few rows for date patterns (including time)
             for idx in range(min(5, len(df))):
                 sample_value = str(df[col].iloc[idx]) if len(df) > idx else ''
-                # Check for common date patterns (including time)
+                # Check for date patterns with optional time
                 if re.search(r'\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}(\s+\d{1,2}:\d{2})?', sample_value):
-                    date_column = col
-                    print(f"DEBUG: Found date column: {col} (sample value: {sample_value})")
+                    key_column_name = col
                     break
-            if date_column:
+            if key_column_name:
                 break
         
-        # If no date column found, try by column name
-        if date_column is None:
+        # If no date column found by values, try by column name (Persian or English)
+        if key_column_name is None:
             for col in df.columns:
                 col_lower = str(col).lower().strip()
-                if 'date' in col_lower or 'تاریخ' in col_lower:
-                    date_column = col
-                    print(f"DEBUG: Found date column by name: {col}")
+                if 'date' in col_lower or 'تاریخ' in col_lower or 'sample' in col_lower:
+                    key_column_name = col
                     break
         
         # If still no date column found, use the first column
-        if date_column is None:
-            date_column = df.columns[0]
-            print(f"DEBUG: Using fallback column: {date_column}")
+        if key_column_name is None:
+            key_column_name = df.columns[0]
             
-        if date_column not in df.columns:
+        if key_column_name not in df.columns:
             continue
 
-        data_columns = [c for c in df.columns if c != date_column]
+        data_columns = [c for c in df.columns if c != key_column_name]
 
-        for row_idx, row in df.iterrows():
-            raw_date_key = str(row[date_column]).strip()
+        for _, row in df.iterrows():
+            raw_date_key = str(row[key_column_name]).strip()
             
-            # Skip placeholder dates
+            # Skip placeholder dates like "mm/dd/yyyy" or "mm/dd/yyyy hh:mm"
             if re.search(r'mm[/\-]dd|dd[/\-]mm|mm-dd|dd-mm', raw_date_key, re.IGNORECASE):
-                print(f"DEBUG: Skipping placeholder date: {raw_date_key}")
                 continue
             
             # Skip empty dates
             if not raw_date_key or raw_date_key.lower() in ['na', 'n/a', '-', '']:
                 continue
                 
-            # Try to parse date
-            standardized_date = standardize_date(raw_date_key)
+            # Remove time part before parsing
+            date_part = re.sub(r'\s+\d{1,2}:\d{2}', '', raw_date_key)
+            date_part = date_part.strip()
+            
+            standardized_date = standardize_date(date_part)
             if not standardized_date:
-                print(f"DEBUG: Could not parse date: '{raw_date_key}'")
                 continue
 
             inner_data = {}
 
-            # Map gas values
             for col_name in data_columns:
                 value = row[col_name]
                 standard_key = None
                 normalized_col_name = normalize_header_token(col_name)
-                
-                # Try to match gas names
+
+                # ✅ FIXED: prevent CO matching inside CO2
                 for target_gas in GAS_SEARCH_ORDER:
                     normalized_target_gas = target_gas.lower()
-                    # Match gas name in column header
-                    if normalized_target_gas in normalized_col_name or normalized_col_name in normalized_target_gas:
+                    pattern = r'\b' + re.escape(normalized_target_gas) + r'(?![\d])\b'
+                    if re.search(pattern, normalized_col_name):
                         standard_key = target_gas
                         break
-                
-                # If no match found, try to infer from column position
-                if standard_key is None:
-                    # Map by position based on common DGA report format
-                    gas_order = ['H2', 'O2', 'N2', 'CO', 'CO2', 'CH4', 'C2H4', 'C2H6', 'C2H2']
-                    idx = data_columns.index(col_name) if col_name in data_columns else -1
-                    if 0 <= idx < len(gas_order):
-                        standard_key = gas_order[idx]
 
                 if standard_key:
                     str_value = str(value).strip()
-                    
-                    # Remove units like "ppm", "vol%" etc.
-                    str_value = re.sub(r'\s*(ppm|ppb|vol%|%|mg/l|mg/L)', '', str_value, flags=re.IGNORECASE)
-                    str_value = str_value.strip()
-                    
-                    # Check if it's "NA" or similar
+
                     if check_nd(str_value):
-                        inner_data[standard_key] = None
+                        inner_data[standard_key] = 0.0
                     else:
                         extracted_number = extract_numeric_value(str_value)
                         if isinstance(extracted_number, float):
                             inner_data[standard_key] = extracted_number
-                        elif extracted_number is None and str_value and str_value != '':
-                            # If not a number, keep as is (might be a string like "NA")
-                            inner_data[standard_key] = str_value
                         else:
-                            inner_data[standard_key] = None
+                            if re.search(r'\d', str_value):
+                                logging.warning(f"Failed to extract number for {standard_key} from '{str_value}' → marked 'NA'.")
+                            inner_data[standard_key] = str_value
 
-            # Skip rows where all gas values are None
-            gas_values = [v for k, v in inner_data.items() if k != 'date']
-            if all(v is None for v in gas_values):
-                print(f"DEBUG: Skipping row with all None gas values for date: {standardized_date}")
-                continue
-                
             inner_data['date'] = standardized_date
             merged_samples_list.append(inner_data)
-            print(f"DEBUG: Added row for date: {standardized_date} with {len(inner_data)-1} gas values")
 
     return merged_samples_list
 
@@ -313,11 +301,16 @@ def format_final_output(merged_samples_list: List[Dict[str, Any]]) -> Dict[int, 
     for data in sorted_samples:
         row_data = {'date': data['date']}
         
+        gas_values = {}
         for target_gas in GAS_COLUMNS:
             value = data.get(target_gas)
-            # Standardize non-float values to 'NA'
             standardized_value = value if isinstance(value, float) else 'NA'
             row_data[target_gas] = standardized_value
+            gas_values[target_gas] = standardized_value
+
+        if all(val == 'NA' for val in gas_values.values()):
+            logging.debug(f"Row for date {data['date']} skipped as all gas values are 'NA'.")
+            continue
         
         final_dict[row_index] = row_data
         row_index += 1
@@ -337,7 +330,7 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
         for page_num, page in enumerate(pdf.pages, 1):
             page_tables = []
 
-            # Try pdfplumber with different strategies
+            # Try pdfplumber with multiple strategies
             strategies = ['lines', 'text', 'cells']
             for strategy in strategies:
                 try:
@@ -374,7 +367,7 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
                             if not all_textual(df):
                                 page_tables.append(df)
                 except Exception as e:
-                    logging.debug(f"Camelot extraction failed on page {page_num}: {e}")
+                    logging.warning(f"Camelot extraction failed on page {page_num}: {e}")
 
             # Deduplicate
             unique_tables = []
@@ -404,18 +397,19 @@ if __name__ == "__main__":
     import sys
     PDF_FILE = sys.argv[1] if len(sys.argv) > 1 else "TFRDGAREPORT6.pdf"
     try:
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.ERROR)
         final_dga_data = extract_pdf_tables(PDF_FILE)
-        
+        logging.getLogger().setLevel(logging.INFO)
+
         print("\n✅ Final Processed DGA Data Dictionary:")
         if not final_dga_data:
             print("  (Empty dictionary - no valid DGA data found.)")
         else:
             for i, (k, v) in enumerate(final_dga_data.items()):
-                if i < 10:
+                if i < PRINT_MAX_ROWS:
                     print(f"  {{{k}: {v}}}")
-                else:
-                    print(f"  ... ({len(final_dga_data) - 10} more entries)")
+                elif i == PRINT_MAX_ROWS:
+                    print(f"  ... ({len(final_dga_data) - PRINT_MAX_ROWS} more entries)")
                     break
     except FileNotFoundError as e:
         print(f"\n❌ ERROR: {e}")

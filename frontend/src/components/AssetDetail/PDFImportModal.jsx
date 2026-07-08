@@ -10,6 +10,7 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
   const [step, setStep] = useState('upload');
   const [error, setError] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(0);
 
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
@@ -50,23 +51,14 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
       });
 
       if (response.data.success && response.data.samples.length > 0) {
-        // Map the data to include all gas fields
-        const samplesWithSelection = response.data.samples.map(s => ({
-          id: s.id || Math.random(),
-          date: s.date || '',
-          h2: s.h2 || '',
-          ch4: s.ch4 || '',
-          c2h2: s.c2h2 || '',
-          c2h4: s.c2h4 || '',
-          c2h6: s.c2h6 || '',
-          co: s.co || '',
-          co2: s.co2 || '',
-          o2: s.o2 || '',
-          n2: s.n2 || '',
-          temp: s.temp || 61,
-          selected: true
+        const samplesWithSelection = response.data.samples.map((s, index) => ({
+          ...s,
+          id: index + 1,
+          selected: true,
+          temp: s.temp || 61
         }));
         setSamples(samplesWithSelection);
+        setSelectedCount(samplesWithSelection.length);
         setStep('preview');
       } else {
         setError('No valid DGA data found in the PDF. Please check the file format.');
@@ -89,12 +81,14 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
     const updated = [...samples];
     updated[index].selected = !updated[index].selected;
     setSamples(updated);
+    setSelectedCount(updated.filter(s => s.selected !== false).length);
   };
 
   const handleSelectAll = () => {
     const allSelected = samples.every(s => s.selected !== false);
     const updated = samples.map(s => ({ ...s, selected: !allSelected }));
     setSamples(updated);
+    setSelectedCount(updated.filter(s => s.selected !== false).length);
   };
 
   const handleConfirm = async () => {
@@ -151,9 +145,10 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
       <div style={styles.overlay} onClick={onCancel}>
         <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
           <div style={styles.header}>
-            <div>
+            <div style={styles.headerLeft}>
               <span style={styles.headerIcon}>📄</span>
               <h2 style={styles.headerTitle}>Import from PDF</h2>
+              <span style={styles.headerBadge}>Auto-Extract</span>
             </div>
             <button style={styles.closeButton} onClick={onCancel}>✕</button>
           </div>
@@ -161,15 +156,15 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
           {error && <div style={styles.error}>{error}</div>}
 
           <div 
-            style={styles.uploadArea}
+            style={file ? styles.uploadAreaWithFile : styles.uploadArea}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
             <div style={styles.uploadIcon}>📄</div>
             <h3 style={styles.uploadTitle}>Upload PDF Report</h3>
             <p style={styles.uploadText}>Drag & drop your PDF file here, or click to browse</p>
-            <p style={styles.uploadFormat}>Supported format: .pdf</p>
-            <p style={styles.uploadNote}>The system will automatically extract DGA data from the PDF</p>
+            <p style={styles.uploadFormat}>Supported format: <strong>.pdf</strong></p>
+            <p style={styles.uploadNote}>💡 The system will automatically extract DGA data from the PDF</p>
             <input
               type="file"
               accept=".pdf"
@@ -178,7 +173,7 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
               id="pdfFileInput"
             />
             <label htmlFor="pdfFileInput" style={styles.browseButton}>
-              Browse Files
+              📂 Browse Files
             </label>
             {file && (
               <div style={styles.fileInfo}>
@@ -194,7 +189,8 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
                 disabled={!file || loading}
                 style={{
                   ...styles.uploadButton,
-                  opacity: (!file || loading) ? 0.6 : 1
+                  opacity: (!file || loading) ? 0.6 : 1,
+                  cursor: (!file || loading) ? 'not-allowed' : 'pointer'
                 }}
               >
                 {loading ? '⏳ Processing PDF...' : '📤 Extract Data'}
@@ -211,9 +207,10 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
     <div style={styles.overlay} onClick={onCancel}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div style={styles.header}>
-          <div>
+          <div style={styles.headerLeft}>
             <span style={styles.headerIcon}>📄</span>
             <h2 style={styles.headerTitle}>Preview Extracted Data</h2>
+            <span style={styles.headerBadge}>{samples.length} Samples</span>
           </div>
           <button style={styles.closeButton} onClick={onCancel}>✕</button>
         </div>
@@ -223,6 +220,7 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
         <div style={styles.previewHeader}>
           <div style={styles.previewInfo}>
             <span style={styles.previewBadge}>✅ {samples.length} Samples Found</span>
+            <span style={styles.previewCount}>📌 {selectedCount} Selected</span>
             <span style={styles.previewHint}>💡 Edit values directly in the table below</span>
           </div>
           <button onClick={handleSelectAll} style={styles.selectAllButton}>
@@ -238,7 +236,7 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
                   <th style={styles.thCheckbox}>
                     <input 
                       type="checkbox" 
-                      checked={samples.every(s => s.selected !== false)} 
+                      checked={samples.every(s => s.selected !== false) && samples.length > 0} 
                       onChange={handleSelectAll}
                       style={styles.checkbox}
                     />
@@ -304,12 +302,22 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
           </div>
         </div>
 
+        <div style={styles.summaryBar}>
+          <span>📊 {samples.length} total samples</span>
+          <span>✅ {selectedCount} selected for import</span>
+          <span>📅 {samples.filter(s => s.date).length} with valid dates</span>
+        </div>
+
         <div style={styles.footer}>
           <button onClick={() => setStep('upload')} style={styles.backButton}>← Back</button>
           <div style={styles.actions}>
             <button onClick={onCancel} style={styles.cancelButton}>Cancel</button>
-            <button onClick={handleConfirm} disabled={importing} style={styles.submitButton}>
-              {importing ? '⏳ Importing...' : '✅ Import Selected'}
+            <button onClick={handleConfirm} disabled={importing || selectedCount === 0} style={{
+              ...styles.submitButton,
+              opacity: (importing || selectedCount === 0) ? 0.6 : 1,
+              cursor: (importing || selectedCount === 0) ? 'not-allowed' : 'pointer'
+            }}>
+              {importing ? '⏳ Importing...' : `✅ Import ${selectedCount} Samples`}
             </button>
           </div>
         </div>
@@ -331,12 +339,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-    animation: 'fadeIn 0.3s ease'
   },
   modal: {
     background: 'white',
     borderRadius: '20px',
-    padding: '32px',
+    padding: '28px',
     maxWidth: '95vw',
     width: '100%',
     maxHeight: '90vh',
@@ -352,16 +359,28 @@ const styles = {
     marginBottom: '20px',
     flexShrink: 0
   },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap'
+  },
   headerIcon: {
-    fontSize: '24px',
-    marginRight: '12px'
+    fontSize: '28px'
   },
   headerTitle: {
     margin: 0,
     fontSize: '22px',
     fontWeight: '700',
-    color: '#1a1a2e',
-    display: 'inline-block'
+    color: '#1a1a2e'
+  },
+  headerBadge: {
+    padding: '4px 14px',
+    background: '#e8f5e9',
+    color: '#2e7d32',
+    borderRadius: '20px',
+    fontSize: '12px',
+    fontWeight: '500'
   },
   closeButton: {
     background: 'none',
@@ -399,9 +418,22 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
+  uploadAreaWithFile: {
+    textAlign: 'center',
+    padding: '40px 20px',
+    border: '2px solid #4CAF50',
+    borderRadius: '16px',
+    backgroundColor: '#f1f8e9',
+    transition: 'all 0.3s ease',
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   uploadIcon: {
-    fontSize: '64px',
-    marginBottom: '16px'
+    fontSize: '56px',
+    marginBottom: '12px'
   },
   uploadTitle: {
     margin: '0 0 8px 0',
@@ -414,32 +446,32 @@ const styles = {
     marginBottom: '4px'
   },
   uploadFormat: {
-    color: '#aaa',
+    color: '#666',
     fontSize: '13px',
     marginBottom: '4px'
   },
   uploadNote: {
     color: '#999',
-    fontSize: '12px',
+    fontSize: '13px',
     marginBottom: '20px'
   },
   fileInput: {
     display: 'none'
   },
   browseButton: {
-    padding: '10px 28px',
+    padding: '12px 32px',
     background: '#667eea',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: '500',
     transition: 'all 0.3s ease',
     ':hover': {
       background: '#5a6fd6',
       transform: 'translateY(-2px)',
-      boxShadow: '0 4px 12px rgba(102,126,234,0.4)'
+      boxShadow: '0 4px 16px rgba(102,126,234,0.4)'
     }
   },
   fileInfo: {
@@ -507,12 +539,14 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '16px',
-    flexShrink: 0
+    flexShrink: 0,
+    flexWrap: 'wrap',
+    gap: '8px'
   },
   previewInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
     flexWrap: 'wrap'
   },
   previewBadge: {
@@ -523,12 +557,20 @@ const styles = {
     fontSize: '13px',
     fontWeight: '500'
   },
+  previewCount: {
+    padding: '6px 14px',
+    background: '#e3f2fd',
+    color: '#1565c0',
+    borderRadius: '20px',
+    fontSize: '13px',
+    fontWeight: '500'
+  },
   previewHint: {
     fontSize: '13px',
     color: '#888'
   },
   selectAllButton: {
-    padding: '6px 16px',
+    padding: '6px 18px',
     background: '#4CAF50',
     color: 'white',
     border: 'none',
@@ -549,7 +591,7 @@ const styles = {
   },
   tableScroll: {
     overflow: 'auto',
-    maxHeight: '400px'
+    maxHeight: '350px'
   },
   table: {
     width: '100%',
@@ -626,6 +668,18 @@ const styles = {
     fontSize: '13px',
     transition: 'border-color 0.2s',
     background: 'white'
+  },
+  summaryBar: {
+    display: 'flex',
+    gap: '24px',
+    padding: '10px 16px',
+    background: '#f8f9fa',
+    borderRadius: '8px',
+    marginTop: '12px',
+    fontSize: '13px',
+    color: '#555',
+    flexShrink: 0,
+    flexWrap: 'wrap'
   },
   footer: {
     display: 'flex',
