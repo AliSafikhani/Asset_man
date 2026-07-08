@@ -1,4 +1,4 @@
-// AssetDetail.jsx - Refactored Main Page
+// AssetDetail.jsx - Professional Redesign
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
@@ -10,6 +10,8 @@ import Pagination from '../components/AssetDetail/Pagination';
 import ColumnSelector from '../components/AssetDetail/ColumnSelector';
 import DGAAlgorithmsResults from '../components/AssetDetail/DGAAlgorithmsResults';
 import AddResultMenu from '../components/AssetDetail/AddResultMenu';
+import { FaArrowLeft, FaBolt, FaPlug, FaCogs, FaBox, FaChartBar, FaDatabase, FaMicrochip } from 'react-icons/fa';
+import { MdTransform, MdDashboard } from 'react-icons/md';
 
 function AssetDetail() {
   const { assetId } = useParams();
@@ -96,7 +98,6 @@ function AssetDetail() {
     try {
       const res = await API.get(`/test-fields/test-type/${testTypeId}`);
       
-      // Add debug logs here
       console.log('🔍 Test Fields loaded:', res.data);
       console.log('📊 Number of fields:', res.data.length);
       if (res.data.length > 0) {
@@ -132,7 +133,6 @@ function AssetDetail() {
 
   const loadTestResults = async (testTypeId) => {
     try {
-      // FIX: Use the correct endpoint with query parameters
       const res = await API.get(`/test-results/?asset_id=${assetId}&test_type_id=${testTypeId}`);
       
       console.log('🔍 Test Results loaded:', res.data);
@@ -562,15 +562,29 @@ function AssetDetail() {
 
   const getAssetIcon = () => {
     switch(asset?.asset_type) {
-      case 'generator': return '⚡';
-      case 'transformer': return '🔌';
-      case 'motor': return '⚙️';
-      default: return '📦';
+      case 'generator': return <FaBolt size={28} color="#f59e0b" />;
+      case 'transformer': return <MdTransform size={28} color="#8b5cf6" />;
+      case 'motor': return <FaCogs size={28} color="#06b6d4" />;
+      default: return <FaBox size={28} color="#64748b" />;
+    }
+  };
+
+  const getAssetTypeColor = () => {
+    switch(asset?.asset_type) {
+      case 'generator': return '#f59e0b';
+      case 'transformer': return '#8b5cf6';
+      case 'motor': return '#06b6d4';
+      default: return '#64748b';
     }
   };
 
   if (loading) {
-    return <div style={styles.container}>Loading asset details...</div>;
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.loadingSpinner}></div>
+        <p>Loading asset details...</p>
+      </div>
+    );
   }
 
   if (!asset) {
@@ -582,18 +596,73 @@ function AssetDetail() {
 
   return (
     <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <button onClick={handleBack} style={styles.backButton}>← Back to Assets</button>
-        <h1>{getAssetIcon()} {asset.asset_name} ({asset.asset_code})</h1>
-      </div>
-
-      <div style={styles.tabs}>
-        <button onClick={() => setActiveTab('nameplate')} style={{ ...styles.tab, backgroundColor: activeTab === 'nameplate' ? '#667eea' : '#f0f0f0' }}>Nameplate Data</button>
-        <button onClick={() => setActiveTab('tests')} style={{ ...styles.tab, backgroundColor: activeTab === 'tests' ? '#667eea' : '#f0f0f0' }}>Test Results</button>
-        <button onClick={() => setActiveTab('dcs')} style={{ ...styles.tab, backgroundColor: activeTab === 'dcs' ? '#667eea' : '#f0f0f0' }}>DCS Signals</button>
+        <button onClick={handleBack} style={styles.backButton}>
+          <FaArrowLeft size={16} style={{ marginRight: '8px' }} />
+          Back to Assets
+        </button>
+        <div style={styles.headerCenter}>
+          <div style={{ ...styles.assetIcon, background: `${getAssetTypeColor()}20` }}>
+            {getAssetIcon()}
+          </div>
+          <div>
+            <h1 style={styles.title}>{asset.asset_name}</h1>
+            <div style={styles.assetMeta}>
+              <span style={styles.assetCode}>{asset.asset_code}</span>
+              <span style={styles.assetTypeBadge}>
+                {asset.asset_type === 'generator' ? '⚡ Generator' : 
+                 asset.asset_type === 'transformer' ? '🔌 Transformer' : 
+                 asset.asset_type === 'motor' ? '⚙️ Motor' : asset.asset_type}
+              </span>
+              <span style={styles.assetStatus}>
+                {asset.operational_status === 'active' ? '🟢 Active' : 
+                 asset.operational_status === 'maintenance' ? '🟡 Maintenance' : 
+                 asset.operational_status === 'inactive' ? '🔴 Inactive' : asset.operational_status}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div style={styles.headerRight}>
+          <span style={styles.assetId}>ID: #{asset.id}</span>
+        </div>
       </div>
 
       {/* Tabs */}
+      <div style={styles.tabs}>
+        <button 
+          onClick={() => setActiveTab('nameplate')} 
+          style={{
+            ...styles.tab,
+            ...(activeTab === 'nameplate' ? styles.tabActive : {})
+          }}
+        >
+          <FaMicrochip size={14} style={{ marginRight: '8px' }} />
+          Nameplate Data
+        </button>
+        <button 
+          onClick={() => setActiveTab('tests')} 
+          style={{
+            ...styles.tab,
+            ...(activeTab === 'tests' ? styles.tabActive : {})
+          }}
+        >
+          <FaDatabase size={14} style={{ marginRight: '8px' }} />
+          Test Results
+        </button>
+        <button 
+          onClick={() => setActiveTab('dcs')} 
+          style={{
+            ...styles.tab,
+            ...(activeTab === 'dcs' ? styles.tabActive : {})
+          }}
+        >
+          <FaChartBar size={14} style={{ marginRight: '8px' }} />
+          DCS Signals
+        </button>
+      </div>
+
+      {/* Tab Content */}
       {activeTab === 'nameplate' && <NameplateTab asset={asset} />}
       
       {activeTab === 'dcs' && (
@@ -608,27 +677,39 @@ function AssetDetail() {
       {activeTab === 'tests' && (
         <div style={styles.tabContent}>
           <div style={styles.testHeader}>
-            <select value={selectedTestType} onChange={handleTestTypeChange} style={styles.select}>
-              <option value="">Select Test Type</option>
-              {testTypes.map(tt => <option key={tt.id} value={tt.id}>{tt.test_name}</option>)}
-            </select>
+            <div style={styles.testTypeWrapper}>
+              <label style={styles.testTypeLabel}>Test Type</label>
+              <select 
+                value={selectedTestType} 
+                onChange={handleTestTypeChange} 
+                style={styles.select}
+              >
+                <option value="">Select Test Type</option>
+                {testTypes.map(tt => (
+                  <option key={tt.id} value={tt.id}>{tt.test_name}</option>
+                ))}
+              </select>
+            </div>
+            
             {selectedTestType && (
               <div style={styles.headerActions}>
                 <button 
                   onClick={() => setShowColumnSelector(!showColumnSelector)} 
                   style={styles.columnSelectorButton}
                 >
+                  <span style={{ marginRight: '6px' }}>📊</span>
                   Columns ▼
                 </button>
                 <button 
                   onClick={() => setShowAddMenu(true)} 
                   style={styles.addButton}
                 >
-                  + Add Test Result
+                  <span style={{ marginRight: '6px' }}>+</span>
+                  Add Test Result
                 </button>
                 {selectedRows.length > 0 && (
                   <button onClick={handleBulkDelete} style={styles.bulkDeleteButton}>
-                    Delete Selected ({selectedRows.length})
+                    🗑 Delete ({selectedRows.length})
                   </button>
                 )}
                 {isDGA && selectedRows.length > 0 && (
@@ -646,55 +727,66 @@ function AssetDetail() {
 
           {/* Column Selector */}
           {showColumnSelector && selectedTestType && (
-            <ColumnSelector
-              visibleColumns={visibleColumns}
-              testFields={testFields}
-              onToggle={toggleColumnVisibility}
-              onClose={() => setShowColumnSelector(false)}
-              onShowAll={() => {
-                const allVisible = {};
-                allVisible.checkbox = true;
-                allVisible.test_date = true;
-                allVisible.lab_name = true;
-                allVisible.notes = true;
-                allVisible.actions = true;
-                testFields.forEach(field => {
-                  allVisible[field.field_name] = true;
-                });
-                setVisibleColumns(allVisible);
-              }}
-              onShowDefault={() => {
-                const defaultVisible = {};
-                defaultVisible.checkbox = true;
-                defaultVisible.test_date = true;
-                defaultVisible.lab_name = false;
-                defaultVisible.notes = false;
-                defaultVisible.actions = true;
-                const dgaGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2', 'tdcg', 'sample_temp'];
-                testFields.forEach(field => {
-                  defaultVisible[field.field_name] = dgaGases.includes(field.field_name);
-                });
-                setVisibleColumns(defaultVisible);
-              }}
-            />
+            <div style={styles.columnSelectorWrapper}>
+              <ColumnSelector
+                visibleColumns={visibleColumns}
+                testFields={testFields}
+                onToggle={toggleColumnVisibility}
+                onClose={() => setShowColumnSelector(false)}
+                onShowAll={() => {
+                  const allVisible = {};
+                  allVisible.checkbox = true;
+                  allVisible.test_date = true;
+                  allVisible.lab_name = true;
+                  allVisible.notes = true;
+                  allVisible.actions = true;
+                  testFields.forEach(field => {
+                    allVisible[field.field_name] = true;
+                  });
+                  setVisibleColumns(allVisible);
+                }}
+                onShowDefault={() => {
+                  const defaultVisible = {};
+                  defaultVisible.checkbox = true;
+                  defaultVisible.test_date = true;
+                  defaultVisible.lab_name = false;
+                  defaultVisible.notes = false;
+                  defaultVisible.actions = true;
+                  const dgaGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2', 'tdcg', 'sample_temp'];
+                  testFields.forEach(field => {
+                    defaultVisible[field.field_name] = dgaGases.includes(field.field_name);
+                  });
+                  setVisibleColumns(defaultVisible);
+                }}
+              />
+            </div>
           )}
 
+          {/* Empty State */}
           {selectedTestType && testResults.length === 0 && (
             <div style={styles.emptyState}>
-              <p>No test results found for {selectedTestTypeName}</p>
+              <div style={styles.emptyIcon}>📊</div>
+              <h3 style={styles.emptyTitle}>No Test Results Found</h3>
+              <p style={styles.emptyText}>No test results found for {selectedTestTypeName}</p>
               <button onClick={() => {
                 setEditingResult(null);
                 setTestFormData({ test_date: new Date().toISOString().split('T')[0] });
                 setShowTestForm(true);
-              }} style={styles.addButton}>
+              }} style={styles.emptyButton}>
                 + Add First Test Result
               </button>
             </div>
           )}
 
+          {/* Results Table */}
           {testResults.length > 0 && (
             <div style={styles.tableContainer}>
-              <h3>Test History - {selectedTestTypeName}</h3>
+              <div style={styles.tableHeaderWrapper}>
+                <h3 style={styles.tableTitle}>
+                  Test History - {selectedTestTypeName}
+                  <span style={styles.tableCount}>({totalRecords} records)</span>
+                </h3>
+              </div>
               
               <Pagination
                 currentPage={currentPage}
@@ -792,13 +884,13 @@ function AssetDetail() {
           }}
         />
       )}
-      {/* Add Result Menu Modal */}
+
       {/* Add Result Menu Modal */}
       {showAddMenu && selectedTestType && (
         <AddResultMenu
           assetId={assetId}
           testTypeId={selectedTestType}
-          testFields={testFields}  // MAKE SURE THIS IS PASSED
+          testFields={testFields}
           onClose={() => setShowAddMenu(false)}
           onSuccess={() => {
             loadTestResults(selectedTestType);
@@ -811,25 +903,323 @@ function AssetDetail() {
 }
 
 const styles = {
-  container: { padding: '20px', maxWidth: '1400px', margin: '0 auto' },
-  header: { display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' },
-  backButton: { padding: '8px 16px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-  tabs: { display: 'flex', gap: '5px', marginBottom: '20px', borderBottom: '2px solid #e0e0e0', flexWrap: 'wrap' },
-  tab: { padding: '10px 20px', border: 'none', borderRadius: '5px 5px 0 0', cursor: 'pointer', fontSize: '16px' },
-  tabContent: { background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' },
-  
-  testHeader: { display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' },
-  select: { padding: '10px', border: '1px solid #ddd', borderRadius: '5px', flex: 1, minWidth: '200px', fontSize: '14px' },
-  headerActions: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' },
-  columnSelectorButton: { padding: '10px 16px', backgroundColor: '#667eea', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px' },
-  addButton: { padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px' },
-  bulkDeleteButton: { padding: '10px 20px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px' },
-  algoButton: { padding: '10px 20px', backgroundColor: '#9C27B0', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '14px' },
-  algoLoadingButton: { padding: '10px 20px', backgroundColor: '#7B1FA2', color: 'white', border: 'none', borderRadius: '5px', cursor: 'not-allowed', fontSize: '14px', opacity: 0.7 },
-  
-  emptyState: { textAlign: 'center', padding: '40px', backgroundColor: '#f8f9fa', borderRadius: '8px' },
-  tableContainer: { marginTop: '20px' },
-  tableFooter: { display: 'flex', justifyContent: 'space-between', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '0 0 5px 5px', marginTop: '10px', fontSize: '14px', color: '#666' }
+  container: { 
+    padding: '24px', 
+    maxWidth: '1400px', 
+    margin: '0 auto',
+    background: '#f8fafc',
+    minHeight: '100vh'
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '400px',
+    color: '#64748b'
+  },
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '16px'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+    gap: '16px',
+    background: 'white',
+    padding: '20px 24px',
+    borderRadius: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+  },
+  backButton: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '8px 16px',
+    background: 'transparent',
+    color: '#64748b',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.2s'
+  },
+  headerCenter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    flex: 1
+  },
+  assetIcon: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#0f172a',
+    margin: 0
+  },
+  assetMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '4px',
+    flexWrap: 'wrap'
+  },
+  assetCode: {
+    fontSize: '13px',
+    color: '#94a3b8',
+    background: '#f1f5f9',
+    padding: '2px 10px',
+    borderRadius: '4px'
+  },
+  assetTypeBadge: {
+    fontSize: '13px',
+    color: '#475569',
+    background: '#f1f5f9',
+    padding: '2px 10px',
+    borderRadius: '4px'
+  },
+  assetStatus: {
+    fontSize: '13px',
+    fontWeight: '500'
+  },
+  headerRight: {
+    fontSize: '13px',
+    color: '#94a3b8'
+  },
+  assetId: {
+    background: '#f1f5f9',
+    padding: '4px 12px',
+    borderRadius: '6px'
+  },
+  tabs: {
+    display: 'flex',
+    gap: '4px',
+    marginBottom: '24px',
+    background: 'white',
+    padding: '6px',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+  },
+  tab: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#64748b',
+    background: 'transparent',
+    transition: 'all 0.2s'
+  },
+  tabActive: {
+    background: '#667eea',
+    color: 'white',
+    boxShadow: '0 4px 12px rgba(102,126,234,0.3)'
+  },
+  tabContent: {
+    background: 'white',
+    padding: '24px',
+    borderRadius: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+  },
+  testHeader: {
+    display: 'flex',
+    gap: '16px',
+    marginBottom: '20px',
+    alignItems: 'center',
+    flexWrap: 'wrap'
+  },
+  testTypeWrapper: {
+    flex: 1,
+    minWidth: '200px'
+  },
+  testTypeLabel: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#475569',
+    marginBottom: '4px'
+  },
+  select: {
+    width: '100%',
+    padding: '10px 14px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '14px',
+    background: 'white'
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center',
+    flexWrap: 'wrap'
+  },
+  columnSelectorButton: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 16px',
+    background: '#f1f5f9',
+    color: '#475569',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '500',
+    transition: 'all 0.2s'
+  },
+  addButton: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 20px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '500',
+    transition: 'all 0.2s'
+  },
+  bulkDeleteButton: {
+    padding: '10px 16px',
+    background: '#fef2f2',
+    color: '#ef4444',
+    border: '1px solid #fecaca',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '500',
+    transition: 'all 0.2s'
+  },
+  algoButton: {
+    padding: '10px 20px',
+    background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '500',
+    transition: 'all 0.2s'
+  },
+  algoLoadingButton: {
+    padding: '10px 20px',
+    background: '#7c3aed',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'not-allowed',
+    fontSize: '13px',
+    fontWeight: '500',
+    opacity: 0.7
+  },
+  columnSelectorWrapper: {
+    marginBottom: '20px',
+    padding: '16px',
+    background: '#f8fafc',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0'
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '60px 20px'
+  },
+  emptyIcon: {
+    fontSize: '56px',
+    marginBottom: '16px'
+  },
+  emptyTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: '8px'
+  },
+  emptyText: {
+    fontSize: '14px',
+    color: '#94a3b8',
+    marginBottom: '20px'
+  },
+  emptyButton: {
+    padding: '10px 24px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500'
+  },
+  tableContainer: {
+    marginTop: '16px'
+  },
+  tableHeaderWrapper: {
+    marginBottom: '16px'
+  },
+  tableTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#0f172a',
+    margin: 0
+  },
+  tableCount: {
+    fontSize: '14px',
+    fontWeight: '400',
+    color: '#94a3b8',
+    marginLeft: '8px'
+  },
+  tableFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    background: '#f8fafc',
+    borderRadius: '0 0 8px 8px',
+    fontSize: '13px',
+    color: '#64748b',
+    borderTop: '1px solid #e2e8f0'
+  }
 };
+
+// Add to global CSS
+const styleSheet = document.createElement("style");
+styleSheet.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .add-btn:hover, .algo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+  }
+  .back-btn:hover {
+    background: #f1f5f9;
+  }
+  .column-selector-btn:hover {
+    background: #e2e8f0;
+  }
+  .bulk-delete-btn:hover {
+    background: #fecaca;
+  }
+  .tab:hover:not(.tab-active) {
+    background: #f1f5f9;
+  }
+`;
+document.head.appendChild(styleSheet);
 
 export default AssetDetail;
