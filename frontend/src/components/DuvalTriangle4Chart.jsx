@@ -1,30 +1,53 @@
+// frontend/src/components/DuvalTriangle4Chart.jsx
+
 import React, { useEffect, useRef, useState } from 'react';
 
 const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
   const svgRef = useRef();
+  const containerRef = useRef();
+  const [renderError, setRenderError] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const renderTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!data || data.length === 0) {
       return;
     }
 
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild);
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
     }
 
+    renderTimeoutRef.current = setTimeout(() => {
+      renderChart();
+    }, 100);
+
+    return () => {
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
+    };
+  }, [data, width, height]);
+
+  const renderChart = async () => {
     try {
-      import('d3').then(d3 => {
-        renderWithD3(d3, svg);
-      }).catch(err => {
-        console.error('Failed to load d3:', err);
-      });
+      const svg = svgRef.current;
+      if (!svg) return;
+      
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
+
+      const d3Module = await import('d3');
+      const d3 = d3Module.default || d3Module;
+      
+      renderWithD3(d3, svg);
+      setRenderError(null);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error rendering Duval Triangle 4 chart:', err);
+      setRenderError(err.message);
     }
-  }, [data]);
+  };
 
   const renderWithD3 = (d3, svg) => {
     try {
@@ -34,20 +57,27 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
 
       const svgElement = d3.select(svg)
         .attr('width', width)
-        .attr('height', height);
+        .attr('height', height)
+        .style('background', '#ffffff')
+        .style('border-radius', '8px')
+        .style('cursor', 'grab');
 
-      const g = svgElement
-        .append('g')
+      // Remove existing zoom
+      svgElement.on('.zoom', null);
+      svgElement.on('dblclick.zoom', null);
+      svgElement.on('wheel.zoom', null);
+
+      const g = svgElement.append('g')
+        .attr('class', 'chart-group')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
       const sin60 = Math.sin(Math.PI / 3);
-      const cos60 = Math.cos(Math.PI / 3);
       
       // Triangle vertices
       const vertices = [
-        { x: 0, y: 0, label: 'H2' },
-        { x: 10, y: 0, label: 'C2H6' },
-        { x: 5, y: 10 * sin60, label: 'CH4' }
+        { x: 0, y: 0, label: 'H₂' },
+        { x: 10, y: 0, label: 'C₂H₆' },
+        { x: 5, y: 10 * sin60, label: 'CH₄' }
       ];
 
       // Scales
@@ -60,85 +90,74 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
         .range([innerHeight, 0]);
 
       // Define zone polygons for Duval Triangle 4
-      // Using the coordinates from your original code
       const zones = [
-        // O Zone (Overheating <250°C)
         {
           id: 'O',
-          label: 'O',
           color: '#FFB74D',
           centroid: { x: 2.5, y: 0.5 * sin60 },
           points: [
             [0, 0],
             [7, 0],
-            [7 - (0.9 * cos60), 0.9 * sin60],
-            [0.9 * cos60, 0.9 * sin60]
+            [7 - (0.9 * Math.cos(Math.PI/3)), 0.9 * sin60],
+            [0.9 * Math.cos(Math.PI/3), 0.9 * sin60]
           ]
         },
-        // C Zone (Carbonization >250°C)
         {
           id: 'C',
-          label: 'C',
           color: '#A1887F',
           centroid: { x: 8.5, y: 0.8 * sin60 },
           points: [
             [7, 0],
             [10, 0],
-            [10 - (6.4 * cos60), 6.4 * sin60],
-            [7.6 - (4 * cos60), 4 * sin60],
-            [7.6 - (1.5 * cos60), 1.5 * sin60],
-            [7 - (1.5 * cos60), 1.5 * sin60]
+            [10 - (6.4 * Math.cos(Math.PI/3)), 6.4 * sin60],
+            [7.6 - (4 * Math.cos(Math.PI/3)), 4 * sin60],
+            [7.6 - (1.5 * Math.cos(Math.PI/3)), 1.5 * sin60],
+            [7 - (1.5 * Math.cos(Math.PI/3)), 1.5 * sin60]
           ]
         },
-        // ND Zone (Not Determined)
         {
           id: 'ND',
-          label: 'ND',
           color: '#90A4AE',
           centroid: { x: 3.0, y: 2.0 * sin60 },
           points: [
-            [0.9 * cos60, 0.9 * sin60],
-            [5.4 - (0.9 * cos60), 0.9 * sin60],
-            [4.6 * cos60, 4.6 * sin60]
+            [0.9 * Math.cos(Math.PI/3), 0.9 * sin60],
+            [5.4 - (0.9 * Math.cos(Math.PI/3)), 0.9 * sin60],
+            [4.6 * Math.cos(Math.PI/3), 4.6 * sin60]
           ]
         },
-        // S Zone (Stray Gassing) - large zone
         {
           id: 'S',
-          label: 'S',
           color: '#A8E6CF',
           centroid: { x: 5.5, y: 6.0 * sin60 },
           points: [
-            [5.4 - (0.9 * cos60), 0.9 * sin60],
-            [7 - (0.9 * cos60), 0.9 * sin60],
-            [7 - (1.5 * cos60), 1.5 * sin60],
-            [7.6 - (1.5 * cos60), 1.5 * sin60],
-            [7.6 - (4 * cos60), 4 * sin60],
-            [10 - (6.4 * cos60), 6.4 * sin60],
-            [10 - (8.5 * cos60), 8.5 * sin60],
-            [1.5 + (8.4 * cos60), 8.4 * sin60],
-            [0.2 + (9.7 * cos60), 9.7 * sin60],
-            [10 - (9.8 * cos60), 9.8 * sin60],
+            [5.4 - (0.9 * Math.cos(Math.PI/3)), 0.9 * sin60],
+            [7 - (0.9 * Math.cos(Math.PI/3)), 0.9 * sin60],
+            [7 - (1.5 * Math.cos(Math.PI/3)), 1.5 * sin60],
+            [7.6 - (1.5 * Math.cos(Math.PI/3)), 1.5 * sin60],
+            [7.6 - (4 * Math.cos(Math.PI/3)), 4 * sin60],
+            [10 - (6.4 * Math.cos(Math.PI/3)), 6.4 * sin60],
+            [10 - (8.5 * Math.cos(Math.PI/3)), 8.5 * sin60],
+            [1.5 + (8.4 * Math.cos(Math.PI/3)), 8.4 * sin60],
+            [0.2 + (9.7 * Math.cos(Math.PI/3)), 9.7 * sin60],
+            [10 - (9.8 * Math.cos(Math.PI/3)), 9.8 * sin60],
             [5, 10 * sin60],
-            [4.6 * cos60, 4.6 * sin60]
+            [4.6 * Math.cos(Math.PI/3), 4.6 * sin60]
           ]
         },
-        // PD Zone (Partial Discharge)
         {
           id: 'PD',
-          label: 'PD',
           color: '#FF6B6B',
           centroid: { x: 7.5, y: 8.5 * sin60 },
           points: [
-            [1.5 + (8.4 * cos60), 8.4 * sin60],
-            [10 - (8.5 * cos60), 8.5 * sin60],
-            [10 - (9.8 * cos60), 9.8 * sin60],
-            [0.2 + (9.7 * cos60), 9.7 * sin60]
+            [1.5 + (8.4 * Math.cos(Math.PI/3)), 8.4 * sin60],
+            [10 - (8.5 * Math.cos(Math.PI/3)), 8.5 * sin60],
+            [10 - (9.8 * Math.cos(Math.PI/3)), 9.8 * sin60],
+            [0.2 + (9.7 * Math.cos(Math.PI/3)), 9.7 * sin60]
           ]
         }
       ];
 
-      // Draw each zone as a filled polygon
+      // Draw zones
       zones.forEach(zone => {
         const polygonPath = d3.line()
           .x(d => xScale(d[0]))
@@ -149,13 +168,13 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
           .datum(zone.points)
           .attr('d', polygonPath)
           .attr('fill', zone.color)
-          .attr('fill-opacity', 0.5)
-          .attr('stroke', '#999')
-          .attr('stroke-width', 0.5)
-          .attr('stroke-opacity', 0.3);
+          .attr('fill-opacity', 0.35)
+          .attr('stroke', zone.color)
+          .attr('stroke-width', 1)
+          .attr('stroke-opacity', 0.5);
       });
 
-      // Draw the main triangle outline
+      // Draw triangle outline
       const trianglePoints = vertices.map(v => [v.x, v.y]);
       const trianglePath = d3.line()
         .x(d => xScale(d[0]))
@@ -165,41 +184,38 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
         .datum([...trianglePoints, trianglePoints[0]])
         .attr('d', trianglePath)
         .attr('fill', 'none')
-        .attr('stroke', '#333')
-        .attr('stroke-width', 2);
+        .attr('stroke', '#1e293b')
+        .attr('stroke-width', 2.5);
 
       // Zone Labels
       zones.forEach(zone => {
-        const labelGroup = g.append('g');
-        
-        labelGroup.append('rect')
-          .attr('x', xScale(zone.centroid.x) - 20)
+        g.append('rect')
+          .attr('x', xScale(zone.centroid.x) - 22)
           .attr('y', yScale(zone.centroid.y) - 12)
-          .attr('width', 40)
+          .attr('width', 44)
           .attr('height', 24)
           .attr('fill', 'white')
           .attr('rx', 4)
-          .attr('ry', 4)
           .style('opacity', 0.85)
           .style('stroke', '#ddd')
           .style('stroke-width', 0.5);
 
-        labelGroup.append('text')
+        g.append('text')
           .attr('x', xScale(zone.centroid.x))
           .attr('y', yScale(zone.centroid.y) + 4)
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'middle')
-          .style('font-size', '13px')
+          .style('font-size', '12px')
           .style('font-weight', 'bold')
-          .style('fill', '#222')
+          .style('fill', '#1e293b')
           .text(zone.id);
       });
 
       // Vertex Labels
       const vertexLabels = [
-        { x: 0, y: -0.8, label: 'H2' },
-        { x: 10, y: -0.8, label: 'C2H6' },
-        { x: 5, y: 10 * sin60 + 0.8, label: 'CH4' }
+        { x: 0, y: -0.8, label: 'H₂' },
+        { x: 10, y: -0.8, label: 'C₂H₆' },
+        { x: 5, y: 10 * sin60 + 0.8, label: 'CH₄' }
       ];
 
       vertexLabels.forEach(v => {
@@ -210,7 +226,7 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
           .attr('dominant-baseline', 'middle')
           .style('font-size', '13px')
           .style('font-weight', 'bold')
-          .style('fill', '#333')
+          .style('fill', '#0f172a')
           .text(v.label);
       });
 
@@ -219,42 +235,52 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
         .domain(['O', 'C', 'ND', 'S', 'PD', 'NA', 'UNK'])
         .range(['#FFB74D', '#A1887F', '#90A4AE', '#A8E6CF', '#FF6B6B', '#E0E0E0', '#95A5A6']);
 
-      // Filter valid data (skip NA results)
+      // Filter valid data
       const validData = data.filter(d => 
         d.coordinates && 
         typeof d.coordinates.x === 'number' && 
         typeof d.coordinates.y === 'number' &&
         !isNaN(d.coordinates.x) &&
         !isNaN(d.coordinates.y) &&
-        d.fault_zone !== 'NA'  // Skip Not Applicable
+        d.fault_zone !== 'NA'
       );
 
       if (validData.length === 0) {
         g.append('text')
           .attr('x', xScale(5))
           .attr('y', yScale(5 * sin60))
-          .attr('text-anchor', 'middle')
           .style('font-size', '14px')
           .style('fill', '#999')
-          .text('No valid data points (NA results skipped)');
+          .text('No valid data points');
         return;
       }
 
-      // Draw data points
+      // Draw data points with glow effect
       validData.forEach((d) => {
         const cx = xScale(d.coordinates.x);
         const cy = yScale(d.coordinates.y);
         const zone = d.fault_zone || 'UNK';
         const fillColor = colorScale(zone);
 
+        // Glow
+        g.append('circle')
+          .attr('cx', cx)
+          .attr('cy', cy)
+          .attr('r', 14)
+          .attr('fill', fillColor)
+          .attr('opacity', 0.15)
+          .attr('pointer-events', 'none');
+
+        // Main circle
         const circle = g.append('circle')
           .attr('cx', cx)
           .attr('cy', cy)
           .attr('r', 8)
           .attr('fill', fillColor)
           .attr('stroke', '#fff')
-          .attr('stroke-width', 2)
-          .style('cursor', 'pointer');
+          .attr('stroke-width', 2.5)
+          .style('cursor', 'pointer')
+          .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
         circle.on('mouseover', function() {
           d3.select(this)
@@ -268,13 +294,12 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
             .transition()
             .duration(200)
             .attr('r', 8)
-            .attr('stroke-width', 2);
+            .attr('stroke-width', 2.5);
         });
 
         const date = d.sample_date ? new Date(d.sample_date).toLocaleDateString() : 'N/A';
-        const note = d.note || '';
         circle.append('title')
-          .text(`Date: ${date}\nZone: ${zone}\nFault: ${d.fault_name || 'Unknown'}${note ? '\nNote: ' + note : ''}\nH2: ${d.percentages?.H2 || 0}%\nCH4: ${d.percentages?.CH4 || 0}%\nC2H6: ${d.percentages?.C2H6 || 0}%`);
+          .text(`Date: ${date}\nZone: ${zone}\nFault: ${d.fault_name || 'Unknown'}`);
       });
 
       // Legend
@@ -285,9 +310,8 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
         .attr('width', 140)
         .attr('height', 160)
         .attr('fill', 'white')
-        .attr('opacity', 0.95)
-        .attr('rx', 4)
-        .attr('ry', 4)
+        .attr('opacity', 0.9)
+        .attr('rx', 8)
         .style('stroke', '#ddd')
         .style('stroke-width', 1);
 
@@ -308,36 +332,103 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
           .attr('width', 12)
           .attr('height', 12)
           .attr('fill', colorScale(item.zone))
-          .attr('rx', 2)
-          .attr('ry', 2)
-          .style('stroke', '#999')
-          .style('stroke-width', 0.5);
+          .attr('rx', 2);
 
         row.append('text')
           .attr('x', 18)
           .attr('y', 10)
-          .style('font-size', '9px')
+          .style('font-size', '10px')
           .style('fill', '#333')
           .text(item.label);
       });
 
+      // ============================================
+      // ZOOM FUNCTIONALITY
+      // ============================================
+      
+      const zoom = d3.zoom()
+        .scaleExtent([0.5, 5])
+        .extent([[0, 0], [width, height]])
+        .on('zoom', (event) => {
+          g.attr('transform', event.transform);
+          const newZoom = Math.round(event.transform.k * 100) / 100;
+          setZoomLevel(newZoom);
+          svgElement.style('cursor', event.transform.k === 1 ? 'grab' : 'grab');
+        });
+
+      svgElement.call(zoom);
+      svgElement.call(zoom.transform, d3.zoomIdentity);
+
+      svgElement.on('dblclick', () => {
+        svgElement.transition()
+          .duration(500)
+          .call(zoom.transform, d3.zoomIdentity);
+      });
+
     } catch (err) {
       console.error('Error rendering with d3:', err);
+      throw err;
     }
+  };
+
+  const handleResetZoom = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    
+    import('d3').then(d3Module => {
+      const d3 = d3Module.default || d3Module;
+      const svgElement = d3.select(svg);
+      const zoom = d3.zoom().on('zoom', null);
+      svgElement.transition()
+        .duration(500)
+        .call(zoom.transform, d3.zoomIdentity);
+    });
   };
 
   if (!data || data.length === 0) {
     return (
       <div style={styles.noDataContainer}>
-        <p>No Duval Triangle 4 data available</p>
-        <p style={styles.noDataSubtext}>Only applies when Duval 1 is PD, T1, or T2</p>
+        <div style={styles.noDataIcon}>📊</div>
+        <h3>No Duval Triangle 4 Data Available</h3>
+        <p>Only applies when Duval 1 is PD, T1, or T2</p>
+      </div>
+    );
+  }
+
+  if (renderError) {
+    return (
+      <div style={styles.errorContainer}>
+        <div style={styles.errorIcon}>⚠️</div>
+        <h4>Error loading chart</h4>
+        <p>{renderError}</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <svg ref={svgRef} width={width} height={height} />
+    <div style={styles.container} ref={containerRef}>
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <span style={styles.headerIcon}>📐</span>
+          <span style={styles.headerTitle}>Duval Triangle 4</span>
+          <span style={styles.headerBadge}>{data.length} Points</span>
+        </div>
+        <div style={styles.headerRight}>
+          <span style={styles.zoomInfo}>Zoom: {zoomLevel}x</span>
+          <button style={styles.resetButton} onClick={handleResetZoom}>
+            🔄 Reset View
+          </button>
+        </div>
+      </div>
+      <div style={styles.chartWrapper}>
+        <svg ref={svgRef} width={width} height={height} />
+      </div>
+      <div style={styles.footer}>
+        <span>🖱️ Scroll to zoom</span>
+        <span>🔄 Drag to pan</span>
+        <span>📌 Double-click to reset</span>
+        <span>💡 Hover points for details</span>
+      </div>
     </div>
   );
 };
@@ -345,26 +436,114 @@ const DuvalTriangle4Chart = ({ data, width = 650, height = 600 }) => {
 const styles = {
   container: {
     width: '100%',
-    overflowX: 'auto',
+    background: '#ffffff',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+    overflow: 'hidden',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 16px',
+    borderBottom: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  headerIcon: {
+    fontSize: '18px',
+  },
+  headerTitle: {
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  headerBadge: {
+    fontSize: '11px',
+    fontWeight: '500',
+    color: '#4f46e5',
+    background: '#eef2ff',
+    padding: '2px 10px',
+    borderRadius: '12px',
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  zoomInfo: {
+    fontSize: '12px',
+    color: '#64748b',
+    background: '#f1f5f9',
+    padding: '2px 10px',
+    borderRadius: '12px',
+  },
+  resetButton: {
+    fontSize: '12px',
+    padding: '4px 12px',
+    background: '#4f46e5',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    ':hover': {
+      background: '#4338ca',
+    },
+  },
+  chartWrapper: {
+    width: '100%',
     display: 'flex',
     justifyContent: 'center',
-    backgroundColor: '#fafafa',
-    borderRadius: '8px',
-    padding: '10px'
+    padding: '8px',
+    overflow: 'hidden',
+    background: '#ffffff',
+    position: 'relative',
+  },
+  footer: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '20px',
+    padding: '8px 16px',
+    borderTop: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    fontSize: '12px',
+    color: '#94a3b8',
+    flexWrap: 'wrap',
   },
   noDataContainer: {
-    padding: '40px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 20px',
+    background: '#ffffff',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
     textAlign: 'center',
-    color: '#666',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '8px'
   },
-  noDataSubtext: {
-    fontSize: '13px',
-    color: '#999',
-    marginTop: '8px'
-  }
+  noDataIcon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  errorContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    color: '#ef4444',
+  },
+  errorIcon: {
+    fontSize: '32px',
+    marginBottom: '8px',
+  },
 };
-
 
 export default DuvalTriangle4Chart;

@@ -1,30 +1,53 @@
+// frontend/src/components/DuvalPentagon2Chart.jsx
+
 import React, { useEffect, useRef, useState } from 'react';
 
 const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
   const svgRef = useRef();
+  const containerRef = useRef();
+  const [renderError, setRenderError] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const renderTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!data || data.length === 0) {
       return;
     }
 
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild);
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
     }
 
+    renderTimeoutRef.current = setTimeout(() => {
+      renderChart();
+    }, 100);
+
+    return () => {
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
+    };
+  }, [data, width, height]);
+
+  const renderChart = async () => {
     try {
-      import('d3').then(d3 => {
-        renderWithD3(d3, svg);
-      }).catch(err => {
-        console.error('Failed to load d3:', err);
-      });
+      const svg = svgRef.current;
+      if (!svg) return;
+      
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
+
+      const d3Module = await import('d3');
+      const d3 = d3Module.default || d3Module;
+      
+      renderWithD3(d3, svg);
+      setRenderError(null);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error rendering Duval Pentagon 2 chart:', err);
+      setRenderError(err.message);
     }
-  }, [data]);
+  };
 
   const renderWithD3 = (d3, svg) => {
     try {
@@ -34,10 +57,45 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
 
       const svgElement = d3.select(svg)
         .attr('width', width)
-        .attr('height', height);
+        .attr('height', height)
+        .style('background', '#ffffff')
+        .style('border-radius', '8px')
+        .style('cursor', 'grab');
 
-      const g = svgElement
-        .append('g')
+      // Remove existing zoom
+      svgElement.on('.zoom', null);
+      svgElement.on('dblclick.zoom', null);
+      svgElement.on('wheel.zoom', null);
+
+      // Add subtle background gradient
+      const defs = svgElement.append('defs');
+      
+      const gradient = defs.append('linearGradient')
+        .attr('id', 'bgGradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '100%')
+        .attr('y2', '100%');
+      
+      gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#f8fafc')
+        .attr('stop-opacity', 1);
+      
+      gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#f1f5f9')
+        .attr('stop-opacity', 1);
+
+      svgElement.append('rect')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('fill', 'url(#bgGradient)')
+        .attr('rx', 12)
+        .attr('ry', 12);
+
+      const g = svgElement.append('g')
+        .attr('class', 'chart-group')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
       // Define pentagon zones for Pentagon 2
@@ -79,7 +137,7 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
         }
       ];
 
-      // Calculate the overall bounds
+      // Calculate bounds
       const allX = zones.flatMap(z => z.points.map(p => p[0]));
       const allY = zones.flatMap(z => z.points.map(p => p[1]));
       const minX = Math.min(...allX) - 10;
@@ -87,7 +145,6 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
       const minY = Math.min(...allY) - 10;
       const maxY = Math.max(...allY) + 10;
 
-      // Create scales
       const xScale = d3.scaleLinear()
         .domain([minX, maxX])
         .range([0, innerWidth]);
@@ -96,7 +153,7 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
         .domain([minY, maxY])
         .range([innerHeight, 0]);
 
-      // Draw each zone as a filled polygon
+      // Draw zones
       zones.forEach(zone => {
         const polygonPath = d3.line()
           .x(d => xScale(d[0]))
@@ -107,19 +164,16 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .datum(zone.points)
           .attr('d', polygonPath)
           .attr('fill', zone.color)
-          .attr('fill-opacity', 0.5)
-          .attr('stroke', 'none');
+          .attr('fill-opacity', 0.35)
+          .attr('stroke', zone.color)
+          .attr('stroke-width', 1)
+          .attr('stroke-opacity', 0.5);
       });
 
-      // Draw the pentagon outline
+      // Draw pentagon outline
       const pentagonPoints = [
-        [0, 40],        // Top (from D1)
-        [38, 12.4],     // Top-Right (from D1)
-        [23.5, -32.4],    // Bottom-Right (from T3/D2)
-        [1, -32.4],     // Bottom (from T2)
-        [-23.5, -32.4], // Bottom-Left (from T1)
-        [-38, 12.4],       // Top-Left (from T1)
-        [0, 40]         // Back to Top
+        [0, 40], [38, 12.4], [23.5, -32.4],
+        [1, -32.4], [-23.5, -32.4], [-38, 12.4], [0, 40]
       ];
 
       const pentagonPath = d3.line()
@@ -131,10 +185,10 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
         .datum(pentagonPoints)
         .attr('d', pentagonPath)
         .attr('fill', 'none')
-        .attr('stroke', '#333')
-        .attr('stroke-width', 2);
+        .attr('stroke', '#1e293b')
+        .attr('stroke-width', 2.5);
 
-      // Draw internal zone boundary lines
+      // Draw internal boundary lines
       const boundaryLines = [
         [[0, 24.5], [-1, 24.5]],
         [[0, 40], [38, 12.4]],
@@ -152,9 +206,9 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .attr('y1', yScale(line[0][1]))
           .attr('x2', xScale(line[1][0]))
           .attr('y2', yScale(line[1][1]))
-          .attr('stroke', '#888')
-          .attr('stroke-width', 0.5)
-          .attr('stroke-dasharray', '3,3');
+          .attr('stroke', '#94a3b8')
+          .attr('stroke-width', 0.8)
+          .attr('stroke-dasharray', '4,4');
       });
 
       // Zone Labels
@@ -170,7 +224,7 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
 
       zoneLabels.forEach(label => {
         const labelGroup = g.append('g');
-        
+
         labelGroup.append('rect')
           .attr('x', xScale(label.x) - 22)
           .attr('y', yScale(label.y) - 12)
@@ -178,7 +232,6 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .attr('height', 24)
           .attr('fill', 'white')
           .attr('rx', 4)
-          .attr('ry', 4)
           .style('opacity', 0.85)
           .style('stroke', '#ddd')
           .style('stroke-width', 0.5);
@@ -188,36 +241,18 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .attr('y', yScale(label.y) + 4)
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'middle')
-          .style('font-size', '12px')
+          .style('font-size', '11px')
           .style('font-weight', 'bold')
-          .style('fill', '#222')
+          .style('fill', '#1e293b')
           .text(label.id);
       });
-
-      // Axis labels
-      g.append('text')
-        .attr('x', innerWidth / 2)
-        .attr('y', innerHeight + 30)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '12px')
-        .style('fill', '#666')
-        .text('X-axis');
-
-      g.append('text')
-        .attr('x', -30)
-        .attr('y', innerHeight / 2)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '12px')
-        .style('fill', '#666')
-        .attr('transform', 'rotate(-90)')
-        .text('Y-axis');
 
       // Color scale for data points
       const colorScale = d3.scaleOrdinal()
         .domain(['PD', 'S', 'O', 'C', 'T3H', 'D1', 'D2', 'NA'])
         .range(['#FF6B6B', '#A8E6CF', '#FFB74D', '#A1887F', '#96CEB4', '#FFEAA7', '#DDA0DD', '#E0E0E0']);
 
-      // Filter valid data (skip NA results)
+      // Filter valid data
       const validData = data.filter(d => 
         d.coordinates && 
         typeof d.coordinates.x === 'number' && 
@@ -232,27 +267,38 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .attr('x', innerWidth / 2)
           .attr('y', innerHeight / 2)
           .attr('text-anchor', 'middle')
-          .style('font-size', '14px')
-          .style('fill', '#999')
-          .text('No valid data points');
+          .style('font-size', '16px')
+          .style('fill', '#94a3b8')
+          .text('No valid data points to display');
         return;
       }
 
-      // Draw data points
+      // Draw data points with glow effect
       validData.forEach((d) => {
         const cx = xScale(d.coordinates.x);
         const cy = yScale(d.coordinates.y);
         const zone = d.fault_zone || 'ND';
         const fillColor = colorScale(zone);
 
+        // Glow
+        g.append('circle')
+          .attr('cx', cx)
+          .attr('cy', cy)
+          .attr('r', 14)
+          .attr('fill', fillColor)
+          .attr('opacity', 0.15)
+          .attr('pointer-events', 'none');
+
+        // Main circle
         const circle = g.append('circle')
           .attr('cx', cx)
           .attr('cy', cy)
           .attr('r', 8)
           .attr('fill', fillColor)
           .attr('stroke', '#fff')
-          .attr('stroke-width', 2)
-          .style('cursor', 'pointer');
+          .attr('stroke-width', 2.5)
+          .style('cursor', 'pointer')
+          .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
         circle.on('mouseover', function() {
           d3.select(this)
@@ -266,13 +312,12 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
             .transition()
             .duration(200)
             .attr('r', 8)
-            .attr('stroke-width', 2);
+            .attr('stroke-width', 2.5);
         });
 
         const date = d.sample_date ? new Date(d.sample_date).toLocaleDateString() : 'N/A';
-        const note = d.note || '';
         circle.append('title')
-          .text(`Date: ${date}\nZone: ${zone}\nFault: ${d.fault_name || 'Unknown'}${note ? '\nNote: ' + note : ''}\nH2: ${d.percentages?.H2 || 0}%\nCH4: ${d.percentages?.CH4 || 0}%\nC2H6: ${d.percentages?.C2H6 || 0}%\nC2H4: ${d.percentages?.C2H4 || 0}%\nC2H2: ${d.percentages?.C2H2 || 0}%`);
+          .text(`Date: ${date}\nZone: ${zone}\nFault: ${d.fault_name || 'Unknown'}`);
       });
 
       // Legend
@@ -283,9 +328,8 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
         .attr('width', 130)
         .attr('height', 170)
         .attr('fill', 'white')
-        .attr('opacity', 0.95)
-        .attr('rx', 4)
-        .attr('ry', 4)
+        .attr('opacity', 0.9)
+        .attr('rx', 8)
         .style('stroke', '#ddd')
         .style('stroke-width', 1);
 
@@ -308,10 +352,7 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .attr('width', 12)
           .attr('height', 12)
           .attr('fill', colorScale(item.zone))
-          .attr('rx', 2)
-          .attr('ry', 2)
-          .style('stroke', '#999')
-          .style('stroke-width', 0.5);
+          .attr('rx', 2);
 
         row.append('text')
           .attr('x', 18)
@@ -321,23 +362,93 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
           .text(item.label);
       });
 
+      // ============================================
+      // ZOOM FUNCTIONALITY
+      // ============================================
+      
+      const zoom = d3.zoom()
+        .scaleExtent([0.5, 5])
+        .extent([[0, 0], [width, height]])
+        .on('zoom', (event) => {
+          g.attr('transform', event.transform);
+          const newZoom = Math.round(event.transform.k * 100) / 100;
+          setZoomLevel(newZoom);
+          svgElement.style('cursor', event.transform.k === 1 ? 'grab' : 'grab');
+        });
+
+      svgElement.call(zoom);
+      svgElement.call(zoom.transform, d3.zoomIdentity);
+
+      svgElement.on('dblclick', () => {
+        svgElement.transition()
+          .duration(500)
+          .call(zoom.transform, d3.zoomIdentity);
+      });
+
     } catch (err) {
       console.error('Error rendering with d3:', err);
+      throw err;
     }
+  };
+
+  const handleResetZoom = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    
+    import('d3').then(d3Module => {
+      const d3 = d3Module.default || d3Module;
+      const svgElement = d3.select(svg);
+      const zoom = d3.zoom().on('zoom', null);
+      svgElement.transition()
+        .duration(500)
+        .call(zoom.transform, d3.zoomIdentity);
+    });
   };
 
   if (!data || data.length === 0) {
     return (
       <div style={styles.noDataContainer}>
-        <p>No Duval Pentagon 2 data available</p>
-        <p style={styles.noDataSubtext}>Only applies when Pentagon 1 is T1, T2, or T3</p>
+        <div style={styles.noDataIcon}>📊</div>
+        <h3>No Duval Pentagon 2 Data Available</h3>
+        <p>Only applies when Pentagon 1 is T1, T2, or T3</p>
+      </div>
+    );
+  }
+
+  if (renderError) {
+    return (
+      <div style={styles.errorContainer}>
+        <div style={styles.errorIcon}>⚠️</div>
+        <h4>Error loading chart</h4>
+        <p>{renderError}</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <svg ref={svgRef} width={width} height={height} />
+    <div style={styles.container} ref={containerRef}>
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <span style={styles.headerIcon}>⬠</span>
+          <span style={styles.headerTitle}>Duval Pentagon 2</span>
+          <span style={styles.headerBadge}>{data.length} Points</span>
+        </div>
+        <div style={styles.headerRight}>
+          <span style={styles.zoomInfo}>Zoom: {zoomLevel}x</span>
+          <button style={styles.resetButton} onClick={handleResetZoom}>
+            🔄 Reset View
+          </button>
+        </div>
+      </div>
+      <div style={styles.chartWrapper}>
+        <svg ref={svgRef} width={width} height={height} />
+      </div>
+      <div style={styles.footer}>
+        <span>🖱️ Scroll to zoom</span>
+        <span>🔄 Drag to pan</span>
+        <span>📌 Double-click to reset</span>
+        <span>💡 Hover points for details</span>
+      </div>
     </div>
   );
 };
@@ -345,25 +456,114 @@ const DuvalPentagon2Chart = ({ data, width = 650, height = 600 }) => {
 const styles = {
   container: {
     width: '100%',
-    overflowX: 'auto',
+    background: '#ffffff',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+    overflow: 'hidden',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 16px',
+    borderBottom: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  headerIcon: {
+    fontSize: '18px',
+  },
+  headerTitle: {
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  headerBadge: {
+    fontSize: '11px',
+    fontWeight: '500',
+    color: '#4f46e5',
+    background: '#eef2ff',
+    padding: '2px 10px',
+    borderRadius: '12px',
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  zoomInfo: {
+    fontSize: '12px',
+    color: '#64748b',
+    background: '#f1f5f9',
+    padding: '2px 10px',
+    borderRadius: '12px',
+  },
+  resetButton: {
+    fontSize: '12px',
+    padding: '4px 12px',
+    background: '#4f46e5',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    ':hover': {
+      background: '#4338ca',
+    },
+  },
+  chartWrapper: {
+    width: '100%',
     display: 'flex',
     justifyContent: 'center',
-    backgroundColor: '#fafafa',
-    borderRadius: '8px',
-    padding: '10px'
+    padding: '8px',
+    overflow: 'hidden',
+    background: '#ffffff',
+    position: 'relative',
+  },
+  footer: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '20px',
+    padding: '8px 16px',
+    borderTop: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    fontSize: '12px',
+    color: '#94a3b8',
+    flexWrap: 'wrap',
   },
   noDataContainer: {
-    padding: '40px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 20px',
+    background: '#ffffff',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
     textAlign: 'center',
-    color: '#666',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '8px'
   },
-  noDataSubtext: {
-    fontSize: '13px',
-    color: '#999',
-    marginTop: '8px'
-  }
+  noDataIcon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  errorContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    color: '#ef4444',
+  },
+  errorIcon: {
+    fontSize: '32px',
+    marginBottom: '8px',
+  },
 };
 
 export default DuvalPentagon2Chart;
