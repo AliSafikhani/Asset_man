@@ -1,5 +1,6 @@
-// frontend\src\pages\AssetDetail.jsx
-// AssetDetail.jsx - Professional Redesign with IEEE Status
+// frontend/src/pages/AssetDetail.jsx
+// AssetDetail.jsx - Professional Redesign with IEEE & IEC Status
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
@@ -11,7 +12,7 @@ import Pagination from '../components/AssetDetail/Pagination';
 import ColumnSelector from '../components/AssetDetail/ColumnSelector';
 import DGAAlgorithmsResults from '../components/AssetDetail/DGAAlgorithmsResults';
 import AddResultMenu from '../components/AssetDetail/AddResultMenu';
-import { FaArrowLeft, FaBolt, FaPlug, FaCogs, FaBox, FaChartBar, FaDatabase, FaMicrochip } from 'react-icons/fa';
+import { FaArrowLeft, FaBolt, FaPlug, FaCogs, FaBox, FaChartBar, FaDatabase, FaMicrochip, FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaQuestionCircle } from 'react-icons/fa';
 import { MdTransform, MdDashboard } from 'react-icons/md';
 
 function AssetDetail() {
@@ -52,16 +53,52 @@ function AssetDetail() {
   const [algoError, setAlgoError] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   
-  // NEW: IEEE Status states
+  // IEEE Status states
   const [ieeeStatusMap, setIeeeStatusMap] = useState({});
   const [ieeeLoading, setIeeeLoading] = useState(false);
-  // IEEE Status states
+  
+  // IEC Status states
+  const [iecStatusMap, setIecStatusMap] = useState({});
+  const [iecLoading, setIecLoading] = useState(false);
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [paginatedResults, setPaginatedResults] = useState([]);
+
+  // Helper function for IEEE status badge
+  const getIeeeStatusBadge = (status, statusCode) => {
+    let mappedStatus = status;
+    
+    if (status === 'Action Required' || statusCode === 3 || statusCode === 4) {
+      mappedStatus = 'Action Required';
+    } else if (status === 'Normal' || statusCode === 1) {
+      mappedStatus = 'Normal';
+    } else if (status === 'Investigate' || statusCode === 2) {
+      mappedStatus = 'Investigate';
+    } else {
+      mappedStatus = 'Unknown';
+    }
+    
+    const statusMap = {
+      'Normal': { icon: <FaCheckCircle size={12} />, color: '#10b981', bg: '#d1fae5', label: 'Normal' },
+      'Investigate': { icon: <FaExclamationTriangle size={12} />, color: '#f59e0b', bg: '#fef3c7', label: 'Investigate' },
+      'Action Required': { icon: <FaShieldAlt size={12} />, color: '#ef4444', bg: '#fecaca', label: 'Action Required' },
+      'Unknown': { icon: <FaQuestionCircle size={12} />, color: '#94a3b8', bg: '#f1f5f9', label: 'Unknown' }
+    };
+    return statusMap[mappedStatus] || statusMap['Unknown'];
+  };
+
+  // Helper function for IEC status badge
+  const getIecStatusBadge = (status) => {
+    const statusMap = {
+      'Investigate': { icon: <FaExclamationTriangle size={12} />, color: '#f59e0b', bg: '#fef3c7', label: 'Investigate' },
+      'Action Required': { icon: <FaShieldAlt size={12} />, color: '#ef4444', bg: '#fecaca', label: 'Action Required' },
+      'Unknown': { icon: <FaQuestionCircle size={12} />, color: '#94a3b8', bg: '#f1f5f9', label: 'Unknown' }
+    };
+    return statusMap[status] || statusMap['Unknown'];
+  };
 
   useEffect(() => {
     loadAsset();
@@ -79,13 +116,14 @@ function AssetDetail() {
     }
   }, [testResults, currentPage, pageSize]);
 
-  // NEW: Load IEEE status when DGA test results are loaded
+  // Load IEEE and IEC status when DGA test results are loaded
   useEffect(() => {
     if (selectedTestType && testResults.length > 0 && asset?.asset_type === 'transformer') {
       const selectedTestTypeObj = testTypes.find(t => t.id == selectedTestType);
       const isDGA = selectedTestTypeObj?.test_name?.toLowerCase().includes('dga') || false;
       if (isDGA) {
         loadIeeeStatus(assetId);
+        loadIecStatus(assetId);
       }
     }
   }, [testResults, selectedTestType, asset?.asset_type]);
@@ -123,17 +161,22 @@ function AssetDetail() {
       
       setTestFields(res.data);
       
+      // COMPACT VIEW: Only show essential columns by default
       const initialVisibility = {
         checkbox: true,
         test_date: true,
-        lab_name: true,
+        lab_name: false,
         notes: false,
-        actions: true
+        actions: true,
+        ieee_status: true,
+        iec_status: true
       };
       
-      const dgaGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2', 'tdcg', 'sample_temp'];
+      // Only show key DGA gases by default (H2, CH4, C2H2, C2H4, C2H6)
+      const keyGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6'];
+      
       res.data.forEach(field => {
-        initialVisibility[field.field_name] = dgaGases.includes(field.field_name);
+        initialVisibility[field.field_name] = keyGases.includes(field.field_name);
       });
       
       setVisibleColumns(initialVisibility);
@@ -186,18 +229,17 @@ function AssetDetail() {
     }
   };
 
-
   // Load IEEE status for transformer
   const loadIeeeStatus = async (assetId) => {
     try {
       setIeeeLoading(true);
       
-      // Get all DGA test results for this transformer
       const selectedTestTypeObj = testTypes.find(t => t.id == selectedTestType);
       const isDGA = selectedTestTypeObj?.test_name?.toLowerCase().includes('dga') || false;
       
       if (!isDGA || testResults.length < 2) {
         setIeeeStatusMap({});
+        setIeeeLoading(false);
         return;
       }
 
@@ -206,58 +248,144 @@ function AssetDetail() {
         const gasData = {};
         result.parameters.forEach(param => {
           if (['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2'].includes(param.field_name)) {
-            gasData[param.field_name] = param.field_value || 0;
+            gasData[param.field_name] = parseFloat(param.field_value) || 0;
           }
         });
-        
-        // Calculate transformer age from commissioning date
-        const transformerAge = asset?.commissioning_date 
-          ? new Date().getFullYear() - new Date(asset.commissioning_date).getFullYear()
-          : 0;
         
         return {
           id: result.id,
           sample_date: result.test_date,
-          gas_data: gasData,
-          transformer_age: transformerAge
+          gas_data: gasData
         };
       });
       
-      // Call IEEE algorithm
+      // Calculate transformer age from commissioning date
+      let transformerAge = "NA";
+      if (asset?.commissioning_date) {
+        const age = new Date().getFullYear() - new Date(asset.commissioning_date).getFullYear();
+        transformerAge = age >= 0 ? age : "NA";
+      }
+      
+      console.log('📊 IEEE Request - Samples:', samples.length);
+      console.log('📊 Transformer Age:', transformerAge);
+      
+      // Call IEEE algorithm - send samples as array with transformer_age in URL
       const response = await API.post(
-        '/algorithms/transformer/dga/ieee_algorithm/batch',
+        `/algorithms/transformer/dga/ieee_algorithm/batch?transformer_age=${transformerAge}&max_day=730`,
         samples
       );
       
+      console.log('📊 IEEE Response:', response.data);
+      
       // Build map of result ID -> IEEE status
       const statusMap = {};
-      response.data.forEach(item => {
-        if (item.id) {
-          statusMap[item.id] = {
-            status: item.status,
-            status_name: item.status_name,
-            status_description: item.status_description,
-            zone_color: item.zone_color,
-            days_from_latest: item.days_from_latest,
-            fault_zone: item.fault_zone,
-            fault_name: item.fault_name
-          };
-        }
-      });
+      if (response.data && response.data.length > 0) {
+        response.data.forEach(item => {
+          if (item.id) {
+            // Use fault_zone as the status code (1=Normal, 2=Investigate, 3=Action Required)
+            let statusCode = parseInt(item.fault_zone) || 0;
+            let status = 'Unknown';
+            
+            if (statusCode === 1) {
+              status = 'Normal';
+            } else if (statusCode === 2) {
+              status = 'Investigate';
+            } else if (statusCode === 3) {
+              status = 'Action Required';
+            }
+            
+            statusMap[item.id] = {
+              status: status,
+              status_code: statusCode,
+              zone_color: item.zone_color || '#95A5A6',
+              fault_type: item.fault_type || 'UNKNOWN',
+              fault_name: item.fault_name || 'Unknown'
+            };
+          }
+        });
+      }
       
       setIeeeStatusMap(statusMap);
       console.log('✅ IEEE status loaded:', statusMap);
       
     } catch (error) {
-      console.error('Error loading IEEE status:', error);
+      console.error('❌ Error loading IEEE status:', error);
+      console.error('Error details:', error.response?.data);
+      setIeeeStatusMap({});
     } finally {
       setIeeeLoading(false);
+    }
+  };
+  // Load IEC status for transformer
+  const loadIecStatus = async (assetId) => {
+    try {
+      setIecLoading(true);
+      
+      const selectedTestTypeObj = testTypes.find(t => t.id == selectedTestType);
+      const isDGA = selectedTestTypeObj?.test_name?.toLowerCase().includes('dga') || false;
+      
+      if (!isDGA || testResults.length < 2) {
+        setIecStatusMap({});
+        return;
+      }
+
+      // Build samples for IEC algorithm
+      const samples = testResults.map(result => {
+        const gasData = {};
+        result.parameters.forEach(param => {
+          if (['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2'].includes(param.field_name)) {
+            gasData[param.field_name] = param.field_value || 0;
+          }
+        });
+        
+        return {
+          id: result.id,
+          sample_date: result.test_date,
+          gas_data: gasData
+        };
+      });
+      
+      console.log('📊 IEC Request - Samples:', samples.length);
+      
+      // Call IEC algorithm
+      const response = await API.post(
+        '/algorithms/transformer/dga/iec_algorithm/batch',
+        samples
+      );
+      
+      console.log('📊 IEC Response:', response.data);
+      
+      // Build map of result ID -> IEC status
+      const statusMap = {};
+      if (response.data && response.data.length > 0) {
+        response.data.forEach(item => {
+          if (item.id) {
+            statusMap[item.id] = {
+              status: item.status || 'Unknown',
+              status_code: item.status_code || 0,
+              zone_color: item.zone_color || '#95A5A6',
+              fault_type: item.fault_type || 'UNKNOWN'
+            };
+          }
+        });
+      }
+      
+      setIecStatusMap(statusMap);
+      console.log('✅ IEC status loaded:', statusMap);
+      
+    } catch (error) {
+      console.error('❌ Error loading IEC status:', error);
+      console.error('Error details:', error.response?.data);
+    } finally {
+      setIecLoading(false);
     }
   };
 
   const handleTestTypeChange = async (e) => {
     const testTypeId = e.target.value;
     setSelectedTestType(testTypeId);
+    setIeeeStatusMap({});
+    setIecStatusMap({});
     if (testTypeId) {
       await loadTestFields(testTypeId);
       await loadTestResults(testTypeId);
@@ -574,7 +702,6 @@ function AssetDetail() {
           { id: 'doernenburg_ratio', setter: setDoernenburgData, name: 'Doernenburg Ratio' },
           { id: 'iec60599_ratio', setter: setIec60599Data, name: 'IEC 60599' },
           { id: 'ml_dga_1', setter: setMlData1, name: 'ML DGA 1' },
-
         ];
 
         for (const algo of chartAlgorithms) {
@@ -810,12 +937,12 @@ function AssetDetail() {
                 {isDGA && (
                   <span style={{
                     fontSize: '12px',
-                    color: ieeeLoading ? '#f59e0b' : '#10b981',
+                    color: (ieeeLoading || iecLoading) ? '#f59e0b' : '#10b981',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}>
-                    {ieeeLoading ? '🔄 IEEE loading...' : '✅ IEEE ready'}
+                    {(ieeeLoading || iecLoading) ? '🔄 Loading...' : '✅ Status Ready'}
                   </span>
                 )}
               </div>
@@ -837,6 +964,8 @@ function AssetDetail() {
                   allVisible.lab_name = true;
                   allVisible.notes = true;
                   allVisible.actions = true;
+                  allVisible.ieee_status = true;
+                  allVisible.iec_status = true;
                   testFields.forEach(field => {
                     allVisible[field.field_name] = true;
                   });
@@ -849,9 +978,11 @@ function AssetDetail() {
                   defaultVisible.lab_name = false;
                   defaultVisible.notes = false;
                   defaultVisible.actions = true;
-                  const dgaGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2', 'tdcg', 'sample_temp'];
+                  defaultVisible.ieee_status = true;
+                  defaultVisible.iec_status = true;
+                  const keyGases = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6'];
                   testFields.forEach(field => {
-                    defaultVisible[field.field_name] = dgaGases.includes(field.field_name);
+                    defaultVisible[field.field_name] = keyGases.includes(field.field_name);
                   });
                   setVisibleColumns(defaultVisible);
                 }}
@@ -893,18 +1024,161 @@ function AssetDetail() {
                 onPageSizeChange={handlePageSizeChange}
               />
               
-              <TestResultTable
-                testResults={paginatedResults}
-                testFields={testFields}
-                visibleColumns={visibleColumns}
-                selectedRows={selectedRows}
-                selectAll={selectAll}
-                onSelectAll={handleSelectAll}
-                onRowSelect={handleRowSelect}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                ieeeStatusMap={ieeeStatusMap}
-              />
+              {/* Custom compact table with IEEE and IEC status */}
+              <div style={styles.tableWrapper}>
+                <table style={styles.dataTable}>
+                  <thead>
+                    <tr>
+                      {visibleColumns.checkbox !== false && (
+                        <th style={styles.thCheckbox}>
+                          <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
+                        </th>
+                      )}
+                      {visibleColumns.test_date !== false && (
+                        <th style={styles.th}>Test Date</th>
+                      )}
+                      {visibleColumns.lab_name !== false && (
+                        <th style={styles.th}>Lab</th>
+                      )}
+                      {isDGA && visibleColumns.ieee_status !== false && (
+                        <th style={styles.th}>IEEE</th>
+                      )}
+                      {isDGA && visibleColumns.iec_status !== false && (
+                        <th style={styles.th}>IEC</th>
+                      )}
+                      {testFields.map(field => {
+                        if (visibleColumns[field.field_name] === false) return null;
+                        return (
+                          <th key={field.id} style={styles.th}>{field.display_name}</th>
+                        );
+                      })}
+                      {visibleColumns.notes !== false && (
+                        <th style={styles.th}>Notes</th>
+                      )}
+                      {visibleColumns.actions !== false && (
+                        <th style={styles.th}>Actions</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedResults.map(result => {
+                      const isChecked = selectedRows.includes(result.id);
+                      const ieeeStatusInfo = ieeeStatusMap[result.id];
+                      const ieeeStatus = ieeeStatusInfo?.status || 'Unknown';
+                      const ieeeStatusCode = ieeeStatusInfo?.status_code;
+                      const ieeeBadge = getIeeeStatusBadge(ieeeStatus, ieeeStatusCode);
+                      
+                      const iecStatus = iecStatusMap[result.id]?.status || 'Unknown';
+                      const iecBadge = getIecStatusBadge(iecStatus);
+                      
+                      return (
+                        <tr key={result.id} style={isChecked ? styles.trSelected : styles.tr}>
+                          {visibleColumns.checkbox !== false && (
+                            <td style={styles.tdCheckbox}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleRowSelect(result.id)}
+                              />
+                            </td>
+                          )}
+                          {visibleColumns.test_date !== false && (
+                            <td style={styles.td}>{new Date(result.test_date).toLocaleDateString()}</td>
+                          )}
+                          {visibleColumns.lab_name !== false && (
+                            <td style={styles.td}>{result.lab_name || '-'}</td>
+                          )}
+                          {isDGA && visibleColumns.ieee_status !== false && (
+                            <td style={styles.td}>
+                              {ieeeLoading ? (
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span>
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  backgroundColor: ieeeBadge.bg,
+                                  color: ieeeBadge.color,
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {ieeeBadge.icon}
+                                  {ieeeBadge.label}
+                                </span>
+                              )}
+                            </td>
+                          )}
+                          {isDGA && visibleColumns.iec_status !== false && (
+                            <td style={styles.td}>
+                              {iecLoading ? (
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span>
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  backgroundColor: iecBadge.bg,
+                                  color: iecBadge.color,
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {iecBadge.icon}
+                                  {iecBadge.label}
+                                </span>
+                              )}
+                            </td>
+                          )}
+                          {testFields.map(field => {
+                            if (visibleColumns[field.field_name] === false) return null;
+                            const param = result.parameters?.find(p => p.field_name === field.field_name);
+                            let value = '-';
+                            let unit = '';
+                            
+                            if (param) {
+                              if (param.field_value !== null) {
+                                value = param.field_value;
+                                unit = param.unit || '';
+                              } else if (param.field_value_text) {
+                                value = param.field_value_text;
+                              } else if (param.field_value_date) {
+                                value = new Date(param.field_value_date).toLocaleDateString();
+                              } else if (param.field_value_boolean !== null) {
+                                value = param.field_value_boolean ? 'Yes' : 'No';
+                              }
+                            }
+                            
+                            // Format numbers to 2 decimal places for compact display
+                            if (typeof value === 'number' && !Number.isInteger(value)) {
+                              value = value.toFixed(2);
+                            }
+                            
+                            return (
+                              <td key={field.id} style={styles.tdCompact}>
+                                {value} {unit}
+                              </td>
+                            );
+                          })}
+                          {visibleColumns.notes !== false && (
+                            <td style={styles.tdNotes}>{result.notes || '-'}</td>
+                          )}
+                          {visibleColumns.actions !== false && (
+                            <td style={styles.tdActions}>
+                              <button onClick={() => handleEdit(result)} style={styles.editButton}>Edit</button>
+                              <button onClick={() => handleDelete(result.id)} style={styles.deleteButton}>Delete</button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
               
               <Pagination
                 currentPage={currentPage}
@@ -1268,7 +1542,10 @@ const styles = {
     marginTop: '16px'
   },
   tableHeaderWrapper: {
-    marginBottom: '16px'
+    marginBottom: '16px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   tableTitle: {
     fontSize: '18px',
@@ -1291,6 +1568,96 @@ const styles = {
     fontSize: '13px',
     color: '#64748b',
     borderTop: '1px solid #e2e8f0'
+  },
+  tableWrapper: {
+    overflowX: 'auto',
+    marginTop: '8px'
+  },
+  dataTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '13px',
+    minWidth: 'auto'
+  },
+  th: {
+    padding: '6px 8px',
+    textAlign: 'left',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    fontWeight: '600',
+    fontSize: '11px',
+    color: '#475569',
+    whiteSpace: 'nowrap'
+  },
+  thCheckbox: {
+    padding: '6px 8px',
+    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+    borderBottom: '2px solid #dee2e6',
+    width: '30px'
+  },
+  td: {
+    padding: '6px 8px',
+    borderBottom: '1px solid #dee2e6',
+    fontSize: '12px',
+    color: '#1e293b',
+    whiteSpace: 'nowrap'
+  },
+  tdCompact: {
+    padding: '4px 6px',
+    borderBottom: '1px solid #dee2e6',
+    fontSize: '12px',
+    color: '#1e293b',
+    whiteSpace: 'nowrap',
+    maxWidth: '80px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+  tdCheckbox: {
+    padding: '4px 6px',
+    borderBottom: '1px solid #dee2e6',
+    textAlign: 'center',
+    width: '30px'
+  },
+  tdNotes: {
+    padding: '4px 6px',
+    borderBottom: '1px solid #dee2e6',
+    fontSize: '12px',
+    color: '#64748b',
+    maxWidth: '120px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+  tdActions: {
+    padding: '4px 6px',
+    borderBottom: '1px solid #dee2e6',
+    whiteSpace: 'nowrap'
+  },
+  tr: {
+    transition: 'background-color 0.2s'
+  },
+  trSelected: {
+    backgroundColor: '#e3f2fd'
+  },
+  editButton: {
+    marginRight: '4px',
+    padding: '2px 8px',
+    backgroundColor: '#FF9800',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '11px'
+  },
+  deleteButton: {
+    padding: '2px 8px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '11px'
   }
 };
 
