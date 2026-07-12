@@ -331,11 +331,11 @@ function TestsPage() {
                 <thead>
                   <tr>
                     <th>Test Date</th>
-                    <th>Lab Name</th>
+                    {/* <th>Lab Name</th>
                     {testFields.map(field => (
                       <th key={field.id}>{field.display_name}</th>
                     ))}
-                    <th>Notes</th>
+                    <th>Notes</th> */}
                   </tr>
                 </thead>
                 <tbody>

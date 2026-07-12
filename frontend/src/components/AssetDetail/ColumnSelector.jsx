@@ -1,6 +1,9 @@
 // ColumnSelector.jsx
 import React from 'react';
 
+// Fields to exclude from the column selector
+const EXCLUDED_FIELDS = ['laboratory_name', 'sample_temp'];
+
 const ColumnSelector = ({ 
   visibleColumns, 
   testFields, 
@@ -9,6 +12,9 @@ const ColumnSelector = ({
   onShowAll,
   onShowDefault
 }) => {
+  // Double filter to ensure duplicates are removed
+  const filteredFields = testFields.filter(field => !EXCLUDED_FIELDS.includes(field.field_name));
+
   return (
     <div style={styles.columnSelector}>
       <div style={styles.columnSelectorHeader}>
@@ -32,15 +38,16 @@ const ColumnSelector = ({
           />
           Test Date
         </label>
-        <label style={styles.columnSelectorItem}>
+        {/* COMMENT OUT OR REMOVE the Lab Name section to completely hide it */}
+        {/* <label style={styles.columnSelectorItem}>
           <input
             type="checkbox"
             checked={visibleColumns.lab_name !== false}
             onChange={() => onToggle('lab_name')}
           />
           Lab Name
-        </label>
-        {testFields.map(field => (
+        </label> */}
+        {filteredFields.map(field => (
           <label key={field.id} style={styles.columnSelectorItem}>
             <input
               type="checkbox"

@@ -159,17 +159,33 @@ function AssetDetail() {
   const loadTestFields = async (testTypeId) => {
     try {
       const res = await API.get(`/test-fields/test-type/${testTypeId}`);
-      setTestFields(res.data);
+      
+      // Filter out duplicate fields
+      const EXCLUDED_FIELDS = ['laboratory_name', 'sample_temp'];
+      const filteredFields = res.data.filter(f => !EXCLUDED_FIELDS.includes(f.field_name));
+      
+      setTestFields(filteredFields);
 
       const visibility = {
-        checkbox: true, test_date: true, lab_name: false, notes: false,
-        actions: true, ieee_status: true, iec_status: true
+        checkbox: true, 
+        test_date: true, 
+        lab_name: false,  // Add this to hide built-in lab name by default
+        notes: false,
+        actions: true, 
+        ieee_status: true, 
+        iec_status: true
       };
-      res.data.forEach(f => { visibility[f.field_name] = DGA_GASES.includes(f.field_name); });
+      
+      filteredFields.forEach(f => { 
+        visibility[f.field_name] = DGA_GASES.includes(f.field_name); 
+      });
+      
       setVisibleColumns(visibility);
 
       const initialData = { test_date: new Date().toISOString().split('T')[0] };
-      res.data.forEach(f => { initialData[f.field_name] = ''; });
+      filteredFields.forEach(f => { 
+        initialData[f.field_name] = ''; 
+      });
       setTestFormData(initialData);
     } catch (error) {
       console.error('Error loading test fields:', error);
@@ -590,7 +606,7 @@ function AssetDetail() {
                     <tr>
                       {visibleColumns.checkbox !== false && <th style={s.thCheckbox}><input type="checkbox" checked={selectAll} onChange={handleSelectAll} /></th>}
                       {visibleColumns.test_date !== false && <th style={s.th}>Test Date</th>}
-                      {visibleColumns.lab_name !== false && <th style={s.th}>Lab</th>}
+                      {/* {visibleColumns.lab_name !== false && <th style={s.th}>Lab</th>} */}
                       {isDGA && visibleColumns.ieee_status !== false && <th style={s.th}>IEEE</th>}
                       {isDGA && visibleColumns.iec_status !== false && <th style={s.th}>IEC</th>}
                       {testFields.map(f => visibleColumns[f.field_name] !== false && <th key={f.id} style={s.th}>{f.display_name}</th>)}
@@ -610,7 +626,7 @@ function AssetDetail() {
                         <tr key={result.id} style={isChecked ? s.trSelected : s.tr}>
                           {visibleColumns.checkbox !== false && <td style={s.tdCheckbox}><input type="checkbox" checked={isChecked} onChange={() => handleRowSelect(result.id)} /></td>}
                           {visibleColumns.test_date !== false && <td style={s.td}>{new Date(result.test_date).toLocaleDateString()}</td>}
-                          {visibleColumns.lab_name !== false && <td style={s.td}>{result.lab_name || '-'}</td>}
+                          {/* {visibleColumns.lab_name !== false && <td style={s.td}>{result.lab_name || '-'}</td>} */}
                           {isDGA && visibleColumns.ieee_status !== false && (
                             <td style={s.td}>
                               {statusLoading.ieee ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
