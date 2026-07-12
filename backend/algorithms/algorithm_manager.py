@@ -13,7 +13,9 @@ from algorithms.transformer.dga.duval_pentagon_2 import DuvalPentagon2
 from algorithms.transformer.dga.rogers_ratio import RogersRatio
 from algorithms.transformer.dga.doernenburg_ratio import DoernenburgRatio
 from algorithms.transformer.dga.iec60599_ratio import IEC60599Ratio
-from algorithms.transformer.dga.ml_dga_algorithm import MLDGA1  # Only import ML_1
+from algorithms.transformer.dga.ml_dga_algorithm import MLDGA1
+from algorithms.transformer.dga.ieee_algorithm import IEEEAlgorithm
+from algorithms.transformer.dga.iec_algorithm import IECAlgorithm  # ADD THIS
 
 
 class AlgorithmManager:
@@ -35,8 +37,9 @@ class AlgorithmManager:
                 'rogers_ratio': RogersRatio(),
                 'doernenburg_ratio': DoernenburgRatio(),
                 'iec60599_ratio': IEC60599Ratio(),
-                'ml_dga_1': MLDGA1(),  # Only register ML_1
-                # ML_2 through ML_5 are not available yet
+                'ml_dga_1': MLDGA1(),
+                'ieee_algorithm': IEEEAlgorithm(),
+                'iec_algorithm': IECAlgorithm(),  # ADD THIS
             }
         }
         print("✅ Registered transformer/dga algorithms")

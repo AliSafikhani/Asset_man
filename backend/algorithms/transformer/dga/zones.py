@@ -1,5 +1,5 @@
 # DGA Zone Definitions
-
+#backend\algorithms\transformer\dga\zones.py
 # Common DGA Constants
 DGA_GASES = ['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2']
 
@@ -412,4 +412,62 @@ class MLDGAFaultStatus:
         "D2": "#DDA0DD",      # Plum
         "N": "#4CAF50",       # Green
         "UNK": "#95A5A6"      # Gray
+    }
+
+# ============================================
+# IEEE Algorithm Status
+# ============================================
+class IEEEStatus:
+    """IEEE Algorithm Status Codes"""
+    UNKNOWN = 0           # Status 0: Unknown/Undetermined
+    NORMAL = 1            # Status 1: Normal Operation
+    INVESTIGATE = 2       # Status 2: Investigate Further
+    ACTION_REQUIRED = 3   # Status 3: Immediate Action Required
+    
+    STATUS_NAMES = {
+        0: "Unknown",
+        1: "Normal",
+        2: "Investigate",
+        3: "Action Required"
+    }
+    
+    STATUS_COLORS = {
+        0: "#95A5A6",      # Gray
+        1: "#4CAF50",      # Green
+        2: "#FF9800",      # Orange
+        3: "#EF4444"       # Red
+    }
+    
+    STATUS_BADGE_CLASSES = {
+        0: "unknown",
+        1: "normal",
+        2: "investigate",
+        3: "action-required"
+    }
+    
+    STATUS_DESCRIPTIONS = {
+        0: "Unable to determine transformer condition",
+        1: "All parameters within normal ranges",
+        2: "Some parameters outside normal ranges - further investigation recommended",
+        3: "Critical parameters outside acceptable ranges - immediate action required"
+    }
+
+# IEC Status
+# ============================================
+class IECStatus:
+    """IEC DGA Status Codes"""
+    UNKNOWN = "UNKNOWN"
+    INVESTIGATE = "Investigate"
+    ACTION_REQUIRED = "Action Required"
+    
+    ZONE_NAMES = {
+        "UNKNOWN": "Unable to Determine",
+        "Investigate": "Investigate - Monitor Closely",
+        "Action Required": "Action Required - Immediate Attention"
+    }
+    
+    ZONE_COLORS = {
+        "UNKNOWN": "#95A5A6",
+        "Investigate": "#FF9800",
+        "Action Required": "#f44336"
     }

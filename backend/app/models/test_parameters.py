@@ -21,4 +21,4 @@ class TestParameter(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    test_result = relationship("TestResult", back_populates="parameters")
+    # test_result = relationship("TestResult", back_populates="parameters")

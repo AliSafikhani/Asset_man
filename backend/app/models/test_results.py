@@ -17,4 +17,4 @@ class TestResult(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    parameters = relationship("TestParameter", back_populates="test_result", cascade="all, delete-orphan")
+    # parameters = relationship("TestParameter", back_populates="test_result", cascade="all, delete-orphan", lazy='joined')

@@ -1,4 +1,5 @@
-// AssetDetail.jsx - Professional Redesign
+// frontend\src\pages\AssetDetail.jsx
+// AssetDetail.jsx - Professional Redesign with IEEE Status
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
@@ -51,6 +52,11 @@ function AssetDetail() {
   const [algoError, setAlgoError] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   
+  // NEW: IEEE Status states
+  const [ieeeStatusMap, setIeeeStatusMap] = useState({});
+  const [ieeeLoading, setIeeeLoading] = useState(false);
+  // IEEE Status states
+  
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -72,6 +78,17 @@ function AssetDetail() {
       setTotalRecords(0);
     }
   }, [testResults, currentPage, pageSize]);
+
+  // NEW: Load IEEE status when DGA test results are loaded
+  useEffect(() => {
+    if (selectedTestType && testResults.length > 0 && asset?.asset_type === 'transformer') {
+      const selectedTestTypeObj = testTypes.find(t => t.id == selectedTestType);
+      const isDGA = selectedTestTypeObj?.test_name?.toLowerCase().includes('dga') || false;
+      if (isDGA) {
+        loadIeeeStatus(assetId);
+      }
+    }
+  }, [testResults, selectedTestType, asset?.asset_type]);
 
   const loadAsset = async () => {
     try {
@@ -166,6 +183,75 @@ function AssetDetail() {
       setCurrentPage(1);
     } catch (error) {
       console.error('Error loading test results:', error);
+    }
+  };
+
+
+  // Load IEEE status for transformer
+  const loadIeeeStatus = async (assetId) => {
+    try {
+      setIeeeLoading(true);
+      
+      // Get all DGA test results for this transformer
+      const selectedTestTypeObj = testTypes.find(t => t.id == selectedTestType);
+      const isDGA = selectedTestTypeObj?.test_name?.toLowerCase().includes('dga') || false;
+      
+      if (!isDGA || testResults.length < 2) {
+        setIeeeStatusMap({});
+        return;
+      }
+
+      // Build samples for IEEE algorithm
+      const samples = testResults.map(result => {
+        const gasData = {};
+        result.parameters.forEach(param => {
+          if (['h2', 'ch4', 'c2h2', 'c2h4', 'c2h6', 'co', 'co2', 'o2', 'n2'].includes(param.field_name)) {
+            gasData[param.field_name] = param.field_value || 0;
+          }
+        });
+        
+        // Calculate transformer age from commissioning date
+        const transformerAge = asset?.commissioning_date 
+          ? new Date().getFullYear() - new Date(asset.commissioning_date).getFullYear()
+          : 0;
+        
+        return {
+          id: result.id,
+          sample_date: result.test_date,
+          gas_data: gasData,
+          transformer_age: transformerAge
+        };
+      });
+      
+      // Call IEEE algorithm
+      const response = await API.post(
+        '/algorithms/transformer/dga/ieee_algorithm/batch',
+        samples
+      );
+      
+      // Build map of result ID -> IEEE status
+      const statusMap = {};
+      response.data.forEach(item => {
+        if (item.id) {
+          statusMap[item.id] = {
+            status: item.status,
+            status_name: item.status_name,
+            status_description: item.status_description,
+            zone_color: item.zone_color,
+            days_from_latest: item.days_from_latest,
+            fault_zone: item.fault_zone,
+            fault_name: item.fault_name
+          };
+        }
+      });
+      
+      setIeeeStatusMap(statusMap);
+      console.log('✅ IEEE status loaded:', statusMap);
+      
+    } catch (error) {
+      console.error('Error loading IEEE status:', error);
+    } finally {
+      setIeeeLoading(false);
     }
   };
 
@@ -721,6 +807,17 @@ function AssetDetail() {
                     {algoLoading ? '⏳ Calculating...' : '🧪 Analyze DGA'}
                   </button>
                 )}
+                {isDGA && (
+                  <span style={{
+                    fontSize: '12px',
+                    color: ieeeLoading ? '#f59e0b' : '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {ieeeLoading ? '🔄 IEEE loading...' : '✅ IEEE ready'}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -806,6 +903,7 @@ function AssetDetail() {
                 onRowSelect={handleRowSelect}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                ieeeStatusMap={ieeeStatusMap}
               />
               
               <Pagination

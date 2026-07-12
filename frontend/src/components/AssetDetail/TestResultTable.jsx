@@ -1,24 +1,66 @@
-// TestResultTable.jsx
+// frontend/src/components/AssetDetail/TestResultTable.jsx
+
 import React from 'react';
 
-const TestResultTable = ({ 
-  testResults, 
-  testFields, 
-  visibleColumns, 
-  selectedRows, 
+const TestResultTable = ({
+  testResults,
+  testFields,
+  visibleColumns,
+  selectedRows,
   selectAll,
   onSelectAll,
   onRowSelect,
   onEdit,
-  onDelete
+  onDelete,
+  ieeeStatusMap = {}
 }) => {
+  
+  // Get IEEE status for a result
+  const getIeeeStatus = (resultId) => {
+    if (ieeeStatusMap && ieeeStatusMap[resultId]) {
+      return ieeeStatusMap[resultId];
+    }
+    return null;
+  };
+
+  // Render IEEE status badge
+  const renderIeeeStatus = (status) => {
+    if (!status) {
+      return <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>;
+    }
+    
+    const colors = {
+      0: { bg: '#f1f5f9', text: '#64748b', label: 'Unknown' },
+      1: { bg: '#dcfce7', text: '#16a34a', label: 'Normal' },
+      2: { bg: '#fef3c7', text: '#d97706', label: 'Investigate' },
+      3: { bg: '#fee2e2', text: '#dc2626', label: 'Action Required' }
+    };
+    
+    const style = colors[status.status] || colors[0];
+    
+    return (
+      <span style={{
+        display: 'inline-block',
+        padding: '4px 10px',
+        borderRadius: '6px',
+        fontSize: '12px',
+        fontWeight: '600',
+        background: style.bg,
+        color: style.text,
+        whiteSpace: 'nowrap'
+      }}>
+        {style.label}
+      </span>
+    );
+  };
+
   return (
-    <div style={styles.tableWrapper}>
-      <table style={styles.dataTable}>
+    <div style={{ overflowX: 'auto' }}>
+      <table style={styles.table}>
         <thead>
-          <tr>
-            {visibleColumns.checkbox !== false && (
-              <th style={styles.thCheckbox}>
+          <tr style={styles.headerRow}>
+            {visibleColumns.checkbox && (
+              <th style={{ ...styles.th, width: '40px' }}>
                 <input
                   type="checkbox"
                   checked={selectAll}
@@ -27,88 +69,125 @@ const TestResultTable = ({
                 />
               </th>
             )}
-            {visibleColumns.test_date !== false && (
+            {visibleColumns.test_date && (
               <th style={styles.th}>Test Date</th>
             )}
-            {visibleColumns.lab_name !== false && (
-              <th style={styles.th}>Lab Name</th>
+            {visibleColumns.lab_name && (
+              <th style={styles.th}>Lab</th>
             )}
-            {testFields.map(field => {
-              if (visibleColumns[field.field_name] === false) return null;
-              return (
-                <th key={field.id} style={styles.th}>{field.display_name}</th>
-              );
-            })}
-            {visibleColumns.notes !== false && (
+            {testFields
+              .filter(field => visibleColumns[field.field_name])
+              .map(field => (
+                <th key={field.id} style={styles.th}>
+                  {field.display_name}
+                  {field.unit && <span style={styles.unit}>({field.unit})</span>}
+                </th>
+              ))}
+            {/* IEEE Status Column */}
+            <th style={{ ...styles.th, minWidth: '120px', background: '#f8fafc', borderLeft: '2px solid #e2e8f0' }}>
+              IEEE Status
+              <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', fontWeight: '400' }}>
+                C57.104-2019
+              </span>
+            </th>
+            {visibleColumns.notes && (
               <th style={styles.th}>Notes</th>
             )}
-            {visibleColumns.actions !== false && (
-              <th style={styles.th}>Actions</th>
+            {visibleColumns.actions && (
+              <th style={{ ...styles.th, width: '120px' }}>Actions</th>
             )}
           </tr>
         </thead>
         <tbody>
-          {testResults.map(result => {
-            const isChecked = selectedRows.includes(result.id);
-            return (
-              <tr key={result.id} style={isChecked ? styles.trSelected : styles.tr}>
-                {visibleColumns.checkbox !== false && (
-                  <td style={styles.tdCheckbox}>
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => onRowSelect(result.id)}
-                      style={styles.checkbox}
-                    />
-                  </td>
-                )}
-                {visibleColumns.test_date !== false && (
-                  <td style={styles.td}>{new Date(result.test_date).toLocaleDateString()}</td>
-                )}
-                {visibleColumns.lab_name !== false && (
-                  <td style={styles.td}>{result.lab_name || '-'}</td>
-                )}
-                {testFields.map(field => {
-                  if (visibleColumns[field.field_name] === false) return null;
-                  const param = result.parameters?.find(p => p.field_name === field.field_name);
-                  let value = '-';
-                  let unit = '';
-                  
-                  if (param) {
-                    if (param.field_value !== null) {
-                      value = param.field_value;
-                      unit = param.unit || '';
-                    } else if (param.field_value_text) {
-                      value = param.field_value_text;
-                    } else if (param.field_value_date) {
-                      value = new Date(param.field_value_date).toLocaleDateString();
-                    } else if (param.field_value_boolean !== null) {
-                      value = param.field_value_boolean ? 'Yes' : 'No';
-                    }
-                  }
-                  
-                  return (
-                    <td key={field.id} style={styles.td}>
-                      {value} {unit}
+          {testResults.length === 0 ? (
+            <tr>
+              <td colSpan={Object.values(visibleColumns).filter(v => v).length + 2} style={styles.emptyState}>
+                No test results available
+              </td>
+            </tr>
+          ) : (
+            testResults.map((result) => {
+              const ieeeStatus = getIeeeStatus(result.id);
+              return (
+                <tr key={result.id} style={styles.row}>
+                  {visibleColumns.checkbox && (
+                    <td style={styles.td}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.includes(result.id)}
+                        onChange={() => onRowSelect(result.id)}
+                        style={styles.checkbox}
+                      />
                     </td>
-                  );
-                })}
-                {visibleColumns.notes !== false && (
-                  <td style={styles.tdNotes}>{result.notes || '-'}</td>
-                )}
-                {visibleColumns.actions !== false && (
-                  <td style={styles.tdActions}>
-                    <button onClick={() => onEdit(result)} style={styles.editButton}>
-                      Edit
-                    </button>
-                    <button onClick={() => onDelete(result.id)} style={styles.deleteButton}>
-                      Delete
-                    </button>
+                  )}
+                  {visibleColumns.test_date && (
+                    <td style={styles.td}>
+                      {new Date(result.test_date).toLocaleDateString()}
+                    </td>
+                  )}
+                  {visibleColumns.lab_name && (
+                    <td style={styles.td}>{result.lab_name || '-'}</td>
+                  )}
+                  {testFields
+                    .filter(field => visibleColumns[field.field_name])
+                    .map(field => {
+                      const param = result.parameters.find(
+                        p => p.field_name === field.field_name
+                      );
+                      let value = '-';
+                      if (param) {
+                        if (param.field_value !== null && param.field_value !== undefined) {
+                          value = param.field_value;
+                        } else if (param.field_value_text) {
+                          value = param.field_value_text;
+                        } else if (param.field_value_date) {
+                          value = new Date(param.field_value_date).toLocaleDateString();
+                        } else if (param.field_value_boolean !== null) {
+                          value = param.field_value_boolean ? 'Yes' : 'No';
+                        }
+                      }
+                      return (
+                        <td key={field.id} style={styles.td}>
+                          {value}
+                        </td>
+                      );
+                    })}
+                  {/* IEEE Status Cell */}
+                  <td style={{
+                    ...styles.td,
+                    background: '#fafbfc',
+                    borderLeft: '2px solid #e2e8f0',
+                    textAlign: 'center'
+                  }}>
+                    {renderIeeeStatus(ieeeStatus)}
                   </td>
-                )}
-              </tr>
-            );
-          })}
+                  {visibleColumns.notes && (
+                    <td style={styles.td}>{result.notes || '-'}</td>
+                  )}
+                  {visibleColumns.actions && (
+                    <td style={styles.td}>
+                      <div style={styles.actionButtons}>
+                        <button
+                          onClick={() => onEdit(result)}
+                          style={styles.editButton}
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => onDelete(result.id)}
+                          style={styles.deleteButton}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>
@@ -116,61 +195,69 @@ const TestResultTable = ({
 };
 
 const styles = {
-  tableWrapper: { overflow: 'hidden' },
-  dataTable: { 
-    width: '100%', 
-    borderCollapse: 'collapse', 
-    fontSize: '14px',
-    tableLayout: 'fixed'
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '14px'
   },
-  th: { 
-    padding: '10px 8px', 
-    textAlign: 'left', 
-    backgroundColor: '#f8f9fa', 
-    borderBottom: '2px solid #dee2e6', 
-    fontWeight: 'bold',
+  headerRow: {
+    background: '#f8fafc',
+    borderBottom: '2px solid #e2e8f0'
+  },
+  th: {
+    padding: '12px 16px',
+    textAlign: 'left',
+    fontWeight: '600',
+    color: '#475569',
     fontSize: '12px',
-    wordBreak: 'break-word',
-    maxWidth: '150px'
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    whiteSpace: 'nowrap'
   },
-  thCheckbox: { 
-    padding: '10px 8px', 
-    textAlign: 'center', 
-    backgroundColor: '#f8f9fa', 
-    borderBottom: '2px solid #dee2e6', 
-    width: '40px' 
+  td: {
+    padding: '10px 16px',
+    borderBottom: '1px solid #f1f5f9',
+    color: '#0f172a',
+    fontSize: '13px'
   },
-  td: { 
-    padding: '8px 8px', 
-    borderBottom: '1px solid #dee2e6',
-    fontSize: '12px',
-    wordBreak: 'break-word',
-    maxWidth: '150px'
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    cursor: 'pointer'
   },
-  tdCheckbox: { 
-    padding: '8px 8px', 
-    borderBottom: '1px solid #dee2e6', 
+  unit: {
+    fontSize: '10px',
+    color: '#94a3b8',
+    marginLeft: '4px',
+    fontWeight: '400'
+  },
+  emptyState: {
+    padding: '40px',
     textAlign: 'center',
-    width: '40px'
+    color: '#94a3b8'
   },
-  tdNotes: { 
-    padding: '8px 8px', 
-    borderBottom: '1px solid #dee2e6',
-    fontSize: '12px',
-    wordBreak: 'break-word',
-    maxWidth: '200px'
+  actionButtons: {
+    display: 'flex',
+    gap: '6px'
   },
-  tdActions: { 
-    padding: '8px 8px', 
-    borderBottom: '1px solid #dee2e6',
-    whiteSpace: 'nowrap',
-    width: '120px'
+  editButton: {
+    padding: '4px 8px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    background: '#f1f5f9',
+    fontSize: '14px',
+    transition: 'background 0.2s'
   },
-  tr: { transition: 'background-color 0.2s' },
-  trSelected: { backgroundColor: '#e3f2fd' },
-  checkbox: { cursor: 'pointer', width: '16px', height: '16px' },
-  editButton: { marginRight: '8px', padding: '4px 10px', backgroundColor: '#FF9800', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' },
-  deleteButton: { padding: '4px 10px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }
+  deleteButton: {
+    padding: '4px 8px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    background: '#fef2f2',
+    fontSize: '14px',
+    transition: 'background 0.2s'
+  }
 };
 
 export default TestResultTable;
