@@ -40,21 +40,21 @@ async def lifespan(app: FastAPI):
         from algorithms import AlgorithmManager
         algorithm_manager = AlgorithmManager()
         app.state.algorithm_manager = algorithm_manager
-        logger.info("? Algorithm Manager initialized successfully")
-        logger.info(f"?? Available assets: {list(algorithm_manager.algorithms.keys())}")
+        logger.info("✅ Algorithm Manager initialized successfully")
+        logger.info(f"📋 Available assets: {list(algorithm_manager.algorithms.keys())}")
         for asset_type, test_types in algorithm_manager.algorithms.items():
             logger.info(f"   - {asset_type}: {list(test_types.keys())}")
             for test_type, algos in test_types.items():
                 logger.info(f"       - {test_type}: {list(algos.keys())}")
     except ImportError as e:
-        logger.warning(f"??  Algorithm Manager import failed: {e}")
+        logger.warning(f"⚠️  Algorithm Manager import failed: {e}")
         app.state.algorithm_manager = None
     except Exception as e:
-        logger.warning(f"??  Algorithm Manager initialization failed: {e}")
+        logger.warning(f"⚠️  Algorithm Manager initialization failed: {e}")
         app.state.algorithm_manager = None
     
-    logger.info(f"?? Server running on http://localhost:8000")
-    logger.info(f"?? API Documentation available at http://localhost:8000/docs")
+    logger.info(f"🚀 Server running on http://localhost:8000")
+    logger.info(f"📖 API Documentation available at http://localhost:8000/docs")
     
     yield
     
@@ -71,6 +71,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     lifespan=lifespan,
+    # redirect_slashes=False,  # ⬅️ ADDED: Prevents 307 redirect from /batch/ to /batch
 )
 
 

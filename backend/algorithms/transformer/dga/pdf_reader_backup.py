@@ -9,7 +9,7 @@ from collections import defaultdict
 import camelot
 import jdatetime
 from datetime import date as GregorianDate
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Union
 
 # --- Configuration Constants ---
 DEFAULT_X_TOLERANCE = 3
@@ -192,281 +192,6 @@ def extract_numeric_value(value_str: str) -> Union[float, None]:
             return None
     return None
 
-# --- NEW: Extract Type 2 Table (dates in headers, gases in first column) - FIXED ---
-# --- NEW: Extract Type 2 Table (dates in headers, gases in first column) ---
-# --- NEW: Extract Type 2 Table (dates in headers, gases in first column) - FIXED ---
-def extract_type2_table(raw_table: List[List]) -> pd.DataFrame:
-    """
-    Extract DGA data from Type 2 table where:
-    - First row contains dates as headers
-    - First column contains gas names
-    - Values are in the intersections
-    """
-    if not raw_table or len(raw_table) < 2:
-        return None
-    
-    # Convert to DataFrame
-    df = pd.DataFrame(raw_table)
-    df = convert_numbers_to_english(df)
-    
-    # Find the row that contains dates (usually first row)
-    date_row_idx = None
-    for idx, row in df.iterrows():
-        row_values = [str(v).strip() for v in row.values]
-        date_count = 0
-        for val in row_values:
-            if re.search(r'\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', val):
-                date_count += 1
-        if date_count >= 2:
-            date_row_idx = idx
-            break
-    
-    if date_row_idx is None:
-        return None
-    
-    # Get dates from the date row
-    date_row = df.iloc[date_row_idx].values
-    dates = []
-    date_col_indices = []
-    
-    for idx, val in enumerate(date_row):
-        val_str = str(val).strip()
-        if re.search(r'\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', val_str):
-            dates.append(val_str)
-            date_col_indices.append(idx)
-    
-    if len(dates) < 1:
-        return None
-    
-    # Define comprehensive gas name mappings
-    gas_name_mapping = {
-        # H2
-        'h2': 'H2', 'h₂': 'H2', 'hydrogen': 'H2', 'هیدروژن': 'H2', 'hidrojen': 'H2',
-        # CH4
-        'ch4': 'CH4', 'ch₄': 'CH4', 'methane': 'CH4', 'متان': 'CH4', 'metan': 'CH4',
-        # C2H6
-        'c2h6': 'C2H6', 'c₂h₆': 'C2H6', 'ethane': 'C2H6', 'اتان': 'C2H6', 'etan': 'C2H6',
-        # C2H4
-        'c2h4': 'C2H4', 'c₂h₄': 'C2H4', 'ethylene': 'C2H4', 'ethene': 'C2H4', 'اتیلن': 'C2H4', 'etilen': 'C2H4',
-        # C2H2
-        'c2h2': 'C2H2', 'c₂h₂': 'C2H2', 'acetylene': 'C2H2', 'ethyne': 'C2H2', 'استیلن': 'C2H2', 'asetilen': 'C2H2',
-        # CO
-        'co': 'CO', 'carbon monoxide': 'CO', 'کربن مونوکسید': 'CO', 'منوکسید کربن': 'CO', 'karbon monoksid': 'CO',
-        # CO2
-        'co2': 'CO2', 'co₂': 'CO2', 'carbon dioxide': 'CO2', 'کربن دی اکسید': 'CO2', 'دی اکسید کربن': 'CO2',
-        # O2
-        'o2': 'O2', 'o₂': 'O2', 'oxygen': 'O2', 'اکسیژن': 'O2', 'oksijen': 'O2',
-        # N2
-        'n2': 'N2', 'n₂': 'N2', 'nitrogen': 'N2', 'نیتروژن': 'N2', 'nitrojen': 'N2',
-    }
-    
-    # Order: check longest keys first to avoid partial matches
-    sorted_gas_keys = sorted(gas_name_mapping.keys(), key=lambda x: (-len(x), x))
-    
-    def normalize_for_gas(text):
-        """Normalize text for gas name comparison."""
-        if not text or pd.isna(text):
-            return ""
-        text = str(text).strip().lower()
-        # Replace subscript characters
-        text = text.replace('₂', '2').replace('₆', '6').replace('₄', '4').replace('₅', '5')
-        text = text.replace('₁', '1').replace('₃', '3').replace('₇', '7').replace('₈', '8')
-        text = text.replace('₉', '9').replace('₀', '0')
-        # Convert Persian/Arabic digits
-        text = text.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
-        # Remove extra spaces
-        text = re.sub(r'\s+', ' ', text).strip()
-        return text
-    
-    def detect_gas(text):
-        """Detect gas name from text. Returns standardized gas name or None."""
-        text_norm = normalize_for_gas(text)
-        if not text_norm:
-            return None
-        
-        # First try exact match
-        if text_norm in gas_name_mapping:
-            return gas_name_mapping[text_norm]
-        
-        # Then try: remove all spaces and try exact match
-        text_no_spaces = text_norm.replace(' ', '')
-        if text_no_spaces in gas_name_mapping:
-            return gas_name_mapping[text_no_spaces]
-        
-        # Then try: check if any gas key is contained in the text
-        # Use longest keys first to avoid partial matches
-        for key in sorted_gas_keys:
-            if len(key) <= 3:
-                # For short keys (h2, o2, n2, co), use word boundary
-                if re.search(r'\b' + re.escape(key) + r'\b', text_norm):
-                    return gas_name_mapping[key]
-            else:
-                # For longer keys, check if the key is in the text
-                if key in text_norm or key in text_no_spaces:
-                    return gas_name_mapping[key]
-        
-        return None
-    
-    # Find gas names in the first column
-    gas_col = df.iloc[:, 0].values
-    gas_rows = []
-    gas_names = []
-    found_gases = set()
-    
-    for idx, val in enumerate(gas_col):
-        # Skip the date row
-        if idx == date_row_idx:
-            continue
-        
-        val_str = str(val).strip() if not pd.isna(val) else ""
-        if not val_str:
-            continue
-        
-        detected_gas = detect_gas(val_str)
-        
-        if detected_gas and detected_gas not in found_gases:
-            gas_names.append(detected_gas)
-            gas_rows.append(idx)
-            found_gases.add(detected_gas)
-    
-    if len(gas_names) < 3:
-        return None
-    
-    # Build transposed data
-    transposed_data = []
-    
-    for date_idx, date in zip(date_col_indices, dates):
-        row_data = {'date': date}
-        
-        for gas_row, gas in zip(gas_rows, gas_names):
-            if gas_row < len(df) and date_idx < len(df.columns):
-                val = str(df.iloc[gas_row, date_idx]).strip()
-                
-                num_val = extract_numeric_value(val)
-                if num_val is not None:
-                    row_data[gas] = num_val
-                elif check_nd(val):
-                    row_data[gas] = 0.0
-                else:
-                    try:
-                        row_data[gas] = float(val)
-                    except (ValueError, TypeError):
-                        row_data[gas] = 'NA'
-        
-        if len(row_data) > 1:
-            transposed_data.append(row_data)
-    
-    if transposed_data:
-        result_df = pd.DataFrame(transposed_data)
-        for gas in GAS_COLUMNS:
-            if gas not in result_df.columns:
-                result_df[gas] = 'NA'
-        return result_df
-    
-    return None
-def extract_type2_tables_from_page(page) -> List[pd.DataFrame]:
-    """
-    Extract Type 2 tables from a page where dates are in headers and gases in rows.
-    """
-    tables_found = []
-    
-    # Try to extract raw tables
-    for strategy in ['lines', 'text', 'cells']:
-        try:
-            table_settings = {
-                'vertical_strategy': strategy,
-                'horizontal_strategy': strategy,
-                'snap_tolerance': 5,
-                'join_tolerance': 5,
-                'edge_min_length': 3,
-                'min_words_vertical': 1,
-                'min_words_horizontal': 1,
-            }
-            raw_tables = page.extract_tables(table_settings)
-            
-            for raw_table in raw_tables:
-                if raw_table and len(raw_table) > 2:
-                    # Try to extract as Type 2
-                    df = extract_type2_table(raw_table)
-                    if df is not None and not df.empty and not all_textual(df):
-                        tables_found.append(df)
-                        logging.info("Found Type 2 table (dates in headers, gases in rows)")
-        except Exception as e:
-            logging.debug(f"Type 2 extraction failed with strategy {strategy}: {e}")
-    
-    return tables_found
-
-# --- IMPROVED: Direct Text Extraction with Table Detection ---
-def extract_dga_from_text_direct(page_text: str) -> List[Dict[str, Any]]:
-    """
-    Extract DGA data directly from text when table extraction fails.
-    This is a fallback for simple text-based extraction.
-    """
-    if not page_text:
-        return []
-    
-    # Clean the text
-    page_text = re.sub(r'\s+', ' ', page_text)
-    
-    # Find all dates
-    dates = re.findall(r'(\d{4}/\d{2}/\d{2})', page_text)
-    unique_dates = []
-    for d in dates:
-        if d not in unique_dates:
-            unique_dates.append(d)
-    
-    if len(unique_dates) < 1:
-        return []
-    
-    # Find gas names and their values
-    gas_data = {}
-    
-    for gas in GAS_COLUMNS:
-        # Look for gas name followed by numbers
-        patterns = [
-            rf'(?:Carbon\s+Dioxide|Ethylene|Acetylene|Ethane|Hydrogen|Oxygen|Nitrogen|Methane|Carbon\s+Monoxide)?\s*{gas}\s*([\d.]+)\s*([\d.]+)',
-            rf'{gas}\s*([\d.]+)\s*([\d.]+)',
-            rf'{gas}[^\d]*([\d.]+)[^\d]*([\d.]+)?',
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, page_text, re.IGNORECASE)
-            if match:
-                try:
-                    val1 = float(match.group(1))
-                    val2 = float(match.group(2)) if match.group(2) and match.group(2).strip() else None
-                    gas_data[gas] = [val1, val2] if val2 is not None else [val1]
-                    break
-                except (ValueError, IndexError):
-                    continue
-    
-    if not gas_data:
-        return []
-    
-    # Build samples
-    samples = []
-    
-    if len(unique_dates) >= 2:
-        # First date sample
-        sample1 = {'date': unique_dates[0]}
-        for gas, values in gas_data.items():
-            sample1[gas] = values[0] if len(values) >= 1 else 0.0
-        samples.append(sample1)
-        
-        # Second date sample
-        sample2 = {'date': unique_dates[1]}
-        for gas, values in gas_data.items():
-            sample2[gas] = values[1] if len(values) >= 2 else (values[0] if len(values) >= 1 else 0.0)
-        samples.append(sample2)
-    
-    elif len(unique_dates) == 1:
-        sample = {'date': unique_dates[0]}
-        for gas, values in gas_data.items():
-            sample[gas] = values[0] if len(values) >= 1 else 0.0
-        samples.append(sample)
-    
-    return samples
-
 # --- Data Integration ---
 def dataframes_to_final_dict(dataframes: List[pd.DataFrame]) -> List[Dict[str, Any]]:
     merged_samples_list: List[Dict[str, Any]] = []
@@ -604,40 +329,32 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
     with pdfplumber.open(pdf_path) as pdf:
         for page_num, page in enumerate(pdf.pages, 1):
             page_tables = []
-            
-            # STEP 1: Try Type 2 table extraction (dates in headers, gases in rows)
-            type2_tables = extract_type2_tables_from_page(page)
-            if type2_tables:
-                page_tables.extend(type2_tables)
-                logging.info(f"Page {page_num}: Found {len(type2_tables)} Type 2 tables")
-            
-            # STEP 2: Try Type 1 extraction (gases in headers, dates in rows)
-            if not page_tables:
-                # Try pdfplumber with multiple strategies
-                strategies = ['lines', 'text', 'cells']
-                for strategy in strategies:
-                    try:
-                        table_settings = {
-                            'vertical_strategy': strategy,
-                            'horizontal_strategy': strategy,
-                            'snap_tolerance': 3,
-                            'join_tolerance': 3,
-                            'edge_min_length': 3,
-                            'min_words_vertical': 1,
-                            'min_words_horizontal': 1,
-                        }
-                        plumber_tables = page.extract_tables(table_settings)
-                        for raw_table in plumber_tables:
-                            if raw_table and len(raw_table) > 1:
-                                headers = ensure_valid_headers(raw_table[0])
-                                df = pd.DataFrame(raw_table[1:], columns=headers)
-                                df = convert_numbers_to_english(df)
-                                if contains_target_gases_only(df.columns) and not all_textual(df):
-                                    page_tables.append(df)
-                    except Exception as e:
-                        logging.debug(f"pdfplumber extraction failed with strategy {strategy}: {e}")
-            
-            # STEP 3: Fallback to Camelot
+
+            # Try pdfplumber with multiple strategies
+            strategies = ['lines', 'text', 'cells']
+            for strategy in strategies:
+                try:
+                    table_settings = {
+                        'vertical_strategy': strategy,
+                        'horizontal_strategy': strategy,
+                        'snap_tolerance': 3,
+                        'join_tolerance': 3,
+                        'edge_min_length': 3,
+                        'min_words_vertical': 1,
+                        'min_words_horizontal': 1,
+                    }
+                    plumber_tables = page.extract_tables(table_settings)
+                    for raw_table in plumber_tables:
+                        if raw_table and len(raw_table) > 1:
+                            headers = ensure_valid_headers(raw_table[0])
+                            df = pd.DataFrame(raw_table[1:], columns=headers)
+                            df = convert_numbers_to_english(df)
+                            if contains_target_gases_only(df.columns) and not all_textual(df):
+                                page_tables.append(df)
+                except Exception as e:
+                    logging.debug(f"pdfplumber extraction failed with strategy {strategy}: {e}")
+
+            # Fallback to Camelot
             if not page_tables:
                 try:
                     tables_c = camelot.read_pdf(str(pdf_path), pages=str(page_num), flavor="stream", suppress_stdout=True)
@@ -651,30 +368,6 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
                                 page_tables.append(df)
                 except Exception as e:
                     logging.warning(f"Camelot extraction failed on page {page_num}: {e}")
-            
-            # STEP 4: Fallback to text extraction (if all else fails)
-            if not page_tables:
-                page_text = page.extract_text()
-                if page_text:
-                    has_gas = any(gas in page_text for gas in GAS_COLUMNS)
-                    has_gc = 'Gas Chromatography' in page_text or 'Chromatography' in page_text
-                    
-                    if has_gas or has_gc:
-                        logging.info(f"Page {page_num}: Trying text extraction fallback")
-                        samples = extract_dga_from_text_direct(page_text)
-                        if samples:
-                            df = pd.DataFrame(samples)
-                            if 'date' in df.columns:
-                                df['date'] = df['date'].apply(standardize_date)
-                            for gas in GAS_COLUMNS:
-                                if gas not in df.columns:
-                                    df[gas] = 0.0
-                                if gas in df.columns:
-                                    df[gas] = pd.to_numeric(df[gas], errors='coerce').fillna(0.0)
-                            
-                            if not df.empty and not all_textual(df):
-                                page_tables.append(df)
-                                logging.info(f"Page {page_num}: Found data via text extraction")
 
             # Deduplicate
             unique_tables = []
@@ -689,7 +382,6 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
                     outdir_path.mkdir(parents=True, exist_ok=True)
                     out_file = outdir_path / f"page{page_num}_table{i}.csv"
                     df.to_csv(out_file, index=False, encoding="utf-8-sig")
-                    logging.info(f"Saved table to {out_file}")
 
     if not all_dataframes:
         print("\nNo relevant DGA concentration tables detected.")
@@ -703,10 +395,11 @@ def extract_pdf_tables(pdf_file: str, outdir: str = "output_tables", save_csv: b
 # --- Run Main ---
 if __name__ == "__main__":
     import sys
-    PDF_FILE = sys.argv[1] if len(sys.argv) > 1 else "main1.pdf"
+    PDF_FILE = sys.argv[1] if len(sys.argv) > 1 else "TFRDGAREPORT6.pdf"
     try:
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.ERROR)
         final_dga_data = extract_pdf_tables(PDF_FILE)
+        logging.getLogger().setLevel(logging.INFO)
 
         print("\n✅ Final Processed DGA Data Dictionary:")
         if not final_dga_data:

@@ -121,7 +121,7 @@ class IECAlgorithm(BaseAlgorithm):
                 if status_code == 2:
                     status = "Investigate"
                     fault_name = "Investigate - Monitor Closely"
-                    zone_color = "#FF9800"
+                    zone_color = "#1900FF"
                 elif status_code == 4:
                     status = "Action Required"
                     fault_name = "Action Required - Immediate Attention"

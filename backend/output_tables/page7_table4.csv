@@ -1,0 +1,8 @@
+﻿Sample Date,col_2,Duval,col_4_1,col_5_2,Duval_1,col_7_3,col_8_4,Duval_2,col_10_5,col_11_6,Duval_3,col_13_7,col_14_8,Duval_4,col_16_9,col_17_10,Duval_5,col_19_11,Rogers,Doernenburg,IEC
+,,Triangle 1,,,Triangle 4,,,Triangle 5,,,Triangle 6,,,Pentagon 1,,,Pentagon 2,,,,
+16/04/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T2,Thermal,T2
+30/04/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T3,Normal,T2
+07/06/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T3,Normal,T2
+09/07/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T3,Normal,T2
+09/08/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T2,Thermal,T2
+12/09/2023 00:00,T3,,,NA,,,C,,,T3,,,T3,,,T3H,,,T3,Thermal,T2

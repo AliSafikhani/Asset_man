@@ -1,10 +1,11 @@
-﻿"""
+﻿# backend\app\api\v1\endpoints\test_results.py
+"""
 Test Results API Endpoints
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc
+from sqlalchemy import select, and_, desc, delete
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from pydantic import BaseModel
@@ -43,6 +44,19 @@ class TestResultCreate(BaseModel):
     lab_name: Optional[str] = None
     notes: Optional[str] = None
     parameters: List[ParameterCreate]
+
+
+class TestResultBatchItem(BaseModel):
+    asset_id: int
+    test_type_id: int
+    test_date: str
+    lab_name: Optional[str] = None
+    notes: Optional[str] = None
+    parameters: List[ParameterCreate]
+
+
+class BatchTestResultCreate(BaseModel):
+    samples: List[TestResultBatchItem]
 
 
 class TestResultUpdate(BaseModel):
@@ -90,10 +104,8 @@ async def get_test_results(
     result = await db.execute(query)
     test_results = result.scalars().all()
     
-    # Convert to response format with parameter details
     response_data = []
     for tr in test_results:
-        # Query parameters for this test result
         params_result = await db.execute(
             select(TestParameter)
             .where(TestParameter.test_result_id == tr.id)
@@ -126,6 +138,99 @@ async def get_test_results(
     return response_data
 
 
+# ============================================
+# POST /batch - BATCH INSERT (MUST BE BEFORE DELETE /batch)
+# ============================================
+
+@router.post("/batch", status_code=status.HTTP_201_CREATED)
+async def batch_insert_test_results(
+    test_data: BatchTestResultCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """Insert multiple test results at once"""
+    results = []
+    errors = []
+    
+    for idx, sample in enumerate(test_data.samples):
+        try:
+            # Verify asset exists
+            asset_result = await db.execute(
+                select(Assets).where(Assets.id == sample.asset_id)
+            )
+            asset = asset_result.scalar_one_or_none()
+            if not asset:
+                errors.append({"row": idx + 1, "error": f"Asset {sample.asset_id} not found"})
+                continue
+            
+            # Verify test type exists
+            test_type_result = await db.execute(
+                select(TestTypes).where(TestTypes.id == sample.test_type_id)
+            )
+            test_type = test_type_result.scalar_one_or_none()
+            if not test_type:
+                errors.append({"row": idx + 1, "error": f"Test type {sample.test_type_id} not found"})
+                continue
+            
+            # Parse test date
+            try:
+                test_date = datetime.strptime(sample.test_date, "%Y-%m-%d").date()
+            except ValueError:
+                errors.append({"row": idx + 1, "error": f"Invalid date format: {sample.test_date}"})
+                continue
+            
+            # Create test result
+            test_result = TestResult(
+                asset_id=sample.asset_id,
+                test_type_id=sample.test_type_id,
+                test_date=test_date,
+                lab_name=sample.lab_name or "Default Lab",
+                notes=sample.notes or ""
+            )
+            db.add(test_result)
+            await db.flush()
+            
+            # Create parameters
+            for param in sample.parameters:
+                field_value_date = None
+                if param.field_value_date:
+                    try:
+                        field_value_date = datetime.strptime(param.field_value_date, "%Y-%m-%d").date()
+                    except ValueError:
+                        pass
+                
+                test_parameter = TestParameter(
+                    test_result_id=test_result.id,
+                    field_name=param.field_name,
+                    field_value=param.field_value,
+                    field_value_text=param.field_value_text,
+                    field_value_date=field_value_date,
+                    field_value_boolean=param.field_value_boolean,
+                    unit=param.unit
+                )
+                db.add(test_parameter)
+            
+            results.append({"row": idx + 1, "id": test_result.id, "success": True})
+            
+        except Exception as e:
+            logger.error(f"Error on row {idx + 1}: {str(e)}")
+            errors.append({"row": idx + 1, "error": str(e)})
+            await db.rollback()
+    
+    if results:
+        try:
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
+    return {
+        "success": len(results),
+        "failed": len(errors),
+        "results": results,
+        "errors": errors
+    }
+
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_test_result(
     test_result: TestResultCreate,
@@ -134,25 +239,21 @@ async def create_test_result(
 ):
     """Create a new test result"""
     
-    # Verify asset exists
     asset_result = await db.execute(select(Assets).where(Assets.id == test_result.asset_id))
     asset = asset_result.scalar_one_or_none()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
     
-    # Verify test type exists
     test_type_result = await db.execute(select(TestTypes).where(TestTypes.id == test_result.test_type_id))
     test_type = test_type_result.scalar_one_or_none()
     if not test_type:
         raise HTTPException(status_code=404, detail="Test type not found")
     
-    # Parse test date
     try:
         test_date = datetime.strptime(test_result.test_date, "%Y-%m-%d").date()
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid test date format. Use YYYY-MM-DD")
     
-    # Create test result
     new_test_result = TestResult(
         asset_id=test_result.asset_id,
         test_type_id=test_result.test_type_id,
@@ -163,9 +264,8 @@ async def create_test_result(
     )
     
     db.add(new_test_result)
-    await db.flush()  # Get ID
+    await db.flush()
     
-    # Add parameters
     for param_data in test_result.parameters:
         field_value_date = None
         if param_data.field_value_date:
@@ -188,28 +288,6 @@ async def create_test_result(
     await db.commit()
     await db.refresh(new_test_result)
     
-    # ============================================
-    # IEEE ALGORITHM RECALCULATION
-    # ============================================
-    is_dga = test_type.test_name and 'dga' in test_type.test_name.lower()
-    is_transformer = asset.asset_type == 'transformer'
-    
-    if is_dga and is_transformer:
-        logger.info(f"🔄 New DGA test result added for transformer {asset.id}. Recalculating IEEE status...")
-        
-        try:
-            ieee_service = IEEEService()
-            results = await ieee_service.calculate_ieee_status(db, asset.id)
-            
-            if results:
-                logger.info(f"✅ IEEE recalculation completed for transformer {asset.id}")
-            else:
-                logger.warning(f"⚠️ IEEE recalculation returned no results for transformer {asset.id}")
-        except Exception as e:
-            logger.error(f"❌ Error during IEEE recalculation for transformer {asset.id}: {str(e)}", exc_info=True)
-    # ============================================
-    
-    # Return response
     response_params = []
     params_result = await db.execute(
         select(TestParameter)
@@ -267,7 +345,6 @@ async def update_test_result(
         existing.notes = test_result.notes
     
     if test_result.parameters is not None:
-        # Delete existing parameters
         params_result = await db.execute(
             select(TestParameter)
             .where(TestParameter.test_result_id == existing.id)
@@ -276,7 +353,6 @@ async def update_test_result(
         for param in existing_params:
             await db.delete(param)
         
-        # Add new parameters
         for param_data in test_result.parameters:
             field_value_date = None
             if param_data.field_value_date:
@@ -298,34 +374,6 @@ async def update_test_result(
     
     await db.commit()
     await db.refresh(existing)
-    
-    # ============================================
-    # IEEE ALGORITHM RECALCULATION
-    # ============================================
-    asset_result = await db.execute(select(Assets).where(Assets.id == existing.asset_id))
-    asset = asset_result.scalar_one_or_none()
-    
-    test_type_result = await db.execute(select(TestTypes).where(TestTypes.id == existing.test_type_id))
-    test_type = test_type_result.scalar_one_or_none()
-    
-    if asset and test_type:
-        is_dga = test_type.test_name and 'dga' in test_type.test_name.lower()
-        is_transformer = asset.asset_type == 'transformer'
-        
-        if is_dga and is_transformer:
-            logger.info(f"🔄 DGA test result updated for transformer {asset.id}. Recalculating IEEE status...")
-            
-            try:
-                ieee_service = IEEEService()
-                results = await ieee_service.calculate_ieee_status(db, asset.id)
-                
-                if results:
-                    logger.info(f"✅ IEEE recalculation completed for transformer {asset.id}")
-                else:
-                    logger.warning(f"⚠️ IEEE recalculation returned no results for transformer {asset.id}")
-            except Exception as e:
-                logger.error(f"❌ Error during IEEE recalculation for transformer {asset.id}: {str(e)}", exc_info=True)
-    # ============================================
     
     response_params = []
     params_result = await db.execute(
@@ -370,10 +418,6 @@ async def delete_test_result(
     if not existing:
         raise HTTPException(status_code=404, detail="Test result not found")
     
-    asset_id = existing.asset_id
-    test_type_id = existing.test_type_id
-    
-    # Delete parameters first
     params_result = await db.execute(
         select(TestParameter)
         .where(TestParameter.test_result_id == existing.id)
@@ -385,36 +429,12 @@ async def delete_test_result(
     await db.delete(existing)
     await db.commit()
     
-    # ============================================
-    # IEEE ALGORITHM RECALCULATION
-    # ============================================
-    asset_result = await db.execute(select(Assets).where(Assets.id == asset_id))
-    asset = asset_result.scalar_one_or_none()
-    
-    test_type_result = await db.execute(select(TestTypes).where(TestTypes.id == test_type_id))
-    test_type = test_type_result.scalar_one_or_none()
-    
-    if asset and test_type:
-        is_dga = test_type.test_name and 'dga' in test_type.test_name.lower()
-        is_transformer = asset.asset_type == 'transformer'
-        
-        if is_dga and is_transformer:
-            logger.info(f"🔄 DGA test result deleted for transformer {asset.id}. Recalculating IEEE status...")
-            
-            try:
-                ieee_service = IEEEService()
-                results = await ieee_service.calculate_ieee_status(db, asset.id)
-                
-                if results:
-                    logger.info(f"✅ IEEE recalculation completed for transformer {asset.id}")
-                else:
-                    logger.warning(f"⚠️ IEEE recalculation returned no results for transformer {asset.id}")
-            except Exception as e:
-                logger.error(f"❌ Error during IEEE recalculation for transformer {asset.id}: {str(e)}", exc_info=True)
-    # ============================================
-    
     return {"message": "Test result deleted successfully"}
 
+
+# ============================================
+# DELETE /batch - BATCH DELETE (MUST BE AFTER POST /batch)
+# ============================================
 
 @router.delete("/batch")
 async def delete_test_results_batch(
@@ -433,11 +453,7 @@ async def delete_test_results_batch(
     if not test_results:
         raise HTTPException(status_code=404, detail="No test results found")
     
-    asset_ids = set()
     for tr in test_results:
-        asset_ids.add(tr.asset_id)
-        
-        # Delete parameters for each test result
         params_result = await db.execute(
             select(TestParameter)
             .where(TestParameter.test_result_id == tr.id)
@@ -445,54 +461,8 @@ async def delete_test_results_batch(
         parameters = params_result.scalars().all()
         for param in parameters:
             await db.delete(param)
-        
         await db.delete(tr)
     
     await db.commit()
-    
-    # ============================================
-    # IEEE ALGORITHM RECALCULATION
-    # ============================================
-    for asset_id in asset_ids:
-        asset_result = await db.execute(select(Assets).where(Assets.id == asset_id))
-        asset = asset_result.scalar_one_or_none()
-        
-        if asset and asset.asset_type == 'transformer':
-            test_type_result = await db.execute(
-                select(TestTypes).where(
-                    and_(
-                        TestTypes.asset_type == 'transformer',
-                        TestTypes.test_name.ilike('%dga%')
-                    )
-                )
-            )
-            test_type = test_type_result.scalar_one_or_none()
-            
-            if test_type:
-                results_count = await db.execute(
-                    select(TestResult)
-                    .where(
-                        and_(
-                            TestResult.asset_id == asset_id,
-                            TestResult.test_type_id == test_type.id
-                        )
-                    )
-                )
-                remaining = results_count.scalars().all()
-                
-                if remaining:
-                    logger.info(f"🔄 DGA test results deleted for transformer {asset.id}. Recalculating IEEE status...")
-                    
-                    try:
-                        ieee_service = IEEEService()
-                        results = await ieee_service.calculate_ieee_status(db, asset.id)
-                        
-                        if results:
-                            logger.info(f"✅ IEEE recalculation completed for transformer {asset.id}")
-                        else:
-                            logger.warning(f"⚠️ IEEE recalculation returned no results for transformer {asset.id}")
-                    except Exception as e:
-                        logger.error(f"❌ Error during IEEE recalculation for transformer {asset.id}: {str(e)}", exc_info=True)
-    # ============================================
     
     return {"message": f"{len(test_results)} test result(s) deleted successfully"}

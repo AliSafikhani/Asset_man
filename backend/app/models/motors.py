@@ -1,4 +1,5 @@
-﻿from sqlalchemy import Column, Integer, String, Float, Boolean, JSON, ForeignKey
+﻿# backend\app\models\motors.py
+from sqlalchemy import Column, Integer, String, Float, Boolean, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models import Base, TimestampMixin
 

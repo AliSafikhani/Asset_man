@@ -1,5 +1,4 @@
-﻿
-// frontend\src\pages\Assets.jsx
+﻿// frontend/src/pages/Assets.jsx
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -174,6 +173,36 @@ function Assets() {
     }
   };
 
+  // Helper function to clean empty values from objects
+  const cleanObject = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const cleaned = {};
+    Object.keys(obj).forEach(key => {
+      const value = obj[key];
+      // Preserve boolean values
+      if (typeof value === 'boolean') {
+        cleaned[key] = value;
+      }
+      // Convert empty strings to null
+      else if (typeof value === 'string') {
+        cleaned[key] = value.trim() === '' ? null : value;
+      }
+      // Preserve numbers (including 0)
+      else if (typeof value === 'number') {
+        cleaned[key] = value;
+      }
+      // Preserve null/undefined as null
+      else if (value === null || value === undefined) {
+        cleaned[key] = null;
+      }
+      // Everything else
+      else {
+        cleaned[key] = value;
+      }
+    });
+    return cleaned;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -196,9 +225,14 @@ function Assets() {
         photo_url: formData.photo_url || null
       };
 
-      if (formData.asset_type === 'generator') payload.generator = formData.generator;
-      else if (formData.asset_type === 'transformer') payload.transformer = formData.transformer;
-      else if (formData.asset_type === 'motor') payload.motor = formData.motor;
+      // Clean asset-specific data
+      if (formData.asset_type === 'generator') {
+        payload.generator = cleanObject(formData.generator);
+      } else if (formData.asset_type === 'transformer') {
+        payload.transformer = cleanObject(formData.transformer);
+      } else if (formData.asset_type === 'motor') {
+        payload.motor = cleanObject(formData.motor);
+      }
 
       if (editingAsset) {
         await API.put(`/assets/${editingAsset.id}`, payload);
@@ -967,7 +1001,10 @@ function Assets() {
               <label style={styles.formLabel}>Insulation Type</label>
               <select
                 value={formData.transformer.insulation_type || ''}
-                onChange={(e) => handleFieldChange('transformer', 'insulation_type', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'insulation_type', value === '' ? null : value);
+                }}
                 style={styles.formSelect}
               >
                 <option value="">Select...</option>
@@ -978,7 +1015,10 @@ function Assets() {
               <label style={styles.formLabel}>Insulation Class</label>
               <select
                 value={formData.transformer.insulation_class || ''}
-                onChange={(e) => handleFieldChange('transformer', 'insulation_class', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'insulation_class', value === '' ? null : value);
+                }}
                 style={styles.formSelect}
               >
                 <option value="">Select...</option>
@@ -1015,7 +1055,10 @@ function Assets() {
               <label style={styles.formLabel}>Vector Group</label>
               <select
                 value={formData.transformer.vector_group || ''}
-                onChange={(e) => handleFieldChange('transformer', 'vector_group', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'vector_group', value === '' ? null : value);
+                }}
                 style={styles.formSelect}
               >
                 <option value="">Select...</option>
@@ -1037,7 +1080,10 @@ function Assets() {
               <label style={styles.formLabel}>Oil Type</label>
               <select
                 value={formData.transformer.oil_type || ''}
-                onChange={(e) => handleFieldChange('transformer', 'oil_type', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'oil_type', value === '' ? null : value);
+                }}
                 style={styles.formSelect}
               >
                 <option value="">Select...</option>
@@ -1817,7 +1863,7 @@ const styles = {
     flexWrap: 'wrap',
     gap: '16px'
   },
-    ageBadge: {
+  ageBadge: {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '4px 10px',
@@ -2426,6 +2472,12 @@ const styles = {
     fontWeight: '600',
     color: '#0f172a',
     margin: 0
+  },
+  subSectionTitle: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#0f172a',
+    margin: '12px 0 8px 0'
   }
 };
 

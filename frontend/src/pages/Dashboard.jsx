@@ -227,9 +227,9 @@ function Dashboard() {
               {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
           </div>
-          <button style={styles.addAssetBtn} onClick={() => navigate('/assets/new')}>
-            <FaPlus size={16} /> Add Asset
-          </button>
+          {/* <button style={styles.addAssetBtn} onClick={() => navigate('/assets/new')}> */}
+            {/* <FaPlus size={16} /> Add Asset
+          </button> */}
         </div>
       </div>
 

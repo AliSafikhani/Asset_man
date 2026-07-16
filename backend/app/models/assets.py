@@ -1,4 +1,5 @@
-﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, JSON, ForeignKey
+﻿# backend\app\models\assets.py
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.base import Base, TimestampMixin
 

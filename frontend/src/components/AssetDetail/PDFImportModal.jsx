@@ -124,7 +124,9 @@ const PDFImportModal = ({ assetId, testTypeId, onBack, onCancel, onSuccess }) =>
         }))
       };
 
+      // const response = await API.post('/test-results/batch', batchData);
       const response = await API.post('/test-results/batch', batchData);
+
       
       if (response.data.success > 0) {
         onSuccess(response.data);

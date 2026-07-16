@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+﻿# backend\app\api\v1\endpoints\companies.py
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
@@ -33,6 +34,7 @@ class CompanyResponse(CompanyCreate):
         from_attributes = True
 
 @router.get("/")
+@router.get("")  # Also match without trailing slash
 async def get_companies(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Companies))
     companies = result.scalars().all()
