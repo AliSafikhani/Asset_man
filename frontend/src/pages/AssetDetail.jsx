@@ -1,5 +1,5 @@
 // frontend/src/pages/AssetDetail.jsx
-// Refactored - Compact version
+// Refactored - Compact version with Duplicate Date Highlighting
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -74,6 +74,38 @@ const calculateAge = (date) => {
   return years >= 0 ? years : 'N/A';
 };
 
+// ============== DUPLICATE DATE HELPERS ==============
+const getDuplicateDateInfo = (testDate, testResults) => {
+  const duplicates = testResults.filter(r => r.test_date === testDate);
+  if (duplicates.length > 1) {
+    return {
+      count: duplicates.length,
+      isDuplicate: true,
+      message: `This date has ${duplicates.length} test results`
+    };
+  }
+  return { isDuplicate: false, count: 0, message: '' };
+};
+
+const getDuplicateDateStyle = (testDate, testResults, resultId) => {
+  const duplicates = testResults.filter(r => r.test_date === testDate);
+  
+  if (duplicates.length > 1) {
+    // Find the index of this result among duplicates
+    const duplicateIndex = duplicates.findIndex(r => r.id === resultId);
+    // Different shades for each duplicate
+    const shades = ['#ebf5ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa'];
+    const borderColors = ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'];
+    
+    return {
+      backgroundColor: shades[duplicateIndex % shades.length],
+      borderLeft: `4px solid ${borderColors[duplicateIndex % borderColors.length]}`,
+      transition: 'background-color 0.2s ease'
+    };
+  }
+  return {};
+};
+
 // ============== COMPONENT ==============
 function AssetDetail() {
   const { assetId } = useParams();
@@ -93,6 +125,7 @@ function AssetDetail() {
   const [selectAll, setSelectAll] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
 
   // Form states
   const [showTestForm, setShowTestForm] = useState(false);
@@ -111,18 +144,53 @@ function AssetDetail() {
   const [statusMap, setStatusMap] = useState({ ieee: {}, iec: {} });
   const [statusLoading, setStatusLoading] = useState({ ieee: false, iec: false });
 
+  // Sort state
+  const [sortConfig, setSortConfig] = useState({ key: 'test_date', direction: 'desc' });
+
   // --- Computed ---
   const isDGA = useMemo(() => 
     testTypes.find(t => t.id == selectedTestType)?.test_name?.toLowerCase().includes('dga') || false,
     [testTypes, selectedTestType]
   );
 
+  // Sort and filter results
+  const sortedAndFilteredResults = useMemo(() => {
+    if (!testResults.length) return [];
+
+    let sorted = [...testResults];
+
+    // Apply sorting
+    if (sortConfig.key) {
+      sorted.sort((a, b) => {
+        if (sortConfig.key === 'test_date') {
+          const dateA = new Date(a.test_date).getTime();
+          const dateB = new Date(b.test_date).getTime();
+          return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+        return 0;
+      });
+    }
+
+    // Apply duplicate filter
+    if (showDuplicatesOnly) {
+      const dateCounts = {};
+      sorted.forEach(r => {
+        dateCounts[r.test_date] = (dateCounts[r.test_date] || 0) + 1;
+      });
+      const duplicateDates = Object.keys(dateCounts).filter(d => dateCounts[d] > 1);
+      return sorted.filter(r => duplicateDates.includes(r.test_date));
+    }
+
+    return sorted;
+  }, [testResults, sortConfig, showDuplicatesOnly]);
+
   const paginatedResults = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return testResults.slice(start, start + pageSize);
-  }, [testResults, currentPage, pageSize]);
+    return sortedAndFilteredResults.slice(start, start + pageSize);
+  }, [sortedAndFilteredResults, currentPage, pageSize]);
 
-  const totalRecords = testResults.length;
+  const totalRecords = sortedAndFilteredResults.length;
+  const totalDuplicateRecords = testResults.length - sortedAndFilteredResults.length;
 
   // --- Effects ---
   useEffect(() => { loadAsset(); }, [assetId]);
@@ -160,7 +228,6 @@ function AssetDetail() {
     try {
       const res = await API.get(`/test-fields/test-type/${testTypeId}`);
       
-      // Filter out duplicate fields
       const EXCLUDED_FIELDS = ['laboratory_name', 'sample_temp'];
       const filteredFields = res.data.filter(f => !EXCLUDED_FIELDS.includes(f.field_name));
       
@@ -169,7 +236,7 @@ function AssetDetail() {
       const visibility = {
         checkbox: true, 
         test_date: true, 
-        lab_name: false,  // Add this to hide built-in lab name by default
+        lab_name: false,
         notes: false,
         actions: true, 
         ieee_status: true, 
@@ -203,6 +270,7 @@ function AssetDetail() {
       setAlgoData({});
       setAlgoError(null);
       setCurrentPage(1);
+      setShowDuplicatesOnly(false);
     } catch (error) {
       console.error('Error loading test results:', error);
     }
@@ -374,6 +442,13 @@ function AssetDetail() {
     }
   };
 
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
   // --- DGA Algorithms ---
   const calculateDgaAlgorithms = async () => {
     if (!selectedRows.length) return alert('Select at least one test result.');
@@ -471,6 +546,9 @@ function AssetDetail() {
 
   const selectedTestTypeName = testTypes.find(t => t.id == selectedTestType)?.test_name;
 
+  // Count visible columns for colspan
+  const visibleColumnsCount = Object.values(visibleColumns).filter(v => v !== false).length;
+
   return (
     <div style={s.container}>
       {/* Header */}
@@ -536,6 +614,21 @@ function AssetDetail() {
 
             {selectedTestType && (
               <div style={s.headerActions}>
+                <button 
+                  onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
+                  style={{
+                    ...s.duplicateFilterButton,
+                    backgroundColor: showDuplicatesOnly ? '#dbeafe' : '#f1f5f9',
+                    color: showDuplicatesOnly ? '#3b82f6' : '#475569',
+                    borderColor: showDuplicatesOnly ? '#3b82f6' : '#e2e8f0'
+                  }}
+                  title={showDuplicatesOnly ? 'Show all results' : 'Show only dates with multiple tests'}
+                >
+                  📅 {showDuplicatesOnly ? 'All Results' : 'Duplicate Dates'}
+                  {showDuplicatesOnly && totalDuplicateRecords > 0 && (
+                    <span style={s.duplicateBadge}>{totalDuplicateRecords}</span>
+                  )}
+                </button>
                 <button onClick={() => setShowColumnSelector(!showColumnSelector)} style={s.columnSelectorButton}>
                   📊 Columns ▼
                 </button>
@@ -579,6 +672,49 @@ function AssetDetail() {
             </div>
           )}
 
+          {/* Duplicate Date Info Banner */}
+          {selectedTestType && testResults.length > 0 && (
+            <div style={s.duplicateInfoBanner}>
+              <div style={s.duplicateInfoContent}>
+                <span style={s.duplicateInfoIcon}>ℹ️</span>
+                <span style={s.duplicateInfoText}>
+                  {showDuplicatesOnly ? (
+                    <>Showing <strong>{totalRecords}</strong> results with duplicate dates</>
+                  ) : (
+                    <>
+                      Total: <strong>{testResults.length}</strong> results | 
+                      <span style={{ color: '#3b82f6', marginLeft: '4px' }}>
+                        <strong>{testResults.length - totalRecords}</strong> results with unique dates
+                      </span>
+                      {testResults.length - totalRecords > 0 && (
+                        <span style={{ marginLeft: '8px', fontSize: '12px', color: '#94a3b8' }}>
+                          (Click "Duplicate Dates" to view only duplicates)
+                        </span>
+                      )}
+                    </>
+                  )}
+                </span>
+                {!showDuplicatesOnly && (
+                  <span style={s.duplicateLegend}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ 
+                        display: 'inline-block', 
+                        width: '12px', 
+                        height: '12px', 
+                        backgroundColor: '#ebf5ff',
+                        borderLeft: '3px solid #3b82f6',
+                        borderRadius: '2px'
+                      }}></span>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>
+                        Same date tests
+                      </span>
+                    </span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Empty State */}
           {selectedTestType && testResults.length === 0 && (
             <div style={s.emptyState}>
@@ -595,18 +731,45 @@ function AssetDetail() {
           {testResults.length > 0 && (
             <div style={s.tableContainer}>
               <div style={s.tableHeaderWrapper}>
-                <h3 style={s.tableTitle}>Test History - {selectedTestTypeName} <span style={s.tableCount}>({totalRecords} records)</span></h3>
+                <h3 style={s.tableTitle}>
+                  Test History - {selectedTestTypeName} 
+                  <span style={s.tableCount}>
+                    ({totalRecords} {totalRecords === 1 ? 'record' : 'records'}
+                    {showDuplicatesOnly && ' - duplicate dates only'}
+                    )
+                  </span>
+                </h3>
               </div>
 
-              <Pagination currentPage={currentPage} totalRecords={totalRecords} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(e) => { setPageSize(parseInt(e.target.value)); setCurrentPage(1); }} />
+              <Pagination 
+                currentPage={currentPage} 
+                totalRecords={totalRecords} 
+                pageSize={pageSize} 
+                onPageChange={setCurrentPage} 
+                onPageSizeChange={(e) => { 
+                  setPageSize(parseInt(e.target.value)); 
+                  setCurrentPage(1); 
+                }} 
+              />
 
               <div style={s.tableWrapper}>
                 <table style={s.dataTable}>
                   <thead>
                     <tr>
                       {visibleColumns.checkbox !== false && <th style={s.thCheckbox}><input type="checkbox" checked={selectAll} onChange={handleSelectAll} /></th>}
-                      {visibleColumns.test_date !== false && <th style={s.th}>Test Date</th>}
-                      {/* {visibleColumns.lab_name !== false && <th style={s.th}>Lab</th>} */}
+                      {visibleColumns.test_date !== false && (
+                        <th 
+                          style={{...s.th, ...s.sortableHeader, cursor: 'pointer'}} 
+                          onClick={() => handleSort('test_date')}
+                        >
+                          Test Date 
+                          {sortConfig.key === 'test_date' && (
+                            <span style={{ marginLeft: '4px' }}>
+                              {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                            </span>
+                          )}
+                        </th>
+                      )}
                       {isDGA && visibleColumns.ieee_status !== false && <th style={s.th}>IEEE</th>}
                       {isDGA && visibleColumns.iec_status !== false && <th style={s.th}>IEC</th>}
                       {testFields.map(f => visibleColumns[f.field_name] !== false && <th key={f.id} style={s.th}>{f.display_name}</th>)}
@@ -621,16 +784,53 @@ function AssetDetail() {
                       const iec = statusMap.iec[result.id];
                       const ieeeBadge = getBadge('IEEE', ieee?.status, ieee?.status_code);
                       const iecBadge = getBadge('IEC', iec?.status, iec?.status_code);
+                      
+                      // Get duplicate date information
+                      const duplicateInfo = getDuplicateDateInfo(result.test_date, testResults);
+                      const duplicateStyle = getDuplicateDateStyle(result.test_date, testResults, result.id);
+                      
+                      const rowStyle = {
+                        ...(isChecked ? s.trSelected : s.tr),
+                        ...duplicateStyle
+                      };
 
                       return (
-                        <tr key={result.id} style={isChecked ? s.trSelected : s.tr}>
-                          {visibleColumns.checkbox !== false && <td style={s.tdCheckbox}><input type="checkbox" checked={isChecked} onChange={() => handleRowSelect(result.id)} /></td>}
-                          {visibleColumns.test_date !== false && <td style={s.td}>{new Date(result.test_date).toLocaleDateString()}</td>}
-                          {/* {visibleColumns.lab_name !== false && <td style={s.td}>{result.lab_name || '-'}</td>} */}
+                        <tr key={result.id} style={rowStyle}>
+                          {visibleColumns.checkbox !== false && (
+                            <td style={s.tdCheckbox}>
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked} 
+                                onChange={() => handleRowSelect(result.id)} 
+                              />
+                            </td>
+                          )}
+                          {visibleColumns.test_date !== false && (
+                            <td style={s.td} title={duplicateInfo.isDuplicate ? duplicateInfo.message : ''}>
+                              {new Date(result.test_date).toLocaleDateString()}
+                              {duplicateInfo.isDuplicate && (
+                                <span style={s.duplicateCountBadge}>
+                                  {duplicateInfo.count}x
+                                </span>
+                              )}
+                            </td>
+                          )}
                           {isDGA && visibleColumns.ieee_status !== false && (
                             <td style={s.td}>
-                              {statusLoading.ieee ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', backgroundColor: ieeeBadge.bg, color: ieeeBadge.color, fontSize: '11px', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                              {statusLoading.ieee ? 
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
+                                <span style={{ 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  gap: '4px', 
+                                  padding: '2px 8px', 
+                                  borderRadius: '4px', 
+                                  backgroundColor: ieeeBadge.bg, 
+                                  color: ieeeBadge.color, 
+                                  fontSize: '11px', 
+                                  fontWeight: '500', 
+                                  whiteSpace: 'nowrap' 
+                                }}>
                                   {ieeeBadge.icon} {ieeeBadge.label}
                                 </span>
                               }
@@ -638,8 +838,20 @@ function AssetDetail() {
                           )}
                           {isDGA && visibleColumns.iec_status !== false && (
                             <td style={s.td}>
-                              {statusLoading.iec ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', backgroundColor: iecBadge.bg, color: iecBadge.color, fontSize: '11px', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                              {statusLoading.iec ? 
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
+                                <span style={{ 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  gap: '4px', 
+                                  padding: '2px 8px', 
+                                  borderRadius: '4px', 
+                                  backgroundColor: iecBadge.bg, 
+                                  color: iecBadge.color, 
+                                  fontSize: '11px', 
+                                  fontWeight: '500', 
+                                  whiteSpace: 'nowrap' 
+                                }}>
                                   {iecBadge.icon} {iecBadge.label}
                                 </span>
                               }
@@ -650,7 +862,10 @@ function AssetDetail() {
                             const param = result.parameters?.find(p => p.field_name === field.field_name);
                             let value = '-', unit = '';
                             if (param) {
-                              if (param.field_value !== null) { value = param.field_value; unit = param.unit || ''; }
+                              if (param.field_value !== null) { 
+                                value = param.field_value; 
+                                unit = param.unit || ''; 
+                              }
                               else if (param.field_value_text) value = param.field_value_text;
                               else if (param.field_value_date) value = new Date(param.field_value_date).toLocaleDateString();
                               else if (param.field_value_boolean !== null) value = param.field_value_boolean ? 'Yes' : 'No';
@@ -672,11 +887,25 @@ function AssetDetail() {
                 </table>
               </div>
 
-              <Pagination currentPage={currentPage} totalRecords={totalRecords} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={(e) => { setPageSize(parseInt(e.target.value)); setCurrentPage(1); }} />
+              <Pagination 
+                currentPage={currentPage} 
+                totalRecords={totalRecords} 
+                pageSize={pageSize} 
+                onPageChange={setCurrentPage} 
+                onPageSizeChange={(e) => { 
+                  setPageSize(parseInt(e.target.value)); 
+                  setCurrentPage(1); 
+                }} 
+              />
 
               <div style={s.tableFooter}>
                 <span>Total: {totalRecords} records</span>
                 {selectedRows.length > 0 && <span>Selected: {selectedRows.length} records</span>}
+                {showDuplicatesOnly && (
+                  <span style={{ color: '#3b82f6' }}>
+                    📅 Showing only duplicate dates
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -759,11 +988,18 @@ const s = {
   select: { width: '100%', padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', background: 'white' },
   headerActions: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' },
   columnSelectorButton: { display: 'flex', alignItems: 'center', padding: '10px 16px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
+  duplicateFilterButton: { display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s ease' },
   addButton: { display: 'flex', alignItems: 'center', padding: '10px 20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
   bulkDeleteButton: { padding: '10px 16px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
   algoButton: { padding: '10px 20px', background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' },
   algoLoadingButton: { padding: '10px 20px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'not-allowed', fontSize: '13px', fontWeight: '500', opacity: 0.7 },
   columnSelectorWrapper: { marginBottom: '20px', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' },
+  duplicateInfoBanner: { marginBottom: '16px', padding: '10px 16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' },
+  duplicateInfoContent: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' },
+  duplicateInfoIcon: { fontSize: '14px', marginRight: '8px' },
+  duplicateInfoText: { fontSize: '13px', color: '#475569' },
+  duplicateLegend: { display: 'flex', alignItems: 'center', gap: '8px' },
+  duplicateBadge: { display: 'inline-block', marginLeft: '4px', padding: '0 6px', background: '#3b82f6', color: 'white', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold' },
   emptyState: { textAlign: 'center', padding: '60px 20px' },
   emptyIcon: { fontSize: '56px', marginBottom: '16px' },
   emptyTitle: { fontSize: '20px', fontWeight: '600', color: '#0f172a', marginBottom: '8px' },
@@ -783,10 +1019,25 @@ const s = {
   tdCheckbox: { padding: '4px 6px', borderBottom: '1px solid #dee2e6', textAlign: 'center', width: '30px' },
   tdNotes: { padding: '4px 6px', borderBottom: '1px solid #dee2e6', fontSize: '12px', color: '#64748b', maxWidth: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   tdActions: { padding: '4px 6px', borderBottom: '1px solid #dee2e6', whiteSpace: 'nowrap' },
-  tr: { transition: 'background-color 0.2s' },
+  tr: { transition: 'background-color 0.2s ease' },
   trSelected: { backgroundColor: '#e3f2fd' },
   editButton: { marginRight: '4px', padding: '2px 8px', backgroundColor: '#FF9800', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' },
-  deleteButton: { padding: '2px 8px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }
+  deleteButton: { padding: '2px 8px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' },
+  sortableHeader: { 
+    cursor: 'pointer', 
+    userSelect: 'none',
+    '&:hover': { backgroundColor: '#e2e8f0' }
+  },
+  duplicateCountBadge: {
+    marginLeft: '4px',
+    padding: '1px 6px',
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    borderRadius: '10px',
+    fontSize: '9px',
+    fontWeight: 'bold',
+    display: 'inline-block'
+  }
 };
 
 // Add global CSS
@@ -798,6 +1049,7 @@ styleSheet.textContent = `
   .column-selector-btn:hover { background: #e2e8f0; }
   .bulk-delete-btn:hover { background: #fecaca; }
   .tab:hover:not(.tab-active) { background: #f1f5f9; }
+  tr:hover { background-color: #f8fafc !important; }
 `;
 document.head.appendChild(styleSheet);
 

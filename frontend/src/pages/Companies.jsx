@@ -1,19 +1,202 @@
 ﻿// frontend/src/pages/Companies.jsx
+// Refactored - Professional Companies Page with Map Integration
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import Table from '../components/ui/Table';
 import toast from 'react-hot-toast';
 import { 
   FaBuilding, FaSearch, FaPlus, FaEdit, FaTrash, FaArrowRight, 
   FaTimes, FaIndustry, FaPhone, FaEnvelope, FaMapMarkerAlt,
-  FaUsers, FaDatabase, FaChevronRight, FaHome
+  FaUsers, FaDatabase, FaGlobe, FaLocationArrow, FaLink,
+  FaChartPie, FaClock, FaCheckCircle, FaExclamationTriangle,
+  FaInfoCircle, FaEye
 } from 'react-icons/fa';
-import { MdOutlineBusinessCenter } from 'react-icons/md';
+import { MdOutlineBusinessCenter, MdLocationOn } from 'react-icons/md';
 
+// ============== MAPNA DIGITAL LOGO COMPONENT ==============
+const MapnaLogo = ({ size = 32 }) => (
+  <svg 
+    viewBox="0 0 200 50" 
+    height={size} 
+    style={{ display: 'block' }}
+  >
+    <defs>
+      <linearGradient id="mapnaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style={{ stopColor: '#667eea', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: '#764ba2', stopOpacity: 1 }} />
+      </linearGradient>
+    </defs>
+    <text x="0" y="30" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="800" fill="url(#mapnaGradient)">
+      MAPNA
+    </text>
+    <text x="90" y="30" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="300" fill="#64748b">
+      Digital
+    </text>
+    <rect x="0" y="38" width="180" height="2" rx="1" fill="url(#mapnaGradient)" />
+  </svg>
+);
+
+// ============== SIMPLE MAP COMPONENT ==============
+const CompanyMap = ({ companies }) => {
+  const [hoveredCompany, setHoveredCompany] = useState(null);
+
+  // Generate random positions for demo (in real app, use actual coordinates)
+  const getCompanyPosition = (index, total) => {
+    // Spread companies across a virtual map
+    const angle = (index / total) * 2 * Math.PI;
+    const radius = 60 + (index % 3) * 20;
+    return {
+      x: 50 + Math.cos(angle) * radius,
+      y: 50 + Math.sin(angle) * radius
+    };
+  };
+
+  return (
+    <div style={mapStyles.container}>
+      <div style={mapStyles.header}>
+        <span style={mapStyles.title}>
+          <FaGlobe size={16} style={{ marginRight: '8px' }} />
+          Company Locations
+        </span>
+        <span style={mapStyles.count}>{companies.length} companies</span>
+      </div>
+      <div style={mapStyles.mapWrapper}>
+        <svg viewBox="0 0 400 300" style={mapStyles.svg}>
+          {/* Background Grid */}
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" strokeWidth="0.5" />
+            </pattern>
+            <radialGradient id="glow">
+              <stop offset="0%" stopColor="#667eea" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#667eea" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          
+          <rect width="400" height="300" fill="url(#grid)" />
+          
+          {/* Connection Lines */}
+          {companies.length > 1 && companies.map((company, idx) => {
+            const pos = getCompanyPosition(idx, companies.length);
+            return companies.map((_, idx2) => {
+              if (idx2 <= idx) return null;
+              const pos2 = getCompanyPosition(idx2, companies.length);
+              return (
+                <line
+                  key={`${idx}-${idx2}`}
+                  x1={pos.x}
+                  y1={pos.y}
+                  x2={pos2.x}
+                  y2={pos2.y}
+                  stroke="#667eea20"
+                  strokeWidth="1"
+                  strokeDasharray="4,4"
+                />
+              );
+            });
+          })}
+
+          {/* Company Markers */}
+          {companies.map((company, index) => {
+            const pos = getCompanyPosition(index, companies.length);
+            const isHovered = hoveredCompany === company.id;
+            const hasPlants = (company.plants_count || 0) > 0;
+
+            return (
+              <g key={company.id}>
+                {/* Glow Effect */}
+                {isHovered && (
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r="25"
+                    fill="url(#glow)"
+                  />
+                )}
+                
+                {/* Connection Dot */}
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r="6"
+                  fill={hasPlants ? '#667eea' : '#94a3b8'}
+                  stroke="white"
+                  strokeWidth="2"
+                  style={mapStyles.marker}
+                  onMouseEnter={() => setHoveredCompany(company.id)}
+                  onMouseLeave={() => setHoveredCompany(null)}
+                />
+                
+                {/* Inner Dot */}
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r="2"
+                  fill="white"
+                  opacity={hasPlants ? 0.8 : 0.4}
+                />
+
+                {/* Label */}
+                <text
+                  x={pos.x}
+                  y={pos.y - 14}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill={isHovered ? '#667eea' : '#64748b'}
+                  fontWeight={isHovered ? '600' : '400'}
+                  style={mapStyles.label}
+                >
+                  {company.name.length > 10 ? company.name.substring(0, 8) + '…' : company.name}
+                </text>
+
+                {/* Tooltip */}
+                {isHovered && (
+                  <g transform={`translate(${pos.x + 15}, ${pos.y - 20})`}>
+                    <rect
+                      x="0"
+                      y="0"
+                      width="140"
+                      height="50"
+                      rx="6"
+                      fill="white"
+                      stroke="#e2e8f0"
+                      strokeWidth="1"
+                      filter="url(#shadow)"
+                    />
+                    <text x="10" y="18" fontSize="11" fontWeight="600" fill="#0f172a">
+                      {company.name}
+                    </text>
+                    <text x="10" y="34" fontSize="10" fill="#64748b">
+                      {company.plants_count || 0} Plants • {company.assets_count || 0} Assets
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <div style={mapStyles.legend}>
+        <span style={mapStyles.legendItem}>
+          <span style={{ ...mapStyles.legendDot, backgroundColor: '#667eea' }} />
+          Active
+        </span>
+        <span style={mapStyles.legendItem}>
+          <span style={{ ...mapStyles.legendDot, backgroundColor: '#94a3b8' }} />
+          No Plants
+        </span>
+        <span style={mapStyles.legendItem}>
+          <FaLink size={12} color="#667eea" style={{ marginRight: '4px' }} />
+          Connections
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ============== MAIN COMPONENT ==============
 function Companies() {
   const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
@@ -30,6 +213,7 @@ function Companies() {
   const [editingCompany, setEditingCompany] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [viewMode, setViewMode] = useState('table'); // 'table' | 'map'
 
   useEffect(() => {
     loadCompanies();
@@ -61,6 +245,13 @@ function Companies() {
   useEffect(() => {
     loadCompanies();
   }, [searchTerm]);
+
+  const stats = useMemo(() => ({
+    total: companies.length,
+    withContact: companies.filter(c => c.email || c.phone).length,
+    totalPlants: companies.reduce((acc, c) => acc + (c.plants_count || 0), 0),
+    active: companies.filter(c => (c.plants_count || 0) > 0).length
+  }), [companies]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -135,7 +326,7 @@ function Companies() {
     setShowDetailModal(true);
   };
 
-  const columns = ['#', 'Company', 'Code', 'Contact', 'Actions'];
+  const columns = ['#', 'Company', 'Contact', 'Plants', 'Status', 'Actions'];
 
   const tableData = companies.map((company, index) => ({
     id: company.id,
@@ -153,14 +344,27 @@ function Companies() {
         </div>
       </div>
     ),
-    code: (
-      <span style={styles.codeBadge}>{company.code}</span>
-    ),
     contact: (
       <div style={styles.contactInfo}>
         {company.email && <span style={styles.contactItem}><FaEnvelope size={12} color="#94a3b8" /> {company.email}</span>}
         {company.phone && <span style={styles.contactItem}><FaPhone size={12} color="#94a3b8" /> {company.phone}</span>}
+        {!company.email && !company.phone && <span style={styles.noContact}>No contact</span>}
       </div>
+    ),
+    plants: (
+      <div style={styles.plantsInfo}>
+        <span style={styles.plantsCount}>{company.plants_count || 0}</span>
+        <span style={styles.plantsLabel}>plants</span>
+      </div>
+    ),
+    status: (
+      <span style={{
+        ...styles.statusBadge,
+        backgroundColor: (company.plants_count || 0) > 0 ? '#ecfdf5' : '#f1f5f9',
+        color: (company.plants_count || 0) > 0 ? '#10b981' : '#94a3b8'
+      }}>
+        {(company.plants_count || 0) > 0 ? 'Active' : 'Inactive'}
+      </span>
     ),
     actions: (
       <div style={styles.actionButtons}>
@@ -169,7 +373,7 @@ function Companies() {
           onClick={() => viewCompanyDetails(company)}
           title="View Details"
         >
-          <FaBuilding size={14} />
+          <FaEye size={14} />
         </button>
         <button 
           style={{ ...styles.actionBtn, ...styles.actionBtnEdit }} 
@@ -198,15 +402,16 @@ function Companies() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
+      {/* Header with Mapna Digital Logo */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <div style={styles.headerIcon}>
-            <FaBuilding size={24} color="#667eea" />
+          <div style={styles.logoWrapper}>
+            <MapnaLogo size={36} />
           </div>
+          <div style={styles.headerDivider}></div>
           <div>
             <h1 style={styles.title}>Companies</h1>
-            <p style={styles.subtitle}>Manage all companies and organizations in your ecosystem</p>
+            <p style={styles.subtitle}>Manage organizations in your ecosystem</p>
           </div>
         </div>
         <button 
@@ -224,33 +429,49 @@ function Companies() {
       {/* Stats Cards */}
       <div style={styles.statsRow}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}><FaBuilding color="#667eea" /></div>
+          <div style={{ ...styles.statIcon, background: '#eef2ff' }}>
+            <FaBuilding color="#667eea" size={20} />
+          </div>
           <div>
-            <span style={styles.statValue}>{companies.length}</span>
+            <span style={styles.statValue}>{stats.total}</span>
             <span style={styles.statLabel}>Total Companies</span>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}><FaUsers color="#10b981" /></div>
+          <div style={{ ...styles.statIcon, background: '#ecfdf5' }}>
+            <FaUsers color="#10b981" size={20} />
+          </div>
           <div>
-            <span style={styles.statValue}>
-              {companies.filter(c => c.email).length}
-            </span>
-            <span style={styles.statLabel}>With Contact</span>
+            <span style={styles.statValue}>{stats.withContact}</span>
+            <span style={styles.statLabel}>With Contact Info</span>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}><FaDatabase color="#3b82f6" /></div>
+          <div style={{ ...styles.statIcon, background: '#eff6ff' }}>
+            <FaIndustry color="#3b82f6" size={20} />
+          </div>
           <div>
-            <span style={styles.statValue}>
-              {companies.reduce((acc, c) => acc + (c.plants_count || 0), 0)}
-            </span>
+            <span style={styles.statValue}>{stats.totalPlants}</span>
             <span style={styles.statLabel}>Total Plants</span>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <div style={{ ...styles.statIcon, background: '#fef3c7' }}>
+            <FaCheckCircle color="#f59e0b" size={20} />
+          </div>
+          <div>
+            <span style={styles.statValue}>{stats.active}</span>
+            <span style={styles.statLabel}>Active Companies</span>
           </div>
         </div>
       </div>
 
-      {/* Search & Filter */}
+      {/* Map View */}
+      <div style={styles.mapSection}>
+        <CompanyMap companies={companies} />
+      </div>
+
+      {/* Search & View Toggle */}
       <div style={styles.searchContainer}>
         <div style={styles.searchWrapper}>
           <FaSearch size={18} color="#94a3b8" style={styles.searchIcon} />
@@ -258,7 +479,7 @@ function Companies() {
             type="text"
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Search by company name, code, or email..."
+            placeholder="Search companies by name, code, or email..."
             style={styles.searchInput}
           />
           {searchTerm && (
@@ -287,9 +508,9 @@ function Companies() {
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <div style={styles.modalHeaderLeft}>
-                <span style={styles.modalIcon}>
+                <div style={styles.modalIcon}>
                   {editingCompany ? <FaEdit size={20} /> : <FaPlus size={20} />}
-                </span>
+                </div>
                 <h2 style={styles.modalTitle}>
                   {editingCompany ? 'Edit Company' : 'Add New Company'}
                 </h2>
@@ -354,7 +575,7 @@ function Companies() {
                   />
                 </div>
                 
-                <div style={styles.formGroup}>
+                <div style={styles.formGroup} className="full-width">
                   <label style={styles.formLabel}>
                     <FaEnvelope size={14} style={styles.labelIcon} /> Email
                   </label>
@@ -415,7 +636,7 @@ function Companies() {
                   <span style={styles.detailValue}>{selectedCompany.email || 'Not provided'}</span>
                 </div>
                 <div style={styles.detailItem}>
-                  <span style={styles.detailLabel}><FaDatabase size={14} color="#94a3b8" /> Plants</span>
+                  <span style={styles.detailLabel}><FaIndustry size={14} color="#94a3b8" /> Plants</span>
                   <span style={styles.detailValue}>{selectedCompany.plants_count || 0}</span>
                 </div>
               </div>
@@ -439,6 +660,77 @@ function Companies() {
   );
 }
 
+// ============== MAP STYLES ==============
+const mapStyles = {
+  container: {
+    background: 'white',
+    borderRadius: '14px',
+    padding: '20px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    marginBottom: '24px'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px'
+  },
+  title: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#0f172a',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  count: {
+    fontSize: '13px',
+    color: '#94a3b8'
+  },
+  mapWrapper: {
+    width: '100%',
+    background: '#fafbfc',
+    borderRadius: '10px',
+    overflow: 'hidden'
+  },
+  svg: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '300px'
+  },
+  marker: {
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  label: {
+    fontSize: '9px',
+    fontFamily: 'Arial, sans-serif',
+    transition: 'all 0.2s',
+    pointerEvents: 'none'
+  },
+  legend: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '20px',
+    marginTop: '12px',
+    paddingTop: '12px',
+    borderTop: '1px solid #f1f5f9'
+  },
+  legendItem: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '12px',
+    color: '#64748b',
+    gap: '6px'
+  },
+  legendDot: {
+    width: '10px',
+    height: '10px',
+    borderRadius: '50%',
+    display: 'inline-block'
+  }
+};
+
+// ============== MAIN STYLES ==============
 const styles = {
   container: {
     padding: '24px',
@@ -453,32 +745,36 @@ const styles = {
     alignItems: 'center',
     marginBottom: '24px',
     flexWrap: 'wrap',
-    gap: '16px'
+    gap: '16px',
+    background: 'white',
+    padding: '16px 24px',
+    borderRadius: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
     gap: '16px'
   },
-  headerIcon: {
-    width: '48px',
-    height: '48px',
-    background: '#eef2ff',
-    borderRadius: '12px',
+  logoWrapper: {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    alignItems: 'center'
+  },
+  headerDivider: {
+    width: '1px',
+    height: '36px',
+    backgroundColor: '#e2e8f0'
   },
   title: {
-    fontSize: '28px',
+    fontSize: '22px',
     fontWeight: '700',
     color: '#0f172a',
     margin: 0
   },
   subtitle: {
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#64748b',
-    margin: '4px 0 0 0'
+    margin: '2px 0 0 0'
   },
   addBtn: {
     display: 'flex',
@@ -507,17 +803,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    transition: 'all 0.3s'
   },
   statIcon: {
     width: '44px',
     height: '44px',
-    background: '#f1f5f9',
     borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px'
+    justifyContent: 'center'
   },
   statValue: {
     fontSize: '24px',
@@ -529,6 +824,9 @@ const styles = {
     fontSize: '13px',
     color: '#94a3b8',
     display: 'block'
+  },
+  mapSection: {
+    marginBottom: '24px'
   },
   searchContainer: {
     display: 'flex',
@@ -609,14 +907,6 @@ const styles = {
     fontSize: '12px',
     color: '#94a3b8'
   },
-  codeBadge: {
-    padding: '4px 12px',
-    background: '#f1f5f9',
-    borderRadius: '6px',
-    fontSize: '12px',
-    color: '#475569',
-    fontWeight: '500'
-  },
   contactInfo: {
     display: 'flex',
     flexDirection: 'column',
@@ -628,6 +918,31 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '6px'
+  },
+  noContact: {
+    fontSize: '12px',
+    color: '#94a3b8',
+    fontStyle: 'italic'
+  },
+  plantsInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px'
+  },
+  plantsCount: {
+    fontWeight: '600',
+    color: '#0f172a',
+    fontSize: '14px'
+  },
+  plantsLabel: {
+    fontSize: '12px',
+    color: '#94a3b8'
+  },
+  statusBadge: {
+    padding: '4px 12px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '500'
   },
   actionButtons: {
     display: 'flex',
@@ -669,8 +984,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1000,
-    animation: 'fadeIn 0.2s'
+    zIndex: 1000
   },
   modalContent: {
     background: 'white',
@@ -679,8 +993,7 @@ const styles = {
     width: '560px',
     maxWidth: '95%',
     maxHeight: '90vh',
-    overflowY: 'auto',
-    animation: 'slideUp 0.3s'
+    overflowY: 'auto'
   },
   modalHeader: {
     display: 'flex',
@@ -718,8 +1031,7 @@ const styles = {
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background 0.2s'
+    justifyContent: 'center'
   },
   modalForm: {
     display: 'flex',
@@ -775,8 +1087,7 @@ const styles = {
     borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '500',
-    transition: 'background 0.2s'
+    fontWeight: '500'
   },
   submitBtn: {
     padding: '10px 28px',
@@ -786,8 +1097,7 @@ const styles = {
     borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '600',
-    transition: 'all 0.3s'
+    fontWeight: '600'
   },
   detailAvatar: {
     width: '48px',
@@ -852,12 +1162,11 @@ const styles = {
     cursor: 'pointer',
     fontSize: '13px',
     fontWeight: '500',
-    color: '#475569',
-    transition: 'all 0.2s'
+    color: '#475569'
   }
 };
 
-// Add to global CSS or use CSS-in-JS
+// Add to global CSS
 const styleSheet = document.createElement("style");
 styleSheet.textContent = `
   @keyframes fadeIn {
@@ -868,12 +1177,27 @@ styleSheet.textContent = `
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
+  .full-width {
+    grid-column: 1 / -1 !important;
+  }
   .stat-card:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     transform: translateY(-2px);
   }
   .action-btn:hover {
     transform: scale(1.1);
+  }
+  .action-btn-enter:hover {
+    background: #dbeafe;
+    color: #4f46e5;
+  }
+  .action-btn-edit:hover {
+    background: #fef3c7;
+    color: #d97706;
+  }
+  .action-btn-delete:hover {
+    background: #fecaca;
+    color: #dc2626;
   }
   .form-input:focus {
     border-color: #667eea;
@@ -896,18 +1220,6 @@ styleSheet.textContent = `
   .add-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-  }
-  .action-btn-enter:hover {
-    background: #dbeafe;
-    color: #4f46e5;
-  }
-  .action-btn-edit:hover {
-    background: #fef3c7;
-    color: #d97706;
-  }
-  .action-btn-delete:hover {
-    background: #fecaca;
-    color: #dc2626;
   }
 `;
 document.head.appendChild(styleSheet);

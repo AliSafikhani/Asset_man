@@ -175,7 +175,7 @@ const TopBar = ({ userName, onLogout, toggleSidebar, isSidebarCollapsed }) => {
           </div>
           <div style={styles.brandText}>
             <span style={getStyles(styles.brandName, darkModeStyles.brandName)}>
-              Asset<span style={styles.brandHighlight}>Hub</span>
+              Power<span style={styles.brandHighlight}>Guardian</span>
             </span>
             <span style={styles.brandVersion}>v2.0</span>
           </div>

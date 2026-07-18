@@ -6,7 +6,7 @@ import {
   FaHome, FaBuilding, FaIndustry, FaServer, FaFlask, 
   FaSignal, FaBell, FaCalendarAlt, FaChartLine, FaCog,
   FaChevronLeft, FaChevronRight, FaUser, FaUserCircle,
-  FaBolt, FaPlug, FaCogs, FaMicrochip
+  FaBolt, FaPlug, FaCogs, FaMicrochip, FaLock
 } from 'react-icons/fa';
 import { MdDashboard, MdTransform, MdSettings, MdLogout } from 'react-icons/md';
 import { HiOutlineLogout } from 'react-icons/hi';
@@ -24,74 +24,88 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       icon: <MdDashboard size={20} />, 
       label: 'Dashboard', 
       color: '#4f46e5',
-      badge: null
+      badge: null,
+      disabled: false  // Added disabled property
     },
     { 
       path: '/companies', 
       icon: <FaBuilding size={18} />, 
       label: 'Companies', 
       color: '#10b981',
-      badge: null
+      badge: null,
+      disabled: false
     },
     { 
       path: '/plants', 
       icon: <FaIndustry size={18} />, 
       label: 'Plants', 
       color: '#3b82f6',
-      badge: null
+      badge: null,
+      disabled: false
     },
     { 
       path: '/assets', 
       icon: <FaServer size={18} />, 
       label: 'Assets', 
       color: '#f59e0b',
-      badge: null
+      badge: null,
+      disabled: false
     },
     { 
       path: '/tests', 
       icon: <FaFlask size={18} />, 
       label: 'Tests', 
       color: '#8b5cf6',
-      badge: null
+      badge: null,
+      disabled: true  // DISABLED - This tab will be greyed out
     },
     { 
       path: '/dcs', 
       icon: <FaSignal size={18} />, 
       label: 'DCS Signals', 
       color: '#06b6d4',
-      badge: null
+      badge: null,
+      disabled: true
     },
     { 
-      path: '/alarms', 
+      path: '/Alarms', 
       icon: <FaBell size={18} />, 
       label: 'Alarms', 
       color: '#ef4444',
-      badge: '3'
+      badge: null,
+      disabled: true
     },
     { 
       path: '/events', 
       icon: <FaCalendarAlt size={18} />, 
       label: 'Events', 
       color: '#198754',
-      badge: null
+      badge: null,
+      disabled: true
     },
     { 
       path: '/reports', 
       icon: <FaChartLine size={18} />, 
       label: 'Reports', 
       color: '#f97316',
-      badge: null
+      badge: null,
+      disabled: true
     },
     { 
       path: '/settings', 
       icon: <FaCog size={18} />, 
       label: 'Settings', 
       color: '#64748b',
-      badge: null
+      badge: null,
+      disabled: true
     }
   ];
 
   const handleNavigate = (path, index) => {
+    // Check if the item is disabled
+    if (menuItems[index].disabled) {
+      return; // Don't navigate if disabled
+    }
     setActiveItem(index);
     navigate(path);
   };
@@ -174,7 +188,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              Asset<span style={{ color: '#4f46e5', WebkitTextFillColor: '#4f46e5' }}>Hub</span>
+              Power<span style={{ color: '#4f46e5', WebkitTextFillColor: '#4f46e5' }}>Guardian</span>
             </span>
             <span style={{
               fontSize: '11px',
@@ -246,6 +260,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         
         {menuItems.map((item, index) => {
           const active = isActive(item.path);
+          const isDisabled = item.disabled || false;
+          
           return (
             <div
               key={index}
@@ -254,28 +270,30 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 padding: '10px 14px',
                 margin: '2px 0',
                 borderRadius: '10px',
-                cursor: 'pointer',
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: active ? `rgba(79, 70, 229, 0.15)` : 'transparent',
-                border: active ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid transparent',
+                background: active && !isDisabled ? `rgba(79, 70, 229, 0.15)` : 'transparent',
+                border: active && !isDisabled ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid transparent',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
-                position: 'relative'
+                position: 'relative',
+                opacity: isDisabled ? 0.4 : 1,
+                pointerEvents: isDisabled ? 'none' : 'auto'
               }}
               onMouseEnter={(e) => {
-                if (!active) {
+                if (!active && !isDisabled) {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!active) {
+                if (!active && !isDisabled) {
                   e.currentTarget.style.background = 'transparent';
                 }
               }}
             >
               {/* Active Indicator */}
-              {active && (
+              {active && !isDisabled && (
                 <div style={{
                   position: 'absolute',
                   left: '-4px',
@@ -295,8 +313,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: active ? `rgba(79, 70, 229, 0.2)` : 'rgba(255,255,255,0.04)',
-                color: active ? '#4f46e5' : '#94a3b8',
+                background: active && !isDisabled ? `rgba(79, 70, 229, 0.2)` : 'rgba(255,255,255,0.04)',
+                color: active && !isDisabled ? '#4f46e5' : '#94a3b8',
                 transition: 'all 0.2s',
                 flexShrink: 0
               }}>
@@ -307,13 +325,26 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 <>
                   <span style={{
                     fontSize: '14px',
-                    fontWeight: active ? '600' : '400',
-                    color: active ? '#f1f5f9' : '#cbd5e1',
+                    fontWeight: active && !isDisabled ? '600' : '400',
+                    color: active && !isDisabled ? '#f1f5f9' : '#cbd5e1',
                     flex: 1
                   }}>
                     {item.label}
                   </span>
-                  {item.badge && (
+                  {isDisabled && (
+                    <span style={{
+                      fontSize: '10px',
+                      color: '#64748b',
+                      background: 'rgba(100, 116, 139, 0.2)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontWeight: '500'
+                    }}>
+                      <FaLock size={10} style={{ marginRight: '4px' }} />
+                      Locked
+                    </span>
+                  )}
+                  {item.badge && !isDisabled && (
                     <span style={{
                       background: '#ef4444',
                       color: 'white',

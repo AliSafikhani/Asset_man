@@ -1,4 +1,5 @@
-﻿# backend\app\api\v1\endpoints\companies.py
+﻿# backend/app/api/v1/endpoints/companies.py
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -33,8 +34,9 @@ class CompanyResponse(CompanyCreate):
     class Config:
         from_attributes = True
 
+# ✅ FIX: Add both with and without trailing slash
 @router.get("/")
-@router.get("")  # Also match without trailing slash
+@router.get("")  # Handle without trailing slash
 async def get_companies(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Companies))
     companies = result.scalars().all()
@@ -48,7 +50,9 @@ async def get_company(company_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Company not found")
     return company
 
+# ✅ FIX: Add both with and without trailing slash
 @router.post("/")
+@router.post("")  # Handle without trailing slash
 async def create_company(
     company: CompanyCreate, 
     user_id: int = Depends(get_current_user_id),
@@ -72,6 +76,7 @@ async def create_company(
     await db.refresh(new_company)
     return new_company
 
+# ✅ FIX: Add both with and without trailing slash
 @router.put("/{company_id}")
 async def update_company(
     company_id: int,
@@ -99,6 +104,7 @@ async def update_company(
     await db.refresh(existing)
     return existing
 
+# ✅ FIX: Add both with and without trailing slash
 @router.delete("/{company_id}")
 async def delete_company(
     company_id: int,

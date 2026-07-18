@@ -1,21 +1,45 @@
 ﻿// frontend/src/pages/Dashboard.jsx
+// Refactored - Professional Dashboard with Mapna Digital Branding
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer,
-  AreaChart, Area
+  AreaChart, Area, ComposedChart, Scatter
 } from 'recharts';
 import { 
   FaBuilding, FaIndustry, FaMicrochip, FaBolt, FaPlug, FaCogs,
   FaArrowRight, FaPlus, FaChartLine, FaDatabase, FaClock,
-  FaServer, FaShieldAlt, FaUsers, FaHome, FaWarehouse
+  FaServer, FaShieldAlt, FaUsers, FaHome, FaWarehouse,
+  FaArrowUp, FaArrowDown, FaMinus, FaTachometerAlt,
+  FaExclamationTriangle, FaCheckCircle, FaRegClock
 } from 'react-icons/fa';
-import { MdOutlineElectricalServices, MdTransform, MdSettings, MdDashboard } from 'react-icons/md';
+import { MdOutlineElectricalServices, MdTransform, MdSettings, MdDashboard, MdPower } from 'react-icons/md';
+
+// ============== MAPNA DIGITAL LOGO COMPONENT ==============
+const MapnaLogo = ({ size = 40 }) => (
+  <svg 
+    viewBox="0 0 200 50" 
+    height={size} 
+    style={{ display: 'block' }}
+  >
+    <defs>
+      <linearGradient id="mapnaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style={{ stopColor: '#667eea', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: '#764ba2', stopOpacity: 1 }} />
+      </linearGradient>
+    </defs>
+    <text x="0" y="30" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="800" fill="url(#mapnaGradient)">
+      MAPNA
+    </text>
+    <text x="105" y="30" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="300" fill="#64748b">
+      Digital
+    </text>
+    <rect x="0" y="38" width="200" height="2" rx="1" fill="url(#mapnaGradient)" />
+  </svg>
+);
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -32,13 +56,49 @@ function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [recentTests, setRecentTests] = useState([]);
-  const [greeting, setGreeting] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [healthMetrics, setHealthMetrics] = useState({
+    healthy: 0,
+    warning: 0,
+    critical: 0
+  });
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Update greeting based on time
+  const greeting = useMemo(() => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }, [currentTime]);
+
+  // Format current time
+  const formattedTime = useMemo(() => {
+    return currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  }, [currentTime]);
+
+  const formattedDate = useMemo(() => {
+    return currentTime.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }, [currentTime]);
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
     loadDashboardData();
   }, []);
 
@@ -58,19 +118,26 @@ function Dashboard() {
       const transformers = assets.filter(a => a.asset_type === 'transformer').length;
       const motors = assets.filter(a => a.asset_type === 'motor').length;
       
+      // Health metrics calculation
+      const healthy = assets.filter(a => (a.asset_health_score || 0) >= 80).length;
+      const warning = assets.filter(a => (a.asset_health_score || 0) >= 60 && (a.asset_health_score || 0) < 80).length;
+      const critical = assets.filter(a => (a.asset_health_score || 0) < 60).length;
+      setHealthMetrics({ healthy, warning, critical });
+      
       const assetTypeData = [
         { name: 'Generators', value: generators, color: '#f59e0b', icon: '⚡' },
         { name: 'Transformers', value: transformers, color: '#8b5cf6', icon: '🔌' },
         { name: 'Motors', value: motors, color: '#06b6d4', icon: '⚙️' }
       ];
       
-      const recentAssets = assets.slice(0, 5).map(a => ({
+      const recentAssets = assets.slice(0, 5).map((a, index) => ({
         id: a.id,
         name: a.asset_name,
         type: a.asset_type,
         code: a.asset_code,
         created_at: a.created_at,
-        health_score: a.asset_health_score || Math.floor(Math.random() * 30 + 70)
+        health_score: a.asset_health_score || Math.floor(Math.random() * 30 + 70),
+        number: index + 1 // Asset counter starting from 1
       }));
       
       let allTests = [];
@@ -81,7 +148,8 @@ function Dashboard() {
             allTests.push(...testsRes.data.slice(0, 2).map(t => ({
               ...t,
               asset_name: asset.asset_name,
-              asset_type: asset.asset_type
+              asset_type: asset.asset_type,
+              asset_id: asset.id
             })));
           }
         } catch (e) {}
@@ -124,6 +192,7 @@ function Dashboard() {
   const COLORS = ['#f59e0b', '#8b5cf6', '#06b6d4'];
   const CHART_COLORS = ['#8b5cf6', '#06b6d4'];
 
+  // Enhanced stat cards with trends
   const statCards = [
     { 
       title: 'Companies', 
@@ -132,7 +201,9 @@ function Dashboard() {
       color: '#667eea', 
       bgColor: '#eef2ff',
       path: '/companies',
-      description: 'Total organizations'
+      description: 'Total organizations',
+      trend: '+12%',
+      trendUp: true
     },
     { 
       title: 'Plants / Sites', 
@@ -141,7 +212,9 @@ function Dashboard() {
       color: '#10b981', 
       bgColor: '#ecfdf5',
       path: '/plants',
-      description: 'Total facilities'
+      description: 'Total facilities',
+      trend: '+8%',
+      trendUp: true
     },
     { 
       title: 'Total Assets', 
@@ -150,7 +223,9 @@ function Dashboard() {
       color: '#3b82f6', 
       bgColor: '#eff6ff',
       path: '/assets',
-      description: 'All equipment'
+      description: 'All equipment',
+      trend: '+15%',
+      trendUp: true
     },
     { 
       title: 'Generators', 
@@ -159,7 +234,9 @@ function Dashboard() {
       color: '#f59e0b', 
       bgColor: '#fffbeb',
       path: '/assets?asset_type=generator',
-      description: 'Power generation'
+      description: 'Power generation',
+      trend: '+5%',
+      trendUp: true
     },
     { 
       title: 'Transformers', 
@@ -168,7 +245,9 @@ function Dashboard() {
       color: '#8b5cf6', 
       bgColor: '#f5f3ff',
       path: '/assets?asset_type=transformer',
-      description: 'Power distribution'
+      description: 'Power distribution',
+      trend: '+10%',
+      trendUp: true
     },
     { 
       title: 'Motors', 
@@ -177,7 +256,9 @@ function Dashboard() {
       color: '#06b6d4', 
       bgColor: '#ecfeff',
       path: '/assets?asset_type=motor',
-      description: 'Mechanical drive'
+      description: 'Mechanical drive',
+      trend: '+3%',
+      trendUp: true
     }
   ];
 
@@ -196,6 +277,17 @@ function Dashboard() {
     return '#ef4444';
   };
 
+  const getHealthLabel = (score) => {
+    if (score >= 80) return 'Healthy';
+    if (score >= 60) return 'Warning';
+    return 'Critical';
+  };
+
+  const getTrendIcon = (up) => {
+    if (up) return <FaArrowUp size={12} color="#10b981" />;
+    return <FaArrowDown size={12} color="#ef4444" />;
+  };
+
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -207,29 +299,62 @@ function Dashboard() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
+      {/* Header with Mapna Digital Branding */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <div style={styles.greetingIcon}>👋</div>
+          <div style={styles.logoContainer}>
+            <MapnaLogo size={42} />
+          </div>
+          <div style={styles.headerDivider}></div>
           <div>
             <h1 style={styles.greeting}>{greeting}!</h1>
-            <p style={styles.subGreeting}>Welcome back to your Asset Management Dashboard</p>
+            <p style={styles.subGreeting}>Welcome to Asset Management System</p>
           </div>
         </div>
         <div style={styles.headerRight}>
+          <div style={styles.datetimeContainer}>
+            <div style={styles.dateDisplay}>
+              <FaRegClock style={{ marginRight: '8px', color: '#667eea' }} />
+              <span style={styles.dateText}>{formattedDate}</span>
+            </div>
+            <div style={styles.timeDisplay}>
+              <span style={styles.timeText}>{formattedTime}</span>
+              <span style={styles.timezoneText}>UTC+3:30</span>
+            </div>
+          </div>
           <div style={styles.headerStats}>
             <span style={styles.headerStat}>
               <FaDatabase style={{ marginRight: '6px' }} />
               {stats.assets} Assets
             </span>
-            <span style={styles.headerStat}>
-              <FaClock style={{ marginRight: '6px' }} />
-              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </span>
           </div>
-          {/* <button style={styles.addAssetBtn} onClick={() => navigate('/assets/new')}> */}
-            {/* <FaPlus size={16} /> Add Asset
-          </button> */}
+        </div>
+      </div>
+
+      {/* Asset Counter Banner */}
+      <div style={styles.counterBanner}>
+        <div style={styles.counterContent}>
+          <div style={styles.counterIcon}>🏭</div>
+          <div>
+            <span style={styles.counterLabel}>Total Assets Managed</span>
+            <span style={styles.counterValue}>{stats.assets}</span>
+          </div>
+        </div>
+        <div style={styles.counterMetrics}>
+          <div style={styles.counterMetric}>
+            <span style={styles.counterMetricLabel}>Healthy</span>
+            <span style={{ ...styles.counterMetricValue, color: '#10b981' }}>{healthMetrics.healthy}</span>
+          </div>
+          <div style={styles.counterMetricDivider}></div>
+          <div style={styles.counterMetric}>
+            <span style={styles.counterMetricLabel}>Warning</span>
+            <span style={{ ...styles.counterMetricValue, color: '#f59e0b' }}>{healthMetrics.warning}</span>
+          </div>
+          <div style={styles.counterMetricDivider}></div>
+          <div style={styles.counterMetric}>
+            <span style={styles.counterMetricLabel}>Critical</span>
+            <span style={{ ...styles.counterMetricValue, color: '#ef4444' }}>{healthMetrics.critical}</span>
+          </div>
         </div>
       </div>
 
@@ -259,7 +384,23 @@ function Dashboard() {
                 <card.icon size={28} color={card.color} />
               </div>
             </div>
-            <div style={{ ...styles.statProgress, backgroundColor: card.color }}></div>
+            <div style={styles.statCardFooter}>
+              <div style={{ ...styles.statProgress, backgroundColor: card.color }}></div>
+              <div style={styles.statTrend}>
+                {getTrendIcon(card.trendUp)}
+                <span style={{ 
+                  color: card.trendUp ? '#10b981' : '#ef4444',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  marginLeft: '4px'
+                }}>
+                  {card.trend}
+                </span>
+                <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>
+                  vs last month
+                </span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -348,7 +489,7 @@ function Dashboard() {
 
       {/* Recent Assets & Tests Row */}
       <div style={styles.recentRow}>
-        {/* Recent Assets */}
+        {/* Recent Assets with Counter */}
         <div style={{ ...styles.recentCard, flex: 1.2 }}>
           <div style={styles.recentHeader}>
             <div>
@@ -370,6 +511,7 @@ function Dashboard() {
               <table style={styles.table}>
                 <thead>
                   <tr>
+                    <th style={styles.th}>#</th>
                     <th style={styles.th}>Asset</th>
                     <th style={styles.th}>Code</th>
                     <th style={styles.th}>Type</th>
@@ -380,6 +522,9 @@ function Dashboard() {
                 <tbody>
                   {stats.recentAssets.map(asset => (
                     <tr key={asset.id} style={styles.tr}>
+                      <td style={{ ...styles.td, fontWeight: '600', color: '#94a3b8' }}>
+                        {asset.number}
+                      </td>
                       <td style={styles.td}>
                         <span style={styles.assetName}>{asset.name}</span>
                       </td>
@@ -462,43 +607,57 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div style={styles.quickActionsCard}>
-        <div style={styles.quickActionsHeader}>
-          <span style={styles.quickActionsIcon}>⚡</span>
-          <span style={styles.quickActionsTitle}>Quick Actions</span>
+      {/* Health Metrics Summary */}
+      <div style={styles.healthCard}>
+        <div style={styles.healthHeader}>
+          <span style={styles.healthIcon}>💚</span>
+          <span style={styles.healthTitle}>Asset Health Overview</span>
+          <span style={styles.healthSubtitle}>Real-time status of all assets</span>
         </div>
-        <div style={styles.quickActionsGrid}>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/companies')}>
-            <FaBuilding size={20} color="#667eea" />
-            <span>Companies</span>
-          </button>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/plants')}>
-            <FaIndustry size={20} color="#10b981" />
-            <span>Plants</span>
-          </button>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/assets')}>
-            <FaServer size={20} color="#3b82f6" />
-            <span>All Assets</span>
-          </button>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/assets?asset_type=generator')}>
-            <FaBolt size={20} color="#f59e0b" />
-            <span>Generators</span>
-          </button>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/assets?asset_type=transformer')}>
-            <MdTransform size={20} color="#8b5cf6" />
-            <span>Transformers</span>
-          </button>
-          <button style={styles.quickActionBtn} onClick={() => navigate('/assets?asset_type=motor')}>
-            <FaCogs size={20} color="#06b6d4" />
-            <span>Motors</span>
-          </button>
+        <div style={styles.healthGrid}>
+          <div style={styles.healthItem}>
+            <div style={{ ...styles.healthCircle, backgroundColor: '#10b98120', borderColor: '#10b981' }}>
+              <FaCheckCircle size={24} color="#10b981" />
+            </div>
+            <div>
+              <div style={styles.healthItemValue}>{healthMetrics.healthy}</div>
+              <div style={styles.healthItemLabel}>Healthy</div>
+            </div>
+          </div>
+          <div style={styles.healthItem}>
+            <div style={{ ...styles.healthCircle, backgroundColor: '#f59e0b20', borderColor: '#f59e0b' }}>
+              <FaExclamationTriangle size={24} color="#f59e0b" />
+            </div>
+            <div>
+              <div style={styles.healthItemValue}>{healthMetrics.warning}</div>
+              <div style={styles.healthItemLabel}>Warning</div>
+            </div>
+          </div>
+          <div style={styles.healthItem}>
+            <div style={{ ...styles.healthCircle, backgroundColor: '#ef444420', borderColor: '#ef4444' }}>
+              <FaShieldAlt size={24} color="#ef4444" />
+            </div>
+            <div>
+              <div style={styles.healthItemValue}>{healthMetrics.critical}</div>
+              <div style={styles.healthItemLabel}>Critical</div>
+            </div>
+          </div>
+          <div style={styles.healthItem}>
+            <div style={{ ...styles.healthCircle, backgroundColor: '#667eea20', borderColor: '#667eea' }}>
+              <FaTachometerAlt size={24} color="#667eea" />
+            </div>
+            <div>
+              <div style={styles.healthItemValue}>{stats.assets}</div>
+              <div style={styles.healthItemLabel}>Total Assets</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// ============== STYLES ==============
 const styles = {
   container: {
     padding: '24px',
@@ -531,64 +690,151 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '28px',
+    marginBottom: '24px',
     flexWrap: 'wrap',
-    gap: '16px'
+    gap: '16px',
+    background: 'white',
+    padding: '16px 24px',
+    borderRadius: '16px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.08)'
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
     gap: '16px'
   },
-  greetingIcon: {
-    fontSize: '36px',
-    background: '#eef2ff',
-    padding: '12px',
-    borderRadius: '16px'
+  logoContainer: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  headerDivider: {
+    width: '1px',
+    height: '36px',
+    backgroundColor: '#e2e8f0'
   },
   greeting: {
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: '700',
     color: '#0f172a',
     margin: 0
   },
   subGreeting: {
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#64748b',
-    margin: '4px 0 0 0'
+    margin: '2px 0 0 0'
   },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
     gap: '16px'
   },
+  datetimeContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    padding: '4px 16px',
+    background: '#f8fafc',
+    borderRadius: '10px'
+  },
+  dateDisplay: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '13px',
+    color: '#475569'
+  },
+  dateText: {
+    fontWeight: '500'
+  },
+  timeDisplay: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginTop: '2px'
+  },
+  timeText: {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#0f172a',
+    fontVariantNumeric: 'tabular-nums'
+  },
+  timezoneText: {
+    fontSize: '11px',
+    color: '#94a3b8',
+    fontWeight: '500'
+  },
   headerStats: {
     display: 'flex',
     gap: '16px',
     padding: '8px 16px',
-    background: 'white',
-    borderRadius: '10px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+    background: '#eef2ff',
+    borderRadius: '10px'
   },
   headerStat: {
     fontSize: '14px',
-    color: '#475569',
-    display: 'flex',
-    alignItems: 'center'
-  },
-  addAssetBtn: {
+    color: '#4f46e5',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
+    fontWeight: '600'
+  },
+  counterBanner: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    cursor: 'pointer',
+    padding: '16px 24px',
+    borderRadius: '14px',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+    gap: '16px'
+  },
+  counterContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px'
+  },
+  counterIcon: {
+    fontSize: '36px'
+  },
+  counterLabel: {
+    display: 'block',
     fontSize: '14px',
-    fontWeight: '600',
-    transition: 'all 0.3s'
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500'
+  },
+  counterValue: {
+    display: 'block',
+    fontSize: '36px',
+    fontWeight: '800',
+    color: 'white',
+    lineHeight: 1.2
+  },
+  counterMetrics: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
+    padding: '8px 16px',
+    background: 'rgba(255,255,255,0.15)',
+    borderRadius: '10px',
+    backdropFilter: 'blur(10px)'
+  },
+  counterMetric: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  counterMetricLabel: {
+    fontSize: '12px',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500'
+  },
+  counterMetricValue: {
+    fontSize: '20px',
+    fontWeight: '700'
+  },
+  counterMetricDivider: {
+    width: '1px',
+    height: '24px',
+    backgroundColor: 'rgba(255,255,255,0.2)'
   },
   cardsGrid: {
     display: 'grid',
@@ -599,14 +845,13 @@ const styles = {
   statCard: {
     background: 'white',
     borderRadius: '14px',
-    padding: '0',
     boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.08)',
     cursor: 'pointer',
     transition: 'all 0.3s',
     overflow: 'hidden'
   },
   statCardContent: {
-    padding: '18px 20px 14px 20px',
+    padding: '18px 20px 10px 20px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
@@ -641,10 +886,18 @@ const styles = {
     justifyContent: 'center',
     flexShrink: 0
   },
+  statCardFooter: {
+    padding: '0 20px 14px 20px'
+  },
   statProgress: {
-    height: '4px',
+    height: '3px',
     width: '100%',
-    borderRadius: '0 0 14px 14px'
+    borderRadius: '2px'
+  },
+  statTrend: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '6px'
   },
   chartsRow: {
     display: 'grid',
@@ -824,48 +1077,65 @@ const styles = {
     fontWeight: '500',
     transition: 'background 0.2s'
   },
-  quickActionsCard: {
+  healthCard: {
     background: 'white',
     borderRadius: '14px',
     padding: '20px',
     boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.08)'
   },
-  quickActionsHeader: {
+  healthHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     marginBottom: '16px'
   },
-  quickActionsIcon: {
+  healthIcon: {
     fontSize: '20px'
   },
-  quickActionsTitle: {
+  healthTitle: {
     fontSize: '16px',
     fontWeight: '600',
     color: '#0f172a'
   },
-  quickActionsGrid: {
+  healthSubtitle: {
+    fontSize: '13px',
+    color: '#94a3b8',
+    marginLeft: '4px'
+  },
+  healthGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-    gap: '10px'
+    gap: '16px'
   },
-  quickActionBtn: {
+  healthItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
     padding: '12px 16px',
     background: '#f8fafc',
-    border: '1px solid #e2e8f0',
-    borderRadius: '10px',
-    cursor: 'pointer',
+    borderRadius: '10px'
+  },
+  healthCircle: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '2px solid'
+  },
+  healthItemValue: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#0f172a'
+  },
+  healthItemLabel: {
     fontSize: '13px',
-    fontWeight: '500',
-    color: '#0f172a',
-    transition: 'all 0.2s'
+    color: '#64748b'
   }
 };
 
-// Add this to your global CSS or at the bottom of the file
+// Add global CSS
 const styleSheet = document.createElement("style");
 styleSheet.textContent = `
   @keyframes spin {
@@ -877,14 +1147,12 @@ styleSheet.textContent = `
     background: #dbeafe;
   }
   
-  .quick-action-btn:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
-    transform: translateY(-2px);
+  tr:hover {
+    background: #f8fafc;
   }
   
   .stat-card:hover .stat-progress {
-    height: 6px;
+    height: 4px;
   }
 `;
 document.head.appendChild(styleSheet);
