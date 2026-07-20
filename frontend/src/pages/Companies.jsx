@@ -512,7 +512,7 @@ function Companies() {
                   {editingCompany ? <FaEdit size={20} /> : <FaPlus size={20} />}
                 </div>
                 <h2 style={styles.modalTitle}>
-                  {editingCompany ? 'Edit Company' : 'Add New Company'}
+                  {editingCompany ? 'Edit Company ' : 'Add New Company'}
                 </h2>
               </div>
               <button style={styles.modalClose} onClick={() => setShowForm(false)}>

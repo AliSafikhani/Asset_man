@@ -1,5 +1,5 @@
 // frontend/src/pages/AssetDetail.jsx
-// Refactored - Compact version with Duplicate Date Highlighting
+// Refactored - Per-test-type column visibility + lab_name column added
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -38,6 +38,79 @@ const ALGO_MAP = {
   'duvalpentagon2': 'duval_pentagon_2', 'rogers': 'rogers_ratio',
   'doernenburg': 'doernenburg_ratio', 'iec60599': 'iec60599_ratio',
   'iec60599ratio': 'iec60599_ratio', 'ml_dga_1': 'ml_dga_1'
+};
+
+// ============================================================
+// DEFAULT VISIBILITY PER TEST TYPE (key = test_type_id)
+// ============================================================
+const DEFAULT_VISIBILITY_MAP = {
+  // DGA (id = 124)
+  124: {
+    checkbox: true,
+    test_date: true,
+    lab_name: true,
+    notes: false,
+    actions: true,
+    ieee_status: true,
+    iec_status: true,
+    sample_temp: true,
+    h2: false,
+    ch4: true,
+    c2h2: true,
+    c2h4: true,
+    c2h6: true,
+    co: false,
+    co2: false,
+    o2: false,
+    n2: false,
+    tdcg: false,
+  },
+  // Oil Quality (example id 2)
+  125: {
+    checkbox: true,
+    test_date: true,
+    lab_name: false,
+    notes: false,
+    actions: true,
+    acidity: true,
+    moisture: true,
+    dielectric_strength: true,
+    color: false,
+  },
+  // Furan Analysis (id = 129)
+  129: {
+    checkbox: true,
+    test_date: true,
+    lab_name: true,
+    notes: false,
+    actions: true,
+    sample_temp: true,
+    fol: true,
+    fal: true,
+    acf: true,
+    mef: true,
+    hmf: true,
+    furoic_acid: true,
+  },
+  // ... add all other test types here
+};
+
+// Fallback for test types not listed
+const getFallbackVisibility = (testTypeId, fields, testTypes) => {
+  const isDga = testTypes.find(t => t.id == testTypeId)?.test_name?.toLowerCase().includes('dga') || false;
+  const def = {
+    checkbox: true,
+    test_date: true,
+    lab_name: false,
+    notes: false,
+    actions: true,
+    ieee_status: true,
+    iec_status: true,
+  };
+  fields.forEach(f => {
+    def[f.field_name] = isDga ? DGA_GASES.includes(f.field_name) : false;
+  });
+  return def;
 };
 
 // ============== HELPERS ==============
@@ -89,14 +162,10 @@ const getDuplicateDateInfo = (testDate, testResults) => {
 
 const getDuplicateDateStyle = (testDate, testResults, resultId) => {
   const duplicates = testResults.filter(r => r.test_date === testDate);
-  
   if (duplicates.length > 1) {
-    // Find the index of this result among duplicates
     const duplicateIndex = duplicates.findIndex(r => r.id === resultId);
-    // Different shades for each duplicate
     const shades = ['#ebf5ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa'];
     const borderColors = ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'];
-    
     return {
       backgroundColor: shades[duplicateIndex % shades.length],
       borderLeft: `4px solid ${borderColors[duplicateIndex % borderColors.length]}`,
@@ -106,7 +175,7 @@ const getDuplicateDateStyle = (testDate, testResults, resultId) => {
   return {};
 };
 
-// ============== COMPONENT ==============
+// ============== MAIN COMPONENT ==============
 function AssetDetail() {
   const { assetId } = useParams();
   const navigate = useNavigate();
@@ -119,7 +188,7 @@ function AssetDetail() {
   const [selectedTestType, setSelectedTestType] = useState('');
   const [testFields, setTestFields] = useState([]);
   const [testResults, setTestResults] = useState([]);
-  const [visibleColumns, setVisibleColumns] = useState({});
+  const [visibleColumnsByTestType, setVisibleColumnsByTestType] = useState({});
   const [showColumnSelector, setShowColumnSelector] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -153,13 +222,46 @@ function AssetDetail() {
     [testTypes, selectedTestType]
   );
 
+  // Get default visibility for a given test type
+  const getDefaultVisibilityForTestType = useCallback((testTypeId, fields) => {
+    if (DEFAULT_VISIBILITY_MAP[testTypeId]) {
+      const predefined = DEFAULT_VISIBILITY_MAP[testTypeId];
+      const fullVisibility = { ...predefined };
+      fields.forEach(f => {
+        if (!(f.field_name in fullVisibility)) {
+          fullVisibility[f.field_name] = false;
+        }
+      });
+      return fullVisibility;
+    }
+    return getFallbackVisibility(testTypeId, fields, testTypes);
+  }, [testTypes]);
+
+  // Current visibility for the selected test type
+  const currentVisibleColumns = useMemo(() => {
+    if (!selectedTestType || !testFields.length) return {};
+    const saved = visibleColumnsByTestType[selectedTestType];
+    if (saved) return saved;
+    const def = getDefaultVisibilityForTestType(selectedTestType, testFields);
+    setVisibleColumnsByTestType(prev => ({ ...prev, [selectedTestType]: def }));
+    return def;
+  }, [selectedTestType, testFields, visibleColumnsByTestType, getDefaultVisibilityForTestType]);
+
+  // All possible column keys (for ColumnSelector)
+  const allColumnKeys = useMemo(() => {
+    if (!selectedTestType) return [];
+    const special = ['checkbox', 'test_date', 'lab_name', 'notes', 'actions'];
+    if (isDGA) {
+      special.push('ieee_status', 'iec_status');
+    }
+    const paramKeys = testFields.map(f => f.field_name);
+    return [...new Set([...special, ...paramKeys])];
+  }, [selectedTestType, isDGA, testFields]);
+
   // Sort and filter results
   const sortedAndFilteredResults = useMemo(() => {
     if (!testResults.length) return [];
-
     let sorted = [...testResults];
-
-    // Apply sorting
     if (sortConfig.key) {
       sorted.sort((a, b) => {
         if (sortConfig.key === 'test_date') {
@@ -170,17 +272,12 @@ function AssetDetail() {
         return 0;
       });
     }
-
-    // Apply duplicate filter
     if (showDuplicatesOnly) {
       const dateCounts = {};
-      sorted.forEach(r => {
-        dateCounts[r.test_date] = (dateCounts[r.test_date] || 0) + 1;
-      });
+      sorted.forEach(r => { dateCounts[r.test_date] = (dateCounts[r.test_date] || 0) + 1; });
       const duplicateDates = Object.keys(dateCounts).filter(d => dateCounts[d] > 1);
       return sorted.filter(r => duplicateDates.includes(r.test_date));
     }
-
     return sorted;
   }, [testResults, sortConfig, showDuplicatesOnly]);
 
@@ -227,33 +324,24 @@ function AssetDetail() {
   const loadTestFields = async (testTypeId) => {
     try {
       const res = await API.get(`/test-fields/test-type/${testTypeId}`);
-      
-      const EXCLUDED_FIELDS = ['laboratory_name', 'sample_temp'];
+      // Only exclude laboratory_name – it's a built‑in column
+      const EXCLUDED_FIELDS = ['laboratory_name'];
       const filteredFields = res.data.filter(f => !EXCLUDED_FIELDS.includes(f.field_name));
-      
       setTestFields(filteredFields);
 
-      const visibility = {
-        checkbox: true, 
-        test_date: true, 
-        lab_name: false,
-        notes: false,
-        actions: true, 
-        ieee_status: true, 
-        iec_status: true
-      };
-      
-      filteredFields.forEach(f => { 
-        visibility[f.field_name] = DGA_GASES.includes(f.field_name); 
-      });
-      
-      setVisibleColumns(visibility);
-
       const initialData = { test_date: new Date().toISOString().split('T')[0] };
-      filteredFields.forEach(f => { 
-        initialData[f.field_name] = ''; 
+      filteredFields.forEach(f => {
+        initialData[f.field_name] = '';
       });
       setTestFormData(initialData);
+
+      setVisibleColumnsByTestType(prev => {
+        if (!prev[testTypeId]) {
+          const def = getDefaultVisibilityForTestType(testTypeId, filteredFields);
+          return { ...prev, [testTypeId]: def };
+        }
+        return prev;
+      });
     } catch (error) {
       console.error('Error loading test fields:', error);
     }
@@ -280,14 +368,12 @@ function AssetDetail() {
   const loadStatus = async (type) => {
     const setLoading = (v) => setStatusLoading(prev => ({ ...prev, [type]: v }));
     setLoading(true);
-
     try {
       if (!isDGA || testResults.length < 2) {
         setStatusMap(prev => ({ ...prev, [type]: {} }));
         setLoading(false);
         return;
       }
-
       const samples = testResults.map(r => {
         const gasData = {};
         r.parameters.forEach(p => {
@@ -297,18 +383,13 @@ function AssetDetail() {
         });
         return { id: r.id, sample_date: r.test_date, gas_data: gasData };
       });
-
       let endpoint = `/algorithms/transformer/dga/${type === 'ieee' ? 'ieee_algorithm' : 'iec_algorithm'}/batch`;
-      let body = samples;
-
       if (type === 'ieee') {
         const age = asset?.commissioning_date ? calculateAge(asset.commissioning_date) : 'NA';
         endpoint += `?transformer_age=${age}&max_day=730`;
       }
-
-      const response = await API.post(endpoint, body);
+      const response = await API.post(endpoint, samples);
       const map = {};
-
       response.data.forEach(item => {
         if (item.id) {
           if (type === 'ieee') {
@@ -324,7 +405,6 @@ function AssetDetail() {
           }
         }
       });
-
       setStatusMap(prev => ({ ...prev, [type]: map }));
     } catch (error) {
       console.error(`Error loading ${type} status:`, error);
@@ -360,7 +440,6 @@ function AssetDetail() {
         unit: field.unit
       };
     });
-
     const testData = {
       asset_id: parseInt(assetId),
       test_type_id: parseInt(selectedTestType),
@@ -369,7 +448,6 @@ function AssetDetail() {
       notes: testFormData.notes || null,
       parameters
     };
-
     try {
       if (editingResult) {
         await API.put(`/test-results/${editingResult.id}`, testData);
@@ -449,27 +527,47 @@ function AssetDetail() {
     }));
   };
 
+  // --- Column visibility toggles ---
+  const handleToggleColumn = (key) => {
+    setVisibleColumnsByTestType(prev => {
+      const current = prev[selectedTestType] || getDefaultVisibilityForTestType(selectedTestType, testFields);
+      return {
+        ...prev,
+        [selectedTestType]: {
+          ...current,
+          [key]: !current[key],
+        },
+      };
+    });
+  };
+
+  const handleShowAllColumns = () => {
+    const all = {};
+    allColumnKeys.forEach(key => { all[key] = true; });
+    setVisibleColumnsByTestType(prev => ({ ...prev, [selectedTestType]: all }));
+  };
+
+  const handleShowDefaultColumns = () => {
+    const def = getDefaultVisibilityForTestType(selectedTestType, testFields);
+    setVisibleColumnsByTestType(prev => ({ ...prev, [selectedTestType]: def }));
+  };
+
   // --- DGA Algorithms ---
   const calculateDgaAlgorithms = async () => {
     if (!selectedRows.length) return alert('Select at least one test result.');
-
     setAlgoLoading(true);
     setAlgoError(null);
     setDgaResults([]);
     setAlgoData({});
-
     try {
       const selectedResults = testResults.filter(r => selectedRows.includes(r.id));
       const results = [];
       const duvalSamples = [];
-
       for (const result of selectedResults) {
         const params = {};
         result.parameters.forEach(p => { if (p.field_value !== null) params[p.field_name] = p.field_value; });
-
         const algos = await API.get('/algorithms/transformer/dga');
         const algoResults = {};
-
         for (const algo of algos.data) {
           try {
             const id = ALGO_MAP[algo.id] || algo.id;
@@ -488,7 +586,6 @@ function AssetDetail() {
             algoResults[algo.id] = { error: 'Calculation failed' };
           }
         }
-
         results.push({ test_id: result.id, test_date: result.test_date, algorithms: algoResults });
         duvalSamples.push({
           id: result.id,
@@ -496,7 +593,6 @@ function AssetDetail() {
           gas_data: { ch4: params.ch4 || 0, c2h2: params.c2h2 || 0, c2h4: params.c2h4 || 0, h2: params.h2 || 0, c2h6: params.c2h6 || 0, co: params.co || 0, co2: params.co2 || 0, o2: params.o2 || 0, n2: params.n2 || 0 }
         });
       }
-
       // Chart algorithms
       const chartAlgos = [
         { id: 'duval_triangle_1', key: 'duvalData' },
@@ -511,7 +607,6 @@ function AssetDetail() {
         { id: 'iec60599_ratio', key: 'iec60599Data' },
         { id: 'ml_dga_1', key: 'mlData1' }
       ];
-
       const newAlgoData = {};
       for (const algo of chartAlgos) {
         try {
@@ -521,7 +616,6 @@ function AssetDetail() {
           newAlgoData[algo.key] = [];
         }
       }
-
       setAlgoData(newAlgoData);
       setDgaResults(results);
       setShowDgaAlgorithms(true);
@@ -541,19 +635,15 @@ function AssetDetail() {
       </div>
     );
   }
-
   if (!asset) return <div style={s.container}>Asset not found</div>;
 
   const selectedTestTypeName = testTypes.find(t => t.id == selectedTestType)?.test_name;
-
-  // Count visible columns for colspan
-  const visibleColumnsCount = Object.values(visibleColumns).filter(v => v !== false).length;
 
   return (
     <div style={s.container}>
       {/* Header */}
       <div style={s.header}>
-        <button onClick={() => navigate(`/plants/${asset?.plant_id}/assets`)} style={s.backButton}>
+        <button onClick={() => navigate(`/assets/`)} style={s.backButton}>
           <FaArrowLeft size={16} style={{ marginRight: '8px' }} />
           Back to Assets
         </button>
@@ -611,7 +701,6 @@ function AssetDetail() {
                 {testTypes.map(tt => <option key={tt.id} value={tt.id}>{tt.test_name}</option>)}
               </select>
             </div>
-
             {selectedTestType && (
               <div style={s.headerActions}>
                 <button 
@@ -654,25 +743,17 @@ function AssetDetail() {
           {showColumnSelector && selectedTestType && (
             <div style={s.columnSelectorWrapper}>
               <ColumnSelector
-                visibleColumns={visibleColumns}
+                visibleColumns={currentVisibleColumns}
                 testFields={testFields}
-                onToggle={(key) => setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }))}
+                onToggle={handleToggleColumn}
                 onClose={() => setShowColumnSelector(false)}
-                onShowAll={() => {
-                  const all = { checkbox: true, test_date: true, lab_name: true, notes: true, actions: true, ieee_status: true, iec_status: true };
-                  testFields.forEach(f => all[f.field_name] = true);
-                  setVisibleColumns(all);
-                }}
-                onShowDefault={() => {
-                  const def = { checkbox: true, test_date: true, lab_name: false, notes: false, actions: true, ieee_status: true, iec_status: true };
-                  testFields.forEach(f => def[f.field_name] = DGA_GASES.includes(f.field_name));
-                  setVisibleColumns(def);
-                }}
+                onShowAll={handleShowAllColumns}
+                onShowDefault={handleShowDefaultColumns}
               />
             </div>
           )}
 
-          {/* Duplicate Date Info Banner */}
+          {/* Duplicate Info Banner */}
           {selectedTestType && testResults.length > 0 && (
             <div style={s.duplicateInfoBanner}>
               <div style={s.duplicateInfoContent}>
@@ -756,12 +837,9 @@ function AssetDetail() {
                 <table style={s.dataTable}>
                   <thead>
                     <tr>
-                      {visibleColumns.checkbox !== false && <th style={s.thCheckbox}><input type="checkbox" checked={selectAll} onChange={handleSelectAll} /></th>}
-                      {visibleColumns.test_date !== false && (
-                        <th 
-                          style={{...s.th, ...s.sortableHeader, cursor: 'pointer'}} 
-                          onClick={() => handleSort('test_date')}
-                        >
+                      {currentVisibleColumns.checkbox !== false && <th style={s.thCheckbox}><input type="checkbox" checked={selectAll} onChange={handleSelectAll} /></th>}
+                      {currentVisibleColumns.test_date !== false && (
+                        <th style={{...s.th, ...s.sortableHeader, cursor: 'pointer'}} onClick={() => handleSort('test_date')}>
                           Test Date 
                           {sortConfig.key === 'test_date' && (
                             <span style={{ marginLeft: '4px' }}>
@@ -770,11 +848,15 @@ function AssetDetail() {
                           )}
                         </th>
                       )}
-                      {isDGA && visibleColumns.ieee_status !== false && <th style={s.th}>IEEE</th>}
-                      {isDGA && visibleColumns.iec_status !== false && <th style={s.th}>IEC</th>}
-                      {testFields.map(f => visibleColumns[f.field_name] !== false && <th key={f.id} style={s.th}>{f.display_name}</th>)}
-                      {visibleColumns.notes !== false && <th style={s.th}>Notes</th>}
-                      {visibleColumns.actions !== false && <th style={s.th}>Actions</th>}
+                      {/* ====== LAB_NAME COLUMN HEADER ====== */}
+                      {currentVisibleColumns.lab_name !== false && (
+                        <th style={s.th}>Laboratory Name</th>
+                      )}
+                      {isDGA && currentVisibleColumns.ieee_status !== false && <th style={s.th}>IEEE</th>}
+                      {isDGA && currentVisibleColumns.iec_status !== false && <th style={s.th}>IEC</th>}
+                      {testFields.map(f => currentVisibleColumns[f.field_name] !== false && <th key={f.id} style={s.th}>{f.display_name}</th>)}
+                      {currentVisibleColumns.notes !== false && <th style={s.th}>Notes</th>}
+                      {currentVisibleColumns.actions !== false && <th style={s.th}>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -785,7 +867,6 @@ function AssetDetail() {
                       const ieeeBadge = getBadge('IEEE', ieee?.status, ieee?.status_code);
                       const iecBadge = getBadge('IEC', iec?.status, iec?.status_code);
                       
-                      // Get duplicate date information
                       const duplicateInfo = getDuplicateDateInfo(result.test_date, testResults);
                       const duplicateStyle = getDuplicateDateStyle(result.test_date, testResults, result.id);
                       
@@ -796,7 +877,7 @@ function AssetDetail() {
 
                       return (
                         <tr key={result.id} style={rowStyle}>
-                          {visibleColumns.checkbox !== false && (
+                          {currentVisibleColumns.checkbox !== false && (
                             <td style={s.tdCheckbox}>
                               <input 
                                 type="checkbox" 
@@ -805,7 +886,7 @@ function AssetDetail() {
                               />
                             </td>
                           )}
-                          {visibleColumns.test_date !== false && (
+                          {currentVisibleColumns.test_date !== false && (
                             <td style={s.td} title={duplicateInfo.isDuplicate ? duplicateInfo.message : ''}>
                               {new Date(result.test_date).toLocaleDateString()}
                               {duplicateInfo.isDuplicate && (
@@ -815,7 +896,11 @@ function AssetDetail() {
                               )}
                             </td>
                           )}
-                          {isDGA && visibleColumns.ieee_status !== false && (
+                          {/* ====== LAB_NAME COLUMN CELL ====== */}
+                          {currentVisibleColumns.lab_name !== false && (
+                            <td style={s.td}>{result.lab_name || '-'}</td>
+                          )}
+                          {isDGA && currentVisibleColumns.ieee_status !== false && (
                             <td style={s.td}>
                               {statusLoading.ieee ? 
                                 <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
@@ -836,7 +921,7 @@ function AssetDetail() {
                               }
                             </td>
                           )}
-                          {isDGA && visibleColumns.iec_status !== false && (
+                          {isDGA && currentVisibleColumns.iec_status !== false && (
                             <td style={s.td}>
                               {statusLoading.iec ? 
                                 <span style={{ fontSize: '11px', color: '#94a3b8' }}>⏳</span> :
@@ -858,7 +943,7 @@ function AssetDetail() {
                             </td>
                           )}
                           {testFields.map(field => {
-                            if (visibleColumns[field.field_name] === false) return null;
+                            if (currentVisibleColumns[field.field_name] === false) return null;
                             const param = result.parameters?.find(p => p.field_name === field.field_name);
                             let value = '-', unit = '';
                             if (param) {
@@ -873,8 +958,8 @@ function AssetDetail() {
                             if (typeof value === 'number' && !Number.isInteger(value)) value = value.toFixed(2);
                             return <td key={field.id} style={s.tdCompact}>{value} {unit}</td>;
                           })}
-                          {visibleColumns.notes !== false && <td style={s.tdNotes}>{result.notes || '-'}</td>}
-                          {visibleColumns.actions !== false && (
+                          {currentVisibleColumns.notes !== false && <td style={s.tdNotes}>{result.notes || '-'}</td>}
+                          {currentVisibleColumns.actions !== false && (
                             <td style={s.tdActions}>
                               <button onClick={() => handleEdit(result)} style={s.editButton}>Edit</button>
                               <button onClick={() => handleDelete(result.id)} style={s.deleteButton}>Delete</button>

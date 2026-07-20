@@ -1,8 +1,4 @@
-// ColumnSelector.jsx
 import React from 'react';
-
-// Fields to exclude from the column selector
-const EXCLUDED_FIELDS = ['laboratory_name', 'sample_temp'];
 
 const ColumnSelector = ({ 
   visibleColumns, 
@@ -12,8 +8,40 @@ const ColumnSelector = ({
   onShowAll,
   onShowDefault
 }) => {
-  // Double filter to ensure duplicates are removed
-  const filteredFields = testFields.filter(field => !EXCLUDED_FIELDS.includes(field.field_name));
+  // ---- Build the complete list of column keys ----
+  // 1. Special columns (always present)
+  const specialKeys = [
+    'checkbox',
+    'test_date',
+    'lab_name',
+    'notes',
+    'actions',
+  ];
+  // Add IEEE/IEC status only if they exist in visibleColumns (i.e., DGA test type)
+  if (visibleColumns.ieee_status !== undefined) specialKeys.push('ieee_status');
+  if (visibleColumns.iec_status !== undefined) specialKeys.push('iec_status');
+
+  // 2. Parameter fields (all from testFields, no exclusions)
+  const paramKeys = testFields.map(field => field.field_name);
+
+  // 3. Combine and remove duplicates (just in case)
+  const allKeys = [...new Set([...specialKeys, ...paramKeys])];
+
+  // ---- Helper to get display name ----
+  const getDisplayName = (key) => {
+    const specialNames = {
+      checkbox: 'Select All',
+      test_date: 'Test Date',
+      lab_name: 'Laboratory Name',
+      notes: 'Notes',
+      actions: 'Actions',
+      ieee_status: 'IEEE Status',
+      iec_status: 'IEC Status',
+    };
+    if (specialNames[key]) return specialNames[key];
+    const field = testFields.find(f => f.field_name === key);
+    return field ? field.display_name : key;
+  };
 
   return (
     <div style={styles.columnSelector}>
@@ -22,64 +50,23 @@ const ColumnSelector = ({
         <button onClick={onClose} style={styles.closeSelectorButton}>✕</button>
       </div>
       <div style={styles.columnSelectorGrid}>
-        <label style={styles.columnSelectorItem}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.checkbox !== false}
-            onChange={() => onToggle('checkbox')}
-          />
-          Select All
-        </label>
-        <label style={styles.columnSelectorItem}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.test_date !== false}
-            onChange={() => onToggle('test_date')}
-          />
-          Test Date
-        </label>
-        {/* COMMENT OUT OR REMOVE the Lab Name section to completely hide it */}
-        {/* <label style={styles.columnSelectorItem}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.lab_name !== false}
-            onChange={() => onToggle('lab_name')}
-          />
-          Lab Name
-        </label> */}
-        {filteredFields.map(field => (
-          <label key={field.id} style={styles.columnSelectorItem}>
+        {allKeys.map(key => (
+          <label key={key} style={styles.columnSelectorItem}>
             <input
               type="checkbox"
-              checked={visibleColumns[field.field_name] !== false}
-              onChange={() => onToggle(field.field_name)}
+              checked={visibleColumns[key] !== false}
+              onChange={() => onToggle(key)}
             />
-            {field.display_name}
+            {getDisplayName(key)}
           </label>
         ))}
-        <label style={styles.columnSelectorItem}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.notes !== false}
-            onChange={() => onToggle('notes')}
-          />
-          Notes
-        </label>
-        <label style={styles.columnSelectorItem}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.actions !== false}
-            onChange={() => onToggle('actions')}
-          />
-          Actions
-        </label>
       </div>
       <div style={styles.columnSelectorFooter}>
         <button onClick={onShowAll} style={styles.selectorActionButton}>
           Show All
         </button>
         <button onClick={onShowDefault} style={styles.selectorActionButton}>
-          Show Default (Gases)
+          Show Default
         </button>
       </div>
     </div>
