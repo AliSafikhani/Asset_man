@@ -1,3 +1,4 @@
+-- backend\database\migrations\002_create_assets_table.sql
 -- STEP 2: Asset Base Table (Common fields for all asset types)
 -- Supports: Generators, Transformers, and Motors
 

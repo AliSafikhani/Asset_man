@@ -81,7 +81,7 @@ const TestResultForm = ({
 
             {/* Laboratory Name */}
             <div style={styles.formGroup}>
-              <label style={styles.label}>Laboratory Name</label>
+              <label style={styles.label}>Laboratory Name </label>
               <input
                 type="text"
                 value={testFormData.lab_name || ''}

@@ -4,3 +4,29 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 cd D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend
 npm run dev
+
+
+add new field for transformer :
+1 : update table in database
+	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\database\migrations\041_add_paper_type_to_transformers.sql
+	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\run_migration.py
+2: add new item to endpoint :
+	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\app\api\v1\endpoints\assets.py
+3:add filed in registration form and also add item for selection 
+	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend\src\pages\Assets.jsx
+4:add item for show in asset specification 
+	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend\src\components\AssetDetail\tabs\AssetProfileTab\subTabs\Specifications.jsx
+
+add new featue ( maintenace activity )
+ 1: define new table and its fields in database 
+	create  backend\database\migrations\043_create_maintenance_activities_table.sql
+ 2: create  maintenace activity SQLAlchemy model 
+	create  backend\app\models\maintenance_activities.py
+3: create maintenece activity endpoint 
+	create  backend/app/api/v1/endpoints/maintenance_activities.py
+4: api_router 
+	update backend\app\api\v1\api.py
+5: add the maintenance_activities relationships 
+	update backend\app\models\hierarchy.py
+	update backend\app\models\assets.py 
+

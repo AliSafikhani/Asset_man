@@ -1,4 +1,4 @@
-// Pagination.jsx
+// frontend/src/components/AssetDetail/Pagination.jsx
 import React from 'react';
 
 const Pagination = ({ 
@@ -11,89 +11,64 @@ const Pagination = ({
   const totalPages = Math.ceil(totalRecords / pageSize);
   if (totalPages <= 1) return null;
 
-  const pageNumbers = [];
-  const maxVisiblePages = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-  
-  if (endPage - startPage < maxVisiblePages - 1) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-  }
-
-  for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
-  }
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
 
   return (
-    <div style={styles.paginationContainer}>
-      <div style={styles.paginationInfo}>
-        Showing {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalRecords)} of {totalRecords} records
+    <div style={styles.container}>
+      <div style={styles.info}>
+        {totalRecords} records
       </div>
-      <div style={styles.paginationControls}>
+      <div style={styles.controls}>
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          style={{...styles.paginationButton, ...(currentPage === 1 ? styles.paginationButtonDisabled : {})}}
+          style={{ ...styles.button, ...(currentPage === 1 ? styles.disabled : {}) }}
         >
-          ⟪
+          «
         </button>
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          style={{...styles.paginationButton, ...(currentPage === 1 ? styles.paginationButtonDisabled : {})}}
+          style={{ ...styles.button, ...(currentPage === 1 ? styles.disabled : {}) }}
         >
           ‹
         </button>
-        
-        {startPage > 1 && (
-          <>
-            <button onClick={() => onPageChange(1)} style={styles.paginationButton}>1</button>
-            {startPage > 2 && <span style={styles.paginationEllipsis}>…</span>}
-          </>
-        )}
-        
-        {pageNumbers.map(num => (
+        {startPage > 2 && <span style={styles.ellipsis}>…</span>}
+        {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(num => (
           <button
             key={num}
             onClick={() => onPageChange(num)}
             style={{
-              ...styles.paginationButton,
-              ...(num === currentPage ? styles.paginationButtonActive : {})
+              ...styles.button,
+              ...(num === currentPage ? styles.active : {}),
             }}
           >
             {num}
           </button>
         ))}
-        
-        {endPage < totalPages && (
-          <>
-            {endPage < totalPages - 1 && <span style={styles.paginationEllipsis}>…</span>}
-            <button onClick={() => onPageChange(totalPages)} style={styles.paginationButton}>{totalPages}</button>
-          </>
-        )}
-        
+        {endPage < totalPages - 1 && <span style={styles.ellipsis}>…</span>}
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          style={{...styles.paginationButton, ...(currentPage === totalPages ? styles.paginationButtonDisabled : {})}}
+          style={{ ...styles.button, ...(currentPage === totalPages ? styles.disabled : {}) }}
         >
           ›
         </button>
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          style={{...styles.paginationButton, ...(currentPage === totalPages ? styles.paginationButtonDisabled : {})}}
+          style={{ ...styles.button, ...(currentPage === totalPages ? styles.disabled : {}) }}
         >
-          ⟫
+          »
         </button>
       </div>
-      <div style={styles.pageSizeSelector}>
-        <label>Show:</label>
-        <select value={pageSize} onChange={onPageSizeChange} style={styles.pageSizeSelect}>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
+      <div style={styles.sizeControl}>
+        <select value={pageSize} onChange={onPageSizeChange} style={styles.select}>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
         </select>
       </div>
     </div>
@@ -101,63 +76,59 @@ const Pagination = ({
 };
 
 const styles = {
-  paginationContainer: {
+  container: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '10px',
-    padding: '10px 0',
-    marginBottom: '10px',
-    borderBottom: '1px solid #e0e0e0'
+    gap: '8px',
+    padding: '8px 0',
+    color: '#1e293b',
   },
-  paginationInfo: {
+  info: {
     fontSize: '14px',
-    color: '#666'
+    color: '#475569',
   },
-  paginationControls: {
+  controls: {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
-    flexWrap: 'wrap'
   },
-  paginationButton: {
-    padding: '6px 12px',
-    border: '1px solid #ddd',
+  button: {
+    padding: '4px 10px',
+    border: '1px solid #e2e8f0',
     borderRadius: '4px',
-    backgroundColor: 'white',
-    color: '#333',
+    background: 'white',
     cursor: 'pointer',
-    fontSize: '14px',
-    minWidth: '32px',
-    transition: 'all 0.2s'
+    fontSize: '13px',
+    color: '#1e293b',
+    transition: 'all 0.2s',
   },
-  paginationButtonActive: {
-    backgroundColor: '#667eea',
+  active: {
+    background: '#667eea',
     color: 'white',
-    borderColor: '#667eea'
+    borderColor: '#667eea',
   },
-  paginationButtonDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed'
+  disabled: {
+    opacity: 0.4,
+    cursor: 'not-allowed',
   },
-  paginationEllipsis: {
-    padding: '0 8px',
-    color: '#666'
+  ellipsis: {
+    padding: '0 4px',
+    color: '#475569',
   },
-  pageSizeSelector: {
+  sizeControl: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px'
   },
-  pageSizeSelect: {
-    padding: '6px',
-    border: '1px solid #ddd',
+  select: {
+    padding: '4px 8px',
+    border: '1px solid #e2e8f0',
     borderRadius: '4px',
-    fontSize: '14px',
-    cursor: 'pointer'
-  }
+    fontSize: '13px',
+    color: '#1e293b',
+    background: 'white',
+  },
 };
 
 export default Pagination;

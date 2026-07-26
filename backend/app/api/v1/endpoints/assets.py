@@ -74,6 +74,7 @@ class TransformerCreate(BaseModel):
     vector_group: Optional[str] = None
     frequency_hz: Optional[float] = None
     oil_type: Optional[str] = None
+    paper_type: Optional[str] = None
     oil_volume_liters: Optional[float] = None
     weight_kg: Optional[float] = None
     no_load_loss_w: Optional[float] = None

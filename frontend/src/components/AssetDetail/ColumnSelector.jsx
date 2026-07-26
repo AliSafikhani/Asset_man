@@ -1,57 +1,46 @@
+// frontend/src/components/AssetDetail/ColumnSelector.jsx
 import React from 'react';
 
-const ColumnSelector = ({ 
-  visibleColumns, 
-  testFields, 
-  onToggle, 
+const ColumnSelector = ({
+  visibleColumns,
+  testFields,
+  onToggle,
   onClose,
   onShowAll,
-  onShowDefault
+  onShowDefault,
 }) => {
-  // ---- Build the complete list of column keys ----
-  // 1. Special columns (always present)
-  const specialKeys = [
+  // Build list of all column keys
+  const allKeys = [
     'checkbox',
     'test_date',
     'lab_name',
     'notes',
     'actions',
+    ...testFields.map(f => f.field_name),
   ];
-  // Add IEEE/IEC status only if they exist in visibleColumns (i.e., DGA test type)
-  if (visibleColumns.ieee_status !== undefined) specialKeys.push('ieee_status');
-  if (visibleColumns.iec_status !== undefined) specialKeys.push('iec_status');
 
-  // 2. Parameter fields (all from testFields, no exclusions)
-  const paramKeys = testFields.map(field => field.field_name);
-
-  // 3. Combine and remove duplicates (just in case)
-  const allKeys = [...new Set([...specialKeys, ...paramKeys])];
-
-  // ---- Helper to get display name ----
   const getDisplayName = (key) => {
-    const specialNames = {
+    const special = {
       checkbox: 'Select All',
       test_date: 'Test Date',
-      lab_name: 'Laboratory Name',
       notes: 'Notes',
+      lab_name: 'Laboratory Name',
       actions: 'Actions',
-      ieee_status: 'IEEE Status',
-      iec_status: 'IEC Status',
     };
-    if (specialNames[key]) return specialNames[key];
+    if (special[key]) return special[key];
     const field = testFields.find(f => f.field_name === key);
     return field ? field.display_name : key;
   };
 
   return (
     <div style={styles.columnSelector}>
-      <div style={styles.columnSelectorHeader}>
-        <span>Select Columns to Display</span>
-        <button onClick={onClose} style={styles.closeSelectorButton}>✕</button>
+      <div style={styles.header}>
+        <span style={styles.title}>Select Columns to Display</span>
+        <button onClick={onClose} style={styles.closeButton}>✕</button>
       </div>
-      <div style={styles.columnSelectorGrid}>
+      <div style={styles.grid}>
         {allKeys.map(key => (
-          <label key={key} style={styles.columnSelectorItem}>
+          <label key={key} style={styles.item}>
             <input
               type="checkbox"
               checked={visibleColumns[key] !== false}
@@ -61,68 +50,68 @@ const ColumnSelector = ({
           </label>
         ))}
       </div>
-      <div style={styles.columnSelectorFooter}>
-        <button onClick={onShowAll} style={styles.selectorActionButton}>
-          Show All
-        </button>
-        <button onClick={onShowDefault} style={styles.selectorActionButton}>
-          Show Default
-        </button>
+      <div style={styles.footer}>
+        <button onClick={onShowAll} style={styles.footerButton}>Show All</button>
+        <button onClick={onShowDefault} style={styles.footerButton}>Show Default</button>
       </div>
     </div>
   );
 };
 
 const styles = {
-  columnSelector: { 
-    backgroundColor: '#f8f9fa', 
-    border: '1px solid #dee2e6', 
-    borderRadius: '8px', 
-    padding: '15px', 
-    marginBottom: '20px'
+  columnSelector: {
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '20px',
   },
-  columnSelectorHeader: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: '10px',
-    fontWeight: 'bold'
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '12px',
   },
-  closeSelectorButton: { 
-    background: 'none', 
-    border: 'none', 
-    fontSize: '20px', 
-    cursor: 'pointer', 
-    color: '#666' 
+  title: {
+    fontWeight: '600',
+    color: '#0f172a',
   },
-  columnSelectorGrid: { 
-    display: 'grid', 
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-    gap: '8px' 
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    color: '#475569',
   },
-  columnSelectorItem: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gap: '8px',
+  },
+  item: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
     fontSize: '14px',
-    cursor: 'pointer'
+    color: '#1e293b',
+    cursor: 'pointer',
   },
-  columnSelectorFooter: { 
-    display: 'flex', 
-    gap: '10px', 
-    marginTop: '15px', 
-    paddingTop: '15px', 
-    borderTop: '1px solid #dee2e6' 
+  footer: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '12px',
+    paddingTop: '12px',
+    borderTop: '1px solid #e2e8f0',
   },
-  selectorActionButton: { 
-    padding: '6px 12px', 
-    backgroundColor: '#6c757d', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '4px', 
-    cursor: 'pointer', 
-    fontSize: '12px' 
-  }
+  footerButton: {
+    padding: '4px 12px',
+    background: '#e2e8f0',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    color: '#1e293b',
+  },
 };
 
 export default ColumnSelector;

@@ -18,3 +18,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Improve contrast across the app */
+body {
+  color: #1e293b; /* dark text for all content */
+}
+
+/* For labels and muted text */
+.text-muted {
+  color: #475569;
+}

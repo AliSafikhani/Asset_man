@@ -1,4 +1,5 @@
-﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, JSON, ForeignKey
+﻿# D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\app\models\hierarchy.py
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, JSON, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.models.base import Base, TimestampMixin
@@ -25,6 +26,7 @@ class Centroids(Base, TimestampMixin):
     
     # Relationships
     companies = relationship("Companies", back_populates="centroid", cascade="all, delete-orphan")
+
 
 class Companies(Base, TimestampMixin):
     __tablename__ = "companies"
@@ -54,6 +56,20 @@ class Companies(Base, TimestampMixin):
     # Relationships
     centroid = relationship("Centroids", back_populates="companies")
     plants = relationship("Plants", back_populates="company", cascade="all, delete-orphan")
+    
+    # NEW: Convenience relationship to access maintenance activities through plants
+    @property
+    def maintenance_activities(self):
+        """Access all maintenance activities across all plants in this company"""
+        from app.models.maintenance_activities import MaintenanceActivities
+        from sqlalchemy import select
+        # This is a property that can be used in queries, but for direct access
+        # you would need to query through the plants relationship
+        activities = []
+        for plant in self.plants:
+            activities.extend(plant.maintenance_activities)
+        return activities
+
 
 class Plants(Base, TimestampMixin):
     __tablename__ = "plants"
@@ -80,3 +96,12 @@ class Plants(Base, TimestampMixin):
     # Relationships
     company = relationship("Companies", back_populates="plants")
     assets = relationship("Assets", back_populates="plant", cascade="all, delete-orphan")
+    
+    # NEW: Add maintenance activities relationship
+    # This allows: plant.maintenance_activities to get all activities for this plant
+    # Cascade delete: when plant is deleted, all its maintenance activities are also deleted
+    maintenance_activities = relationship(
+        "MaintenanceActivities", 
+        back_populates="plant", 
+        cascade="all, delete-orphan"
+    )

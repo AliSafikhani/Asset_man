@@ -100,11 +100,12 @@ function Assets() {
   const efficiencyClasses = ['IE1', 'IE2', 'IE3', 'IE4', 'IE5'];
   const ipRatings = ['IP20', 'IP23', 'IP44', 'IP54', 'IP55', 'IP65', 'IP66', 'IP67'];
 
-  const transformerTypes = ['Power Transformer', 'Distribution Transformer', 'Auto Transformer', 'Instrument Transformer', 'Step-Up', 'Step-Down'];
+  const transformerTypes = ["GSU" , "Network" , "LargeDist" , "Industrial" , "LVDC", "HVDC" , "Reactor" , "Furnace"];
   const coolingTypes = ['ONAN', 'ONAF', 'OFAF', 'ODAF', 'OFWF', 'ODWF', 'AN', 'AF'];
   const insulationTypes = ['Oil Immersed', 'Dry Type', 'Gas Filled', 'Silicone', 'Nomex'];
   const vectorGroups = ['Dyn11', 'Dyn1', 'Yyn0', 'Yd11', 'Yd1', 'Dd0', 'Dd6', 'Yz5', 'Yz11'];
   const oilTypes = ['Mineral Oil', 'Synthetic Ester', 'Natural Ester', 'Silicone', 'Gas'];
+  const paperTypes = ['Kraft','TUP','Synthetic','Other'];
 
   useEffect(() => {
     loadPlants();
@@ -1088,6 +1089,20 @@ function Assets() {
               >
                 <option value="">Select...</option>
                 {oilTypes.map(type => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Paper Type</label>
+              <select
+                value={formData.transformer.paper_type || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'paper_type', value === '' ? null : value);
+                }}
+                style={styles.formSelect}
+              >
+                <option value="">Select...</option>
+                {paperTypes.map(type => <option key={type} value={type}>{type}</option>)}
               </select>
             </div>
             <div style={styles.formGroup}>

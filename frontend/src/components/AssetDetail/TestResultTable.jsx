@@ -72,9 +72,9 @@ const TestResultTable = ({
             {visibleColumns.test_date && (
               <th style={styles.th}>Test Date</th>
             )}
-            {visibleColumns.lab_name && (
+            {/* {visibleColumns.lab_name && (
               <th style={styles.th}>Lab</th>
-            )}
+            )} */}
             {testFields
               .filter(field => visibleColumns[field.field_name])
               .map(field => (

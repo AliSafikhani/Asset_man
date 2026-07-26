@@ -31,3 +31,4 @@ class Assets(Base, TimestampMixin):
     generator = relationship("Generators", back_populates="asset", uselist=False, cascade="all, delete-orphan")
     transformer = relationship("Transformers", back_populates="asset", uselist=False, cascade="all, delete-orphan")
     motor = relationship("Motors", back_populates="asset", uselist=False, cascade="all, delete-orphan")
+    maintenance_activities = relationship("MaintenanceActivities", back_populates="asset")
