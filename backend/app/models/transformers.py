@@ -41,6 +41,8 @@ class Transformers(Base, TimestampMixin):
     frequency_hz = Column(Float)
     oil_type = Column(String(50))
     paper_type = Column(String(50))
+    breathing = Column(String(50))
+    oil_inhibition = Column(String(50))
     oil_volume_liters = Column(Float)
     weight_kg = Column(Float)
     

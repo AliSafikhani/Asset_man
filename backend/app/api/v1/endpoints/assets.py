@@ -75,6 +75,8 @@ class TransformerCreate(BaseModel):
     frequency_hz: Optional[float] = None
     oil_type: Optional[str] = None
     paper_type: Optional[str] = None
+    breathing: Optional[str] = None
+    oil_inhibition: Optional[str] = None
     oil_volume_liters: Optional[float] = None
     weight_kg: Optional[float] = None
     no_load_loss_w: Optional[float] = None

@@ -106,6 +106,8 @@ function Assets() {
   const vectorGroups = ['Dyn11', 'Dyn1', 'Yyn0', 'Yd11', 'Yd1', 'Dd0', 'Dd6', 'Yz5', 'Yz11'];
   const oilTypes = ['Mineral Oil', 'Synthetic Ester', 'Natural Ester', 'Silicone', 'Gas'];
   const paperTypes = ['Kraft','TUP','Synthetic','Other'];
+  const breathing = ['Open','Sealed'];
+  const oilInhibition = ['uninhibited','inhibited'];
 
   useEffect(() => {
     loadPlants();
@@ -1103,6 +1105,34 @@ function Assets() {
               >
                 <option value="">Select...</option>
                 {paperTypes.map(type => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Breathing</label>
+              <select
+                value={formData.transformer.breathing || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'breathing', value === '' ? null : value);
+                }}
+                style={styles.formSelect}
+              >
+                <option value="">Select...</option>
+                {breathing.map(type => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Oil Inhibition</label>
+              <select
+                value={formData.transformer.oil_inhibition || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleFieldChange('transformer', 'oil_inhibition', value === '' ? null : value);
+                }}
+                style={styles.formSelect}
+              >
+                <option value="">Select...</option>
+                {oilInhibition.map(type => <option key={type} value={type}>{type}</option>)}
               </select>
             </div>
             <div style={styles.formGroup}>

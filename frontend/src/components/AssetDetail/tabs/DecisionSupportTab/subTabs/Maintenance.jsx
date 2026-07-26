@@ -116,7 +116,6 @@ const Maintenance = ({ asset, assetId }) => {
   // ---- Sorting & Filtering ----
   const sortedActivities = useMemo(() => {
     const sorted = [...activities];
-    // Sort by scheduled_date descending (newest first)
     sorted.sort((a, b) => {
       const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
       const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
@@ -164,6 +163,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: 'minor',
       maintenance_section: sectionOptions[0] || '',
       priority: 'medium',
+      status: 'planned', // ✅ Added status
       scheduled_date: new Date().toISOString().split('T')[0],
       assigned_technician: null,
       meter_reading: '',
@@ -186,6 +186,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: activity.maintenance_order || 'minor',
       maintenance_section: activity.maintenance_section || sectionOptions[0] || '',
       priority: activity.priority || 'medium',
+      status: activity.status || 'planned', // ✅ Added status
       scheduled_date: activity.scheduled_date ? new Date(activity.scheduled_date).toISOString().split('T')[0] : '',
       assigned_technician: activity.assigned_technician || null,
       meter_reading: activity.meter_reading || '',
@@ -208,6 +209,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: formData.maintenance_order,
       maintenance_section: formData.maintenance_section,
       priority: formData.priority,
+      status: formData.status || 'planned', // ✅ Include status
       scheduled_date: formData.scheduled_date || null,
       assigned_technician: formData.assigned_technician,
       meter_reading: formData.meter_reading ? parseFloat(formData.meter_reading) : null,
@@ -251,7 +253,6 @@ const Maintenance = ({ asset, assetId }) => {
     if (!selectedRows.length) return alert('Select at least one activity.');
     if (!window.confirm(`Delete ${selectedRows.length} activity(ies)?`)) return;
     try {
-      // Delete one by one (since no batch endpoint yet)
       for (const id of selectedRows) {
         await API.delete(`/maintenance-activities/${id}`);
       }
@@ -514,7 +515,7 @@ const Maintenance = ({ asset, assetId }) => {
                         {activity.scheduled_date ? new Date(activity.scheduled_date).toLocaleDateString() : '-'}
                       </td>
                       <td style={tableStyles.td}>
-                        ${(activity.total_cost || activity.labor_cost + activity.parts_cost || 0).toFixed(2)}
+                        ${(activity.total_cost || 0).toFixed(2)}
                       </td>
                       <td style={tableStyles.tdActions}>
                         {/* Status transition buttons */}
@@ -601,8 +602,8 @@ const Maintenance = ({ asset, assetId }) => {
                 />
               </div>
 
-              {/* Row: Order + Section + Priority */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              {/* Row: Order + Section + Priority + Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '500', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>Order *</label>
                   <select
@@ -642,6 +643,22 @@ const Maintenance = ({ asset, assetId }) => {
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                     <option value="critical">Critical</option>
+                  </select>
+                </div>
+                {/* ✅ Status Dropdown - NEW */}
+                <div>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>Status</label>
+                  <select
+                    value={formData.status || 'planned'}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                  >
+                    <option value="planned">Planned</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="canceled">Canceled</option>
                   </select>
                 </div>
               </div>
