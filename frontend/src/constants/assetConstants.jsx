@@ -74,7 +74,7 @@ export const DEFAULT_VISIBILITY_MAP = {
     lab_name: true,
     notes: false,
     actions: true,
-    sample_temp: true,
+    sample_temp: false,
     fol: true,
     fal: true,
     acf: true,

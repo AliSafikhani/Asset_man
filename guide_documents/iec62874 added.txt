@@ -1,0 +1,8 @@
+1- create algorithm file 
+backend/algorithms/transformer/iec62784/iec62874.py
+
+2- create service file 
+backend/app/services/iec62874_service.py
+
+3- create frontend file 
+frontend\src\components\AssetDetail\tabs\AssetHealthTab\subTabs\IEC62874.jsx
