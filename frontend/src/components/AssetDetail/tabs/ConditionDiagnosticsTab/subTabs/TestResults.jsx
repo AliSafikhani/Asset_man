@@ -1,5 +1,4 @@
-﻿// frontend/src/components/AssetDetail/tabs/ConditionDiagnosticsTab/subTabs/TestResults.jsx
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import API from '../../../../../services/api';
 import Pagination from '../../../Pagination';
 import ColumnSelector from '../../../ColumnSelector';
@@ -188,47 +187,80 @@ const TestResults = ({ assetId, asset }) => {
     }
   };
 
+  // ============================================================
+  // UPDATED loadStatus: IEEE uses LIVE endpoint (Option A)
+  // IEC still uses legacy POST until we migrate it.
+  // ============================================================
   const loadStatus = async (type) => {
     const setLoading = (v) => setStatusLoading(prev => ({ ...prev, [type]: v }));
     setLoading(true);
     try {
-      if (!isDGA || testResults.length < 2) {
-        setStatusMap(prev => ({ ...prev, [type]: {} }));
-        setLoading(false);
-        return;
-      }
-      const samples = testResults.map(r => {
-        const gasData = {};
-        r.parameters.forEach(p => {
-          if (GAS_KEYS.includes(p.field_name)) {
-            gasData[p.field_name] = parseFloat(p.field_value) || 0;
+      // --- IEEE: NEW LIVE ENDPOINT (Option A) ---
+      if (type === 'ieee') {
+        if (!isDGA || testResults.length < 2) {
+          setStatusMap(prev => ({ ...prev, ieee: {} }));
+          setLoading(false);
+          return;
+        }
+
+        // Call the new live diagnostics endpoint
+        // const response = await API.get(`/api/v1/diagnostics/transformer/${assetId}/ieee`);
+        const response = await API.get(`/diagnostics/transformer/${assetId}/ieee`);
+        const results = response.data.data || [];
+        const map = {};
+
+        results.forEach(item => {
+          if (item.id) {
+            const code = parseInt(item.fault_zone) || 0;
+            // Custom mapping for IEEE statuses
+            const status = code === 1 ? 'Normal' : code === 2 ? 'Investigate' : code === 3 ? 'Action Required' : 'Unknown';
+            map[item.id] = {
+              status,
+              status_code: code,
+              zone_color: item.zone_color,
+            };
           }
         });
-        return { id: r.id, sample_date: r.test_date, gas_data: gasData };
-      });
-      let endpoint = `/algorithms/transformer/dga/${type === 'ieee' ? 'ieee_algorithm' : 'iec_algorithm'}/batch`;
-      if (type === 'ieee') {
-        const age = asset?.commissioning_date ? calculateAge(asset.commissioning_date) : 'NA';
-        endpoint += `?transformer_age=${age}&max_day=730`;
+
+        setStatusMap(prev => ({ ...prev, ieee: map }));
+        setLoading(false);
+        return; // Exit early, don't run legacy logic
       }
-      const response = await API.post(endpoint, samples);
-      const map = {};
-      response.data.forEach(item => {
-        if (item.id) {
-          if (type === 'ieee') {
-            const code = parseInt(item.fault_zone) || 0;
-            const status = code === 1 ? 'Normal' : code === 2 ? 'Investigate' : code === 3 ? 'Action Required' : 'Unknown';
-            map[item.id] = { status, status_code: code, zone_color: item.zone_color };
-          } else {
+
+      // --- IEC: LEGACY LOGIC (Keep until we migrate IEC to live) ---
+      if (type === 'iec') {
+        if (!isDGA || testResults.length < 2) {
+          setStatusMap(prev => ({ ...prev, iec: {} }));
+          setLoading(false);
+          return;
+        }
+
+        // Build samples for the legacy batch endpoint
+        const samples = testResults.map(r => {
+          const gasData = {};
+          r.parameters.forEach(p => {
+            if (GAS_KEYS.includes(p.field_name)) {
+              gasData[p.field_name] = parseFloat(p.field_value) || 0;
+            }
+          });
+          return { id: r.id, sample_date: r.test_date, gas_data: gasData };
+        });
+
+        // Use the old algorithms endpoint for IEC
+        const response = await API.post(`/algorithms/transformer/dga/iec_algorithm/batch`, samples);
+        const map = {};
+        response.data.forEach(item => {
+          if (item.id) {
             map[item.id] = {
               status: item.status || 'Unknown',
               status_code: item.status_code || 0,
               zone_color: item.zone_color,
             };
           }
-        }
-      });
-      setStatusMap(prev => ({ ...prev, [type]: map }));
+        });
+
+        setStatusMap(prev => ({ ...prev, iec: map }));
+      }
     } catch (error) {
       console.error(`Error loading ${type} status:`, error);
       setStatusMap(prev => ({ ...prev, [type]: {} }));
@@ -236,6 +268,9 @@ const TestResults = ({ assetId, asset }) => {
       setLoading(false);
     }
   };
+  // ============================================================
+  // END OF UPDATED loadStatus
+  // ============================================================
 
   // ---- Sort & filter ----
   const sortedAndFilteredResults = useMemo(() => {

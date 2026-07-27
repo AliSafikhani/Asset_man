@@ -1,4 +1,3 @@
-# backend/app/api/v1/api.py
 from fastapi import APIRouter
 from app.api.v1.endpoints import auth
 from app.api.v1.endpoints import companies
@@ -14,6 +13,8 @@ from app.api.v1.endpoints import dcs_signals
 from app.api.v1.endpoints import alarms
 from app.api.v1.endpoints import events
 from app.api.v1.endpoints import maintenance_activities  # NEW: Import maintenance activities
+from app.api.v1.endpoints import diagnostics  # NEW: Import diagnostics (IEEE, IEC, etc.)
+print("✅ Diagnostics imported successfully!") 
 from app.api.algorithms import router as algorithms_router
 from app.api import upload
 
@@ -33,6 +34,7 @@ api_router.include_router(dcs_signals.router, prefix="/dcs")
 api_router.include_router(alarms.router, prefix="/alarms")
 api_router.include_router(events.router, prefix="/events")
 api_router.include_router(maintenance_activities.router, prefix="/maintenance-activities")  # NEW: Register maintenance activities
+api_router.include_router(diagnostics.router, prefix="/diagnostics")  # NEW: Register diagnostics (IEEE live endpoint)
 
 api_router.include_router(algorithms_router, prefix="/algorithms")
 api_router.include_router(upload.router, prefix="/upload")

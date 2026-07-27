@@ -66,6 +66,13 @@ const PRIORITY_LABELS = { low: 'Low', medium: 'Medium', high: 'High', critical: 
 const PRIORITY_COLORS = { low: '#10b981', medium: '#3b82f6', high: '#f59e0b', critical: '#ef4444' };
 const ORDER_LABELS = { minor: 'Minor', major: 'Major', emergency: 'Emergency', overhaul: 'Overhaul' };
 
+// Oil detail options
+const OIL_DETAIL_OPTIONS = [
+  { value: 'oil_change', label: 'Oil Change' },
+  { value: 'reconditioning', label: 'Reconditioning' },
+  { value: 'reclamation', label: 'Reclamation' },
+];
+
 const Maintenance = ({ asset, assetId }) => {
   const assetType = asset?.asset_type;
 
@@ -86,6 +93,9 @@ const Maintenance = ({ asset, assetId }) => {
   // ---- Computed ----
   const sectionOptions = getMaintenanceSectionOptions(assetType);
   const extraDataFields = getExtraDataFields(assetType);
+
+  // Determine if oil_detail should be shown
+  const showOilDetail = assetType === 'transformer' && formData.maintenance_section === 'Oil';
 
   // ---- Load Activities ----
   const loadActivities = useCallback(async () => {
@@ -163,7 +173,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: 'minor',
       maintenance_section: sectionOptions[0] || '',
       priority: 'medium',
-      status: 'planned', // ✅ Added status
+      status: 'planned',
       scheduled_date: new Date().toISOString().split('T')[0],
       assigned_technician: null,
       meter_reading: '',
@@ -174,6 +184,7 @@ const Maintenance = ({ asset, assetId }) => {
       attachments: [],
       recommended_next_date: '',
       extra_data: {},
+      oil_detail: '', // new field
     });
     setEditingActivity(null);
   };
@@ -186,7 +197,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: activity.maintenance_order || 'minor',
       maintenance_section: activity.maintenance_section || sectionOptions[0] || '',
       priority: activity.priority || 'medium',
-      status: activity.status || 'planned', // ✅ Added status
+      status: activity.status || 'planned',
       scheduled_date: activity.scheduled_date ? new Date(activity.scheduled_date).toISOString().split('T')[0] : '',
       assigned_technician: activity.assigned_technician || null,
       meter_reading: activity.meter_reading || '',
@@ -197,6 +208,7 @@ const Maintenance = ({ asset, assetId }) => {
       attachments: activity.attachments || [],
       recommended_next_date: activity.recommended_next_date ? new Date(activity.recommended_next_date).toISOString().split('T')[0] : '',
       extra_data: activity.extra_data || {},
+      oil_detail: activity.oil_detail || '', // new field
     });
     setShowForm(true);
   };
@@ -209,7 +221,7 @@ const Maintenance = ({ asset, assetId }) => {
       maintenance_order: formData.maintenance_order,
       maintenance_section: formData.maintenance_section,
       priority: formData.priority,
-      status: formData.status || 'planned', // ✅ Include status
+      status: formData.status || 'planned',
       scheduled_date: formData.scheduled_date || null,
       assigned_technician: formData.assigned_technician,
       meter_reading: formData.meter_reading ? parseFloat(formData.meter_reading) : null,
@@ -220,6 +232,7 @@ const Maintenance = ({ asset, assetId }) => {
       attachments: formData.attachments || [],
       recommended_next_date: formData.recommended_next_date || null,
       extra_data: formData.extra_data || {},
+      oil_detail: formData.oil_detail || null, // new field
     };
 
     try {
@@ -481,6 +494,11 @@ const Maintenance = ({ asset, assetId }) => {
                         <span style={{ fontSize: '12px', background: '#e2e8f0', padding: '2px 8px', borderRadius: '4px' }}>
                           {activity.maintenance_section}
                         </span>
+                        {activity.oil_detail && (
+                          <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>
+                            Oil: {OIL_DETAIL_OPTIONS.find(o => o.value === activity.oil_detail)?.label || activity.oil_detail}
+                          </div>
+                        )}
                       </td>
                       <td style={tableStyles.td}>
                         <span style={{ fontSize: '12px' }}>{ORDER_LABELS[activity.maintenance_order] || activity.maintenance_order}</span>
@@ -645,7 +663,6 @@ const Maintenance = ({ asset, assetId }) => {
                     <option value="critical">Critical</option>
                   </select>
                 </div>
-                {/* ✅ Status Dropdown - NEW */}
                 <div>
                   <label style={{ display: 'block', fontWeight: '500', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>Status</label>
                   <select
@@ -662,6 +679,26 @@ const Maintenance = ({ asset, assetId }) => {
                   </select>
                 </div>
               </div>
+
+              {/* Oil Detail - conditional field */}
+              {showOilDetail && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontWeight: '500', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>
+                    Oil Detail *
+                  </label>
+                  <select
+                    value={formData.oil_detail || ''}
+                    onChange={(e) => setFormData({ ...formData, oil_detail: e.target.value })}
+                    required
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                  >
+                    <option value="">Select oil detail</option>
+                    {OIL_DETAIL_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Scheduled Date + Meter Reading */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>

@@ -10,11 +10,13 @@ add new field for transformer :
 1 : update table in database
 	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\database\migrations\041_add_paper_type_to_transformers.sql
 	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\run_migration.py
-2: add new item to endpoint :
+2: update model 
+	backend\app\models\transformers.py
+3: add new item to endpoint :
 	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\backend\app\api\v1\endpoints\assets.py
-3:add filed in registration form and also add item for selection 
+4:add filed in registration form and also add item for selection 
 	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend\src\pages\Assets.jsx
-4:add item for show in asset specification 
+5:add item for show in asset specification 
 	D:\4_PROGRAMMING\12_ELECTRICAL_MONITORING_APP\4_EMA_4\frontend\src\components\AssetDetail\tabs\AssetProfileTab\subTabs\Specifications.jsx
 
 add new featue ( maintenace activity )
@@ -30,3 +32,5 @@ add new featue ( maintenace activity )
 	update backend\app\models\hierarchy.py
 	update backend\app\models\assets.py 
 
+6: update frontend
+	frontend/src/components/AssetDetail/tabs/DecisionSupportTab/subTabs/Maintenance.jsx

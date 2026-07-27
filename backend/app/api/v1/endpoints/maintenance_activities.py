@@ -25,6 +25,7 @@ class MaintenanceActivityCreate(BaseModel):
     description: Optional[str] = None
     maintenance_order: str  # minor, major, emergency, overhaul
     maintenance_section: str  # contextual based on asset_type
+    oil_detail:str 
     priority: str  # low, medium, high, critical
     scheduled_date: Optional[str] = None  # "YYYY-MM-DDTHH:MM:SS" or "YYYY-MM-DD"
     assigned_technician: Optional[int] = None
@@ -43,6 +44,7 @@ class MaintenanceActivityUpdate(BaseModel):
     description: Optional[str] = None
     maintenance_order: Optional[str] = None
     maintenance_section: Optional[str] = None
+    oil_detail: Optional[str] = None
     priority: Optional[str] = None
     scheduled_date: Optional[str] = None
     assigned_technician: Optional[int] = None
@@ -149,6 +151,7 @@ async def get_maintenance_activities(
             "description": act.description,
             "maintenance_order": act.maintenance_order,
             "maintenance_section": act.maintenance_section,
+            "oil_detail" : act.oil_detail,
             "priority": act.priority,
             "status": act.status,
             "scheduled_date": act.scheduled_date,
@@ -203,13 +206,13 @@ async def create_maintenance_activity(
     sql = text("""
         INSERT INTO maintenance_activities (
             plant_id, asset_id, title, description, maintenance_order,
-            maintenance_section, priority, status, scheduled_date,
+            maintenance_section,oil_detail, priority, status, scheduled_date,
             assigned_technician, meter_reading, labor_cost, parts_cost,
             findings_description, action_taken, attachments,
             recommended_next_date, extra_data, created_by
         ) VALUES (
             :plant_id, :asset_id, :title, :description, :maintenance_order,
-            :maintenance_section, :priority, :status, :scheduled_date,
+            :maintenance_section, :oil_detail, :priority, :status, :scheduled_date,
             :assigned_technician, :meter_reading, :labor_cost, :parts_cost,
             :findings_description, :action_taken, :attachments,
             :recommended_next_date, :extra_data, :created_by
@@ -223,6 +226,7 @@ async def create_maintenance_activity(
         'description': activity.description,
         'maintenance_order': activity.maintenance_order,
         'maintenance_section': activity.maintenance_section,
+        'oil_detail':activity.oil_detail,
         'priority': activity.priority,
         'status': 'planned',
         'scheduled_date': scheduled_dt,
@@ -268,6 +272,7 @@ async def get_maintenance_activity(
         "description": activity.description,
         "maintenance_order": activity.maintenance_order,
         "maintenance_section": activity.maintenance_section,
+        "oil_detail": activity.oil_detail,
         "priority": activity.priority,
         "status": activity.status,
         "scheduled_date": activity.scheduled_date,

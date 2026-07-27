@@ -23,7 +23,7 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 
 # ---- Path to the migration file ----
 # Adjust this if your file is elsewhere
-MIGRATION_FILE = Path(__file__).parent / "database" / "migrations" / "044_add_oil_inhibition_to_transformers.sql"
+MIGRATION_FILE = Path(__file__).parent / "database" / "migrations" / "045_add_oil_detail_to_maintenance_activities_table.sql"
 
 
 def run_migration():

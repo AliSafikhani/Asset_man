@@ -530,3 +530,12 @@ async def delete_asset(asset_id: int, db: AsyncSession = Depends(get_db)):
     await db.delete(asset)
     await db.commit()
     return {"message": "Asset deleted successfully"}
+from app.services.ieee_service import IEEEService
+
+@router.get("/{asset_id}/ieee-live")
+async def get_ieee_live(asset_id: int, db: AsyncSession = Depends(get_db)):
+    service = IEEEService()
+    results = await service.calculate_ieee_status(db, asset_id)
+    if results is None:
+        raise HTTPException(404, "Insufficient DGA samples")
+    return {"asset_id": asset_id, "data": results}

@@ -167,14 +167,17 @@ class IEEEService:
         asset_id: int
     ) -> Optional[List[Dict[str, Any]]]:
         """
-        Calculate IEEE status for all DGA samples of a transformer
+        Calculate IEEE status for all DGA samples of a transformer.
+        
+        This is a LIVE calculation - results are NOT stored in the database.
+        The frontend should call this endpoint whenever it needs the latest status.
         
         Args:
             db: Database session
             asset_id: Transformer asset ID
             
         Returns:
-            List of results for each sample, or None if error
+            List of results for each sample (oldest to newest), or None if error
         """
         try:
             # Get all DGA samples
@@ -196,11 +199,7 @@ class IEEEService:
             results = self.algorithm.calculate_batch(samples)
             
             if results:
-                logger.info(f"IEEE algorithm completed with {len(results)} results")
-                
-                # Update database with IEEE status
-                await self.update_ieee_results(db, asset_id, results)
-                
+                logger.info(f"IEEE algorithm completed with {len(results)} results for transformer {asset_id}")
                 return results
             else:
                 logger.warning(f"IEEE algorithm returned no results for transformer {asset_id}")

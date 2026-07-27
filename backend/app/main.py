@@ -1,3 +1,4 @@
+# backend\app\main.py
 """
 FastAPI Main Application Entry Point
 Asset Management System with Multi-Tier Hierarchy

@@ -18,6 +18,7 @@ class MaintenanceActivities(Base, TimestampMixin):
     description = Column(Text)
     maintenance_order = Column(String(50), nullable=False)
     maintenance_section = Column(String(100), nullable=False)
+    oil_detail = Column(String(100), nullable=False)
     priority = Column(String(20), nullable=False)
     
     # Workflow Status
