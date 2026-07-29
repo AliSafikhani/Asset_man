@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+﻿# backend\app\api\v1\endpoints\sites.py
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel

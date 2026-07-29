@@ -1,3 +1,4 @@
+-- backend\database\migrations\001_create_hierarchy_tables.sql
 -- STEP 1: Create organization hierarchy tables
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

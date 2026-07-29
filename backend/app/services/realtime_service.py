@@ -1,3 +1,4 @@
+# backend\app\services\realtime_service.py
 """
 Real-time data service for handling 1 kHz data streaming
 Manages data ingestion, downsampling, and broadcasting to WebSocket clients

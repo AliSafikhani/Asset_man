@@ -7,7 +7,14 @@ from app.models.motors import Motors
 from app.models.users import Users, UserHierarchy, RefreshTokens
 from app.models.tests import TestTypes, TestResultsHeader, TestResultsDetails
 from app.models.realtime import RealtimeData, SignalDefinitions, AlarmRules, AlarmsLog
-
+from app.models.monitoring import (
+    SignalGroup,
+    SignalConfiguration,
+    SignalVisualizationSettings,
+    SignalAlarmHistory,
+    ComparisonGroup,
+    ComparisonGroupItem
+)
 __all__ = [
     "Base",
     "TimestampMixin",

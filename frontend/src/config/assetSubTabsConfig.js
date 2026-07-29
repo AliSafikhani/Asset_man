@@ -37,6 +37,7 @@ export const SUB_TABS_CONFIG = {
     label: 'Operational Intelligence',
     subTabs: [
       { id: 'liveMonitoring', label: 'Live Monitoring' },
+      { id: 'signalConfiguration', label: 'Signal Configuration' },  // ← NEW
       { id: 'analytics', label: 'Analytics' },
       { id: 'alarms', label: 'Alarms' },
       { id: 'events', label: 'Events' },

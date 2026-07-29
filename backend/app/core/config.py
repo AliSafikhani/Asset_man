@@ -22,7 +22,9 @@ class Settings(BaseSettings):
             return [i.strip() for i in v.split(",")]
         return v
     
-    # Database
+    # ============================================================
+    # WEBAPP DATABASE (PostgreSQL – Read/Write)
+    # ============================================================
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "postgres"
@@ -33,7 +35,22 @@ class Settings(BaseSettings):
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
+    # ============================================================
+    # DCS ENGINE DATABASE (PostgreSQL – Read‑only)
+    # ============================================================
+    DCS_DB_HOST: str = "localhost"
+    DCS_DB_PORT: int = 5434
+    DCS_DB_USER: str = "dcs_user"
+    DCS_DB_PASSWORD: str = "sekert1!"
+    DCS_DB_NAME: str = "dcs_db"
+    
+    @property
+    def DCS_DATABASE_URL(self) -> str:
+        return f"postgresql+asyncpg://{self.DCS_DB_USER}:{self.DCS_DB_PASSWORD}@{self.DCS_DB_HOST}:{self.DCS_DB_PORT}/{self.DCS_DB_NAME}"
+    
+    # ============================================================
     # TimescaleDB (optional)
+    # ============================================================
     TIMESCALE_HOST: Optional[str] = "localhost"
     TIMESCALE_PORT: Optional[int] = 5432
     TIMESCALE_USER: Optional[str] = "postgres"

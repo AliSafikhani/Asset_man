@@ -1,4 +1,5 @@
-﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey
+﻿# backend\app\models\dcs_models.py
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.models.base import Base
