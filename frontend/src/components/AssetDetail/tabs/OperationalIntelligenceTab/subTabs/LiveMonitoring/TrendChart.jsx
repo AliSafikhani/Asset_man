@@ -1,10 +1,7 @@
 /**
- * TrendChart Component
- * File: components/AssetDetail/tabs/OperationalIntelligenceTab/subTabs/LiveMonitoring/TrendChart.jsx
- * Description: Professional chart with controls (legend, grid, zoom, download)
+ * TrendChart Component – Fixed x‑axis labels
  */
-
-import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -15,15 +12,12 @@ import {
   Switch,
   FormControlLabel,
   Stack,
-  Button,
 } from '@mui/material';
 import {
   RestartAlt as ResetIcon,
   Download as DownloadIcon,
   Fullscreen as FullscreenIcon,
   FullscreenExit as FullscreenExitIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
 } from '@mui/icons-material';
 import {
   Chart as ChartJS,
@@ -37,6 +31,7 @@ import {
   Filler,
   TimeScale,
   Colors,
+  Decimation,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { Line } from 'react-chartjs-2';
@@ -53,21 +48,11 @@ ChartJS.register(
   Filler,
   TimeScale,
   Colors,
-  zoomPlugin
+  zoomPlugin,
+  Decimation
 );
 
-const CHART_COLORS = [
-  '#2196F3', '#FF5722', '#4CAF50', '#FFC107', '#9C27B0',
-  '#F44336', '#00BCD4', '#FF9800', '#795548', '#607D8B',
-  '#E91E63', '#8BC34A',
-];
-
-const LINE_STYLES = {
-  solid: [],
-  dashed: [6, 4],
-  dotted: [2, 4],
-  dashdot: [6, 4, 2, 4],
-};
+const COLORS = ['#2196F3', '#FF5722', '#4CAF50', '#FFC107', '#9C27B0'];
 
 const TrendChart = ({
   signals = [],
@@ -75,162 +60,101 @@ const TrendChart = ({
   timeLevel = 'raw',
   startTime,
   endTime,
-  latestValues = {},
   onSignalClick,
   height = 400,
   isLoading = false,
   error = null,
 }) => {
   const chartRef = useRef(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
-  const [chartKey, setChartKey] = useState(0);
-
-  const formatDate = useCallback((date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, []);
-
-  const getTimeUnit = useCallback(() => {
-    if (!startTime || !endTime) return 'hour';
-    const diffDays = (endTime - startTime) / (1000 * 60 * 60 * 24);
-    if (diffDays <= 1) return 'minute';
-    if (diffDays <= 7) return 'hour';
-    if (diffDays <= 30) return 'day';
-    if (diffDays <= 365) return 'month';
-    return 'year';
-  }, [startTime, endTime]);
-
-  const getDisplayName = useCallback((s) => s.custom_name || s.name || `Signal ${s.signal_id}`, []);
-  const getColor = useCallback((s, i) => s.color_hex || CHART_COLORS[i % CHART_COLORS.length], []);
-  const getLineStyle = useCallback((s) => LINE_STYLES[s.line_type || 'solid'] || [], []);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const chartData = useMemo(() => {
     const activeSignals = signals.filter((s) => signalData[s.signal_id]?.length > 0);
     if (activeSignals.length === 0) return { datasets: [] };
 
-    const datasets = activeSignals.map((signal, index) => {
-      const data = signalData[signal.signal_id] || [];
-      const color = getColor(signal, index);
-      const lineStyle = getLineStyle(signal);
-      const valueKey = timeLevel === 'minute' || timeLevel === 'hour' ? 'avg_value' : 'value';
+    const datasets = activeSignals.map((signal, idx) => {
+      const points = signalData[signal.signal_id] || [];
+      const color = signal.color_hex || COLORS[idx % COLORS.length];
+      const label = signal.custom_name || signal.name || `Signal ${signal.signal_id}`;
 
       return {
-        label: getDisplayName(signal),
-        data: data.map((point) => ({
-          x: new Date(point.timestamp),
-          y: point[valueKey] !== undefined ? point[valueKey] : null,
-        })),
+        label,
+        data: points.map((p) => ({ x: new Date(p.timestamp), y: p.avg_value })),
         borderColor: color,
-        backgroundColor: color + '22',
-        borderWidth: signal.line_width || 2,
-        borderDash: lineStyle,
+        backgroundColor: color + '33',
+        borderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: color,
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2,
-        tension: 0.15,
+        tension: 0.1,
         fill: false,
-        spanGaps: false,
       };
     });
 
     return { datasets };
-  }, [signals, signalData, timeLevel, getDisplayName, getColor, getLineStyle]);
+  }, [signals, signalData]);
 
-  const chartOptions = useMemo(() => ({
+  const hasData = chartData.datasets.some((ds) => ds.data.length > 0);
+
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: {
-        display: showLegend,
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'line',
-          padding: 16,
-          font: { size: 11, weight: '500' },
-        },
-      },
+      legend: { display: showLegend, position: 'top' },
       tooltip: {
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        titleColor: '#fff',
-        bodyColor: '#e0e0e0',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        padding: 12,
         callbacks: {
-          title: (items) => items.length > 0 ? formatDate(items[0].parsed.x) : '',
-          label: (ctx) => {
-            const label = ctx.dataset.label || '';
-            const value = ctx.parsed.y;
-            return value !== null && value !== undefined ? `${label}: ${value.toFixed(2)}` : null;
-          },
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}`,
         },
       },
       zoom: {
-        pan: { enabled: true, mode: 'x', modifierKey: 'shift' },
-        zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, mode: 'x' },
+        pan: { enabled: true, mode: 'x' },
+        zoom: { wheel: { enabled: true, speed: 0.1 }, mode: 'x' },
       },
+      decimation: { enabled: true, algorithm: 'lttb', samples: 5000, threshold: 1000 },
     },
     scales: {
       x: {
         type: 'time',
         time: {
-          unit: getTimeUnit(),
+          // ✅ Force date + time on all labels
           displayFormats: {
-            minute: 'HH:mm',
-            hour: 'HH:mm',
-            day: 'MMM d',
-            month: 'MMM yyyy',
-            year: 'yyyy',
+            minute: 'MMM d, HH:mm',
+            hour: 'MMM d, HH:mm',
+            day: 'MMM d, HH:mm',
+            month: 'MMM d, HH:mm',
+            year: 'MMM d, HH:mm',
           },
+          tooltipFormat: 'MMM d, HH:mm',
         },
-        grid: { display: showGrid, drawBorder: true },
-        ticks: { maxRotation: 30, autoSkip: true, maxTicksLimit: 25 },
+        grid: { display: showGrid },
+        ticks: {
+          maxRotation: 30,
+          autoSkip: true,
+          maxTicksLimit: 20,
+        },
       },
       y: {
-        beginAtZero: false,
-        grid: { display: showGrid, drawBorder: true },
-        ticks: { callback: (v) => v !== null && v !== undefined ? v.toFixed(1) : '' },
+        grid: { display: showGrid },
+        ticks: { callback: (v) => v?.toFixed(1) },
       },
     },
-    elements: { line: { borderJoinStyle: 'round' } },
-    animation: { duration: 300 },
-  }), [showLegend, showGrid, getTimeUnit, formatDate]);
+  };
 
-  // Handlers
-  const handleResetZoom = useCallback(() => chartRef.current?.resetZoom(), []);
-  const handleDownload = useCallback(() => {
+  const handleResetZoom = () => chartRef.current?.resetZoom();
+  const handleDownload = () => {
     if (!chartRef.current) return;
     const link = document.createElement('a');
-    link.download = `trend_chart_${new Date().toISOString().slice(0,10)}.png`;
-    link.href = chartRef.current.canvas.toDataURL('image/png', 1.0);
+    link.download = `chart_${new Date().toISOString().slice(0,10)}.png`;
+    link.href = chartRef.current.canvas.toDataURL('image/png');
     link.click();
-  }, []);
-  const handleFullscreen = useCallback(() => setIsFullscreen((p) => !p), []);
+  };
+  const handleFullscreen = () => setIsFullscreen((p) => !p);
 
-  useEffect(() => {
-    setChartKey((p) => p + 1);
-  }, [signals, timeLevel, startTime, endTime, signalData]);
-
-  // Loading
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height={height}>
-        <CircularProgress size={32} />
-        <Typography variant="body2" sx={{ ml: 2, color: 'text.secondary' }}>
-          Loading chart data...
-        </Typography>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading chart...</Typography>
       </Box>
     );
   }
@@ -245,77 +169,45 @@ const TrendChart = ({
 
   if (!signals || signals.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height={height} bgcolor="action.hover" borderRadius={2}>
-        <Typography variant="body2" color="text.secondary">
-          No signals selected. Check signals in the list to display.
-        </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" height={height} bgcolor="#f5f5f5" borderRadius={2}>
+        <Typography variant="body2" color="text.secondary">No signals selected</Typography>
       </Box>
     );
   }
 
-  const hasData = chartData.datasets.some((ds) => ds.data.length > 0);
-
   if (!hasData) {
     return (
-      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={height} bgcolor="action.hover" borderRadius={2} gap={1}>
-        <Typography variant="body2" color="text.secondary">
-          No data available for the selected time range.
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Try selecting a different time range or data level.
-        </Typography>
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={height} bgcolor="#f5f5f5" borderRadius={2} gap={1}>
+        <Typography variant="body2" color="text.secondary">No data available for the selected time range.</Typography>
+        <Typography variant="caption" color="text.secondary">Raw data is limited to the last 2 days.</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 64px)' : height, width: '100%', transition: 'height 0.3s' }}>
-      {/* Toolbar */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" px={1} py={0.5} bgcolor="action.hover" borderRadius="4px 4px 0 0" flexWrap="wrap" gap={1}>
-        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-          <Typography variant="caption" color="text.secondary" fontWeight="500">
+    <Box sx={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 64px)' : height, width: '100%' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" px={1} py={0.5} bgcolor="#f5f5f5" borderRadius="4px 4px 0 0" flexWrap="wrap">
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="caption" color="text.secondary">
             {timeLevel === 'raw' ? 'Real-time (1Hz)' : timeLevel === 'minute' ? '1-Minute Avg' : '1-Hour Avg'}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {formatDate(startTime)} → {formatDate(endTime)}
+            {startTime?.toLocaleString()} → {endTime?.toLocaleString()}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {signals.filter(s => signalData[s.signal_id]?.length > 0).length} signals
           </Typography>
         </Stack>
-
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <FormControlLabel
-            control={<Switch size="small" checked={showLegend} onChange={(e) => setShowLegend(e.target.checked)} />}
-            label={<Typography variant="caption">Legend</Typography>}
-          />
-          <FormControlLabel
-            control={<Switch size="small" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />}
-            label={<Typography variant="caption">Grid</Typography>}
-          />
+        <Stack direction="row" spacing={0.5}>
+          <FormControlLabel control={<Switch size="small" checked={showLegend} onChange={(e) => setShowLegend(e.target.checked)} />} label="Legend" />
+          <FormControlLabel control={<Switch size="small" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />} label="Grid" />
           <Tooltip title="Reset Zoom"><IconButton size="small" onClick={handleResetZoom}><ResetIcon fontSize="small" /></IconButton></Tooltip>
-          <Tooltip title="Download PNG"><IconButton size="small" onClick={handleDownload}><DownloadIcon fontSize="small" /></IconButton></Tooltip>
-          <Tooltip title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
-            <IconButton size="small" onClick={handleFullscreen}>
-              {isFullscreen ? <FullscreenExitIcon fontSize="small" /> : <FullscreenIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
+          <Tooltip title="Download"><IconButton size="small" onClick={handleDownload}><DownloadIcon fontSize="small" /></IconButton></Tooltip>
+          <Tooltip title="Fullscreen"><IconButton size="small" onClick={handleFullscreen}>{isFullscreen ? <FullscreenExitIcon fontSize="small" /> : <FullscreenIcon fontSize="small" />}</IconButton></Tooltip>
         </Stack>
       </Box>
-
-      {/* Chart */}
-      <Box sx={{ height: `calc(100% - 38px)`, width: '100%', position: 'relative', bgcolor: 'background.paper', borderRadius: '0 0 4px 4px', border: '1px solid', borderColor: 'divider', borderTop: 'none' }}>
-        <Line ref={chartRef} key={chartKey} data={chartData} options={chartOptions} onClick={(e, elements) => {
-          if (elements?.length > 0) {
-            const signal = signals[elements[0].datasetIndex];
-            if (signal && onSignalClick) onSignalClick(signal.signal_id);
-          }
-        }} />
-      </Box>
-
-      {/* Zoom hint */}
-      <Box position="absolute" bottom={8} right={8} bgcolor="rgba(0,0,0,0.5)" color="white" px={1.5} py={0.5} borderRadius={1} fontSize="0.55rem" sx={{ opacity: 0.5 }}>
-        Scroll to zoom · Shift+drag to pan
+      <Box sx={{ height: `calc(100% - 36px)`, bgcolor: 'white', border: '1px solid #e0e0e0', borderTop: 'none' }}>
+        <Line ref={chartRef} data={chartData} options={options} />
       </Box>
     </Box>
   );

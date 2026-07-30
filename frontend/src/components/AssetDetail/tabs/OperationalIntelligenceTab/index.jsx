@@ -1,3 +1,4 @@
+// frontend\src\components\AssetDetail\tabs\OperationalIntelligenceTab\index.jsx
 import React, { useState, Suspense, lazy } from 'react';
 import { getSubTabsForModule } from '../../../../config/assetSubTabsConfig';
 import SubTabNavigation from '../../common/SubTabNavigation';
@@ -5,7 +6,7 @@ import LoadingSpinner from '../../../ui/LoadingSpinner';
 
 
 // Lazy load sub‑tabs
-const LiveMonitoring = lazy(() => import('./subTabs/LiveMonitoring'));
+const LiveMonitoring = lazy(() => import('./subTabs/LiveMonitoring/index.jsx'));
 const SignalConfiguration = lazy(() => import('./subTabs/SignalConfiguration'));
 const Analytics = lazy(() => import('./subTabs/Analytics'));
 const Alarms = lazy(() => import('./subTabs/Alarms'));

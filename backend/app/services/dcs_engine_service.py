@@ -1,16 +1,17 @@
 """
-DCS Engine Service
+DCS Engine Service – Updated with Smart Downsampling & Aggregated Timeline
 File: app/services/dcs_engine_service.py
-Description: Service for querying the DCS engine database (read‑only)
+Description: Service for querying the DCS engine database with auto‑downsampling
 """
 
 import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from decimal import Decimal
+import math
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text, and_, between, func
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -25,19 +26,82 @@ class DCSEngineService:
         self.db = db
 
     # ============================================================
+    # HELPER: Compute optimal bucket size (seconds)
+    # ============================================================
+
+    def _compute_bucket_seconds(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+        max_points: int = 10000,
+        min_interval_seconds: int = 1,
+    ) -> int:
+        """
+        Compute the optimal bucket size (in seconds) to keep the total
+        number of points under `max_points`.
+
+        Args:
+            start_time: Start of time range
+            end_time: End of time range
+            max_points: Maximum number of points to return
+            min_interval_seconds: Minimum bucket size (1 second for raw)
+
+        Returns:
+            Bucket size in seconds
+        """
+        if not start_time or not end_time:
+            return min_interval_seconds
+
+        total_seconds = (end_time - start_time).total_seconds()
+        if total_seconds <= 0:
+            return min_interval_seconds
+
+        # Calculate required bucket size
+        bucket_seconds = math.ceil(total_seconds / max_points)
+
+        # Ensure minimum
+        if bucket_seconds < min_interval_seconds:
+            bucket_seconds = min_interval_seconds
+
+        # Round to clean values for better SQL performance
+        if bucket_seconds <= 60:
+            # Use seconds: 1, 2, 5, 10, 15, 30, 60
+            clean_values = [1, 2, 5, 10, 15, 30, 60]
+            for v in clean_values:
+                if bucket_seconds <= v:
+                    return v
+            return 60
+        elif bucket_seconds <= 3600:
+            # Use minutes: 1, 2, 5, 10, 15, 30, 60
+            minutes = math.ceil(bucket_seconds / 60)
+            clean_minutes = [1, 2, 5, 10, 15, 30, 60]
+            for v in clean_minutes:
+                if minutes <= v:
+                    return v * 60
+            return 3600
+        elif bucket_seconds <= 86400:
+            # Use hours: 1, 2, 3, 6, 12, 24
+            hours = math.ceil(bucket_seconds / 3600)
+            clean_hours = [1, 2, 3, 6, 12, 24]
+            for v in clean_hours:
+                if hours <= v:
+                    return v * 3600
+            return 86400
+        else:
+            # Use days: 1, 2, 3, 7, 14, 30
+            days = math.ceil(bucket_seconds / 86400)
+            clean_days = [1, 2, 3, 7, 14, 30]
+            for v in clean_days:
+                if days <= v:
+                    return v * 86400
+            return 30 * 86400
+
+    # ============================================================
     # SIGNAL METADATA
     # ============================================================
 
     async def get_signals_by_plant(self, plant_id: int) -> List[Dict[str, Any]]:
-        """
-        Get all signals for a specific plant from dcs_signal_characteristic.
-
-        Args:
-            plant_id: The plant ID (matches plant_id in DCS engine)
-
-        Returns:
-            List of signal dictionaries with metadata
-        """
+        """Get all signals for a specific plant."""
         try:
             query = text("""
                 SELECT
@@ -92,15 +156,7 @@ class DCSEngineService:
             return []
 
     async def get_signal_by_id(self, signal_id: int) -> Optional[Dict[str, Any]]:
-        """
-        Get a single signal by ID.
-
-        Args:
-            signal_id: The DCS signal ID
-
-        Returns:
-            Signal dictionary or None if not found
-        """
+        """Get a single signal by ID."""
         try:
             query = text("""
                 SELECT
@@ -149,22 +205,12 @@ class DCSEngineService:
             return None
 
     async def get_signals_by_ids(self, signal_ids: List[int]) -> List[Dict[str, Any]]:
-        """
-        Get multiple signals by their IDs.
-
-        Args:
-            signal_ids: List of DCS signal IDs
-
-        Returns:
-            List of signal dictionaries
-        """
+        """Get multiple signals by their IDs."""
         if not signal_ids:
             return []
 
         try:
-            # Convert list to string for SQL IN clause
             ids_str = ','.join(str(id) for id in signal_ids)
-
             query = text(f"""
                 SELECT
                     id,
@@ -214,40 +260,32 @@ class DCSEngineService:
             return []
 
     # ============================================================
-    # TIME-SERIES DATA
+    # AGGREGATED DATA FETCHING (with dynamic downsampling)
     # ============================================================
 
-    async def get_raw_data(
+    async def get_raw_data_aggregated(
         self,
         signal_id: int,
         start_time: datetime,
         end_time: datetime,
-        max_points: int = 10000
+        max_points: int = 10000,
     ) -> List[Dict[str, Any]]:
         """
-        Get raw 1Hz data from dcs_signal_raw.
-
-        Args:
-            signal_id: The DCS signal ID
-            start_time: Start of time range
-            end_time: End of time range
-            max_points: Maximum number of points to return
-
-        Returns:
-            List of data points with timestamp and value
+        Get raw data – always returns the most recent `max_points` points.
+        The time range parameters are ignored for raw data.
         """
         try:
+            # ✅ Ignore time range – always get newest points
             query = text("""
                 SELECT
                     timestamp,
                     value,
-                    quality,
-                    rms,
-                    rate_of_change
+                    value as min_value,
+                    value as max_value,
+                    quality
                 FROM dcs_signal_raw
                 WHERE signal_id = :signal_id
-                AND timestamp BETWEEN :start_time AND :end_time
-                ORDER BY timestamp
+                ORDER BY timestamp DESC
                 LIMIT :max_points
             """)
 
@@ -255,21 +293,22 @@ class DCSEngineService:
                 query,
                 {
                     "signal_id": signal_id,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "max_points": max_points
+                    "max_points": max_points,
                 }
             )
             rows = result.fetchall()
+
+            # Reverse to show oldest → newest (left to right on chart)
+            rows = rows[::-1]
 
             data = []
             for row in rows:
                 data.append({
                     "timestamp": row[0].isoformat() if row[0] else None,
-                    "value": float(row[1]) if row[1] is not None else None,
-                    "quality": row[2] if row[2] is not None else True,
-                    "rms": float(row[3]) if row[3] is not None else None,
-                    "rate_of_change": float(row[4]) if row[4] is not None else None,
+                    "avg_value": float(row[1]) if row[1] is not None else None,
+                    "min_value": float(row[2]) if row[2] is not None else None,
+                    "max_value": float(row[3]) if row[3] is not None else None,
+                    "quality": row[4] if row[4] is not None else True,
                 })
 
             return data
@@ -277,16 +316,15 @@ class DCSEngineService:
         except Exception as e:
             logger.error(f"Error fetching raw data for signal {signal_id}: {e}")
             return []
-
-    async def get_minute_data(
+    async def get_minute_data_aggregated(
         self,
         signal_id: int,
         start_time: datetime,
         end_time: datetime,
-        max_points: int = 10000
+        max_points: int = 10000,
     ) -> List[Dict[str, Any]]:
         """
-        Get 1-minute aggregated data from dcs_signal_min.
+        Get minute data with automatic downsampling if needed.
 
         Args:
             signal_id: The DCS signal ID
@@ -295,160 +333,70 @@ class DCSEngineService:
             max_points: Maximum number of points to return
 
         Returns:
-            List of data points with timestamp, avg, min, max, count
+            List of data points (timestamp, avg_value, min_value, max_value)
         """
         try:
-            query = text("""
-                SELECT
-                    timestamp,
-                    avg_value,
-                    min_value,
-                    max_value,
-                    count,
-                    rms_avg
-                FROM dcs_signal_min
-                WHERE signal_id = :signal_id
-                AND timestamp BETWEEN :start_time AND :end_time
-                ORDER BY timestamp
-                LIMIT :max_points
-            """)
-
-            result = await self.db.execute(
-                query,
-                {
-                    "signal_id": signal_id,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "max_points": max_points
-                }
+            # Compute optimal bucket size (minimum 60 seconds)
+            bucket_seconds = self._compute_bucket_seconds(
+                start_time,
+                end_time,
+                max_points,
+                min_interval_seconds=60,
             )
-            rows = result.fetchall()
 
-            data = []
-            for row in rows:
-                data.append({
-                    "timestamp": row[0].isoformat() if row[0] else None,
-                    "avg_value": float(row[1]) if row[1] is not None else None,
-                    "min_value": float(row[2]) if row[2] is not None else None,
-                    "max_value": float(row[3]) if row[3] is not None else None,
-                    "count": row[4] if row[4] is not None else 0,
-                    "rms_avg": float(row[5]) if row[5] is not None else None,
-                })
-
-            return data
-
-        except Exception as e:
-            logger.error(f"Error fetching minute data for signal {signal_id}: {e}")
-            return []
-
-    async def get_hour_data(
-        self,
-        signal_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        max_points: int = 10000
-    ) -> List[Dict[str, Any]]:
-        """
-        Get 1-hour aggregated data from dcs_signal_hour.
-
-        Args:
-            signal_id: The DCS signal ID
-            start_time: Start of time range
-            end_time: End of time range
-            max_points: Maximum number of points to return
-
-        Returns:
-            List of data points with timestamp, avg, min, max, count
-        """
-        try:
-            query = text("""
-                SELECT
-                    timestamp,
-                    avg_value,
-                    min_value,
-                    max_value,
-                    count,
-                    rms_avg
-                FROM dcs_signal_hour
-                WHERE signal_id = :signal_id
-                AND timestamp BETWEEN :start_time AND :end_time
-                ORDER BY timestamp
-                LIMIT :max_points
-            """)
-
-            result = await self.db.execute(
-                query,
-                {
-                    "signal_id": signal_id,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "max_points": max_points
-                }
-            )
-            rows = result.fetchall()
-
-            data = []
-            for row in rows:
-                data.append({
-                    "timestamp": row[0].isoformat() if row[0] else None,
-                    "avg_value": float(row[1]) if row[1] is not None else None,
-                    "min_value": float(row[2]) if row[2] is not None else None,
-                    "max_value": float(row[3]) if row[3] is not None else None,
-                    "count": row[4] if row[4] is not None else 0,
-                    "rms_avg": float(row[5]) if row[5] is not None else None,
-                })
-
-            return data
-
-        except Exception as e:
-            logger.error(f"Error fetching hour data for signal {signal_id}: {e}")
-            return []
-
-    # ============================================================
-    # DATA AVAILABILITY TIMELINE
-    # ============================================================
-
-    async def get_raw_timeline(
-        self,
-        signal_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        interval_minutes: int = 60
-    ) -> List[Dict[str, Any]]:
-        """
-        Get data availability timeline for raw data.
-
-        Args:
-            signal_id: The DCS signal ID
-            start_time: Start of time range
-            end_time: End of time range
-            interval_minutes: Interval size in minutes
-
-        Returns:
-            List of intervals with data count and quality info
-        """
-        try:
-            query = text("""
-                SELECT
-                    time_bucket,
-                    COUNT(*) as data_count,
-                    AVG(CASE WHEN quality THEN 1 ELSE 0 END) as quality_ratio,
-                    MIN(value) as min_value,
-                    MAX(value) as max_value,
-                    AVG(value) as avg_value
-                FROM (
+            # If bucket is 60 seconds, return minute data directly
+            if bucket_seconds == 60:
+                query = text("""
                     SELECT
-                        date_trunc('minute', timestamp) -
-                        (EXTRACT(MINUTE FROM timestamp)::int % :interval_minutes) * INTERVAL '1 minute'
-                        AS time_bucket,
-                        value,
-                        quality
-                    FROM dcs_signal_raw
+                        timestamp,
+                        avg_value,
+                        min_value,
+                        max_value,
+                        rms_avg
+                    FROM dcs_signal_min
                     WHERE signal_id = :signal_id
                     AND timestamp BETWEEN :start_time AND :end_time
-                ) AS bucketed
-                GROUP BY time_bucket
-                ORDER BY time_bucket
+                    ORDER BY timestamp
+                    LIMIT :max_points
+                """)
+
+                result = await self.db.execute(
+                    query,
+                    {
+                        "signal_id": signal_id,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "max_points": max_points,
+                    }
+                )
+                rows = result.fetchall()
+
+                data = []
+                for row in rows:
+                    data.append({
+                        "timestamp": row[0].isoformat() if row[0] else None,
+                        "avg_value": float(row[1]) if row[1] is not None else None,
+                        "min_value": float(row[2]) if row[2] is not None else None,
+                        "max_value": float(row[3]) if row[3] is not None else None,
+                        "rms_avg": float(row[4]) if row[4] is not None else None,
+                    })
+
+                return data
+
+            # Otherwise, aggregate by time bucket
+            interval_str = f"{bucket_seconds} seconds"
+            query = text(f"""
+                SELECT
+                    time_bucket('{interval_str}', timestamp) AS bucket,
+                    AVG(avg_value) AS avg_value,
+                    MIN(min_value) AS min_value,
+                    MAX(max_value) AS max_value,
+                    AVG(rms_avg) AS rms_avg
+                FROM dcs_signal_min
+                WHERE signal_id = :signal_id
+                AND timestamp BETWEEN :start_time AND :end_time
+                GROUP BY bucket
+                ORDER BY bucket
             """)
 
             result = await self.db.execute(
@@ -457,120 +405,107 @@ class DCSEngineService:
                     "signal_id": signal_id,
                     "start_time": start_time,
                     "end_time": end_time,
-                    "interval_minutes": interval_minutes
                 }
             )
             rows = result.fetchall()
 
-            timeline = []
+            data = []
             for row in rows:
-                timeline.append({
+                data.append({
                     "timestamp": row[0].isoformat() if row[0] else None,
-                    "data_count": row[1] if row[1] is not None else 0,
-                    "quality_ratio": float(row[2]) if row[2] is not None else 0,
-                    "min_value": float(row[3]) if row[3] is not None else None,
-                    "max_value": float(row[4]) if row[4] is not None else None,
-                    "avg_value": float(row[5]) if row[5] is not None else None,
+                    "avg_value": float(row[1]) if row[1] is not None else None,
+                    "min_value": float(row[2]) if row[2] is not None else None,
+                    "max_value": float(row[3]) if row[3] is not None else None,
+                    "rms_avg": float(row[4]) if row[4] is not None else None,
                 })
 
-            return timeline
+            return data
 
         except Exception as e:
-            logger.error(f"Error fetching raw timeline for signal {signal_id}: {e}")
+            logger.error(f"Error fetching aggregated minute data for signal {signal_id}: {e}")
             return []
 
-    async def get_minute_timeline(
+    async def get_hour_data_aggregated(
         self,
         signal_id: int,
         start_time: datetime,
         end_time: datetime,
-        interval_days: int = 1
+        max_points: int = 10000,
     ) -> List[Dict[str, Any]]:
         """
-        Get data availability timeline for minute data.
+        Get hour data with automatic downsampling if needed.
 
         Args:
             signal_id: The DCS signal ID
             start_time: Start of time range
             end_time: End of time range
-            interval_days: Interval size in days
+            max_points: Maximum number of points to return
 
         Returns:
-            List of intervals with data count
+            List of data points (timestamp, avg_value, min_value, max_value)
         """
         try:
-            query = text("""
-                SELECT
-                    date_trunc('day', timestamp) as day_bucket,
-                    COUNT(*) as data_count,
-                    AVG(avg_value) as avg_value,
-                    MIN(min_value) as min_value,
-                    MAX(max_value) as max_value
-                FROM dcs_signal_min
-                WHERE signal_id = :signal_id
-                AND timestamp BETWEEN :start_time AND :end_time
-                GROUP BY day_bucket
-                ORDER BY day_bucket
-            """)
-
-            result = await self.db.execute(
-                query,
-                {
-                    "signal_id": signal_id,
-                    "start_time": start_time,
-                    "end_time": end_time
-                }
+            # Compute optimal bucket size (minimum 3600 seconds = 1 hour)
+            bucket_seconds = self._compute_bucket_seconds(
+                start_time,
+                end_time,
+                max_points,
+                min_interval_seconds=3600,
             )
-            rows = result.fetchall()
 
-            timeline = []
-            for row in rows:
-                timeline.append({
-                    "timestamp": row[0].isoformat() if row[0] else None,
-                    "data_count": row[1] if row[1] is not None else 0,
-                    "avg_value": float(row[2]) if row[2] is not None else None,
-                    "min_value": float(row[3]) if row[3] is not None else None,
-                    "max_value": float(row[4]) if row[4] is not None else None,
-                })
+            # If bucket is 3600 seconds, return hour data directly
+            if bucket_seconds == 3600:
+                query = text("""
+                    SELECT
+                        timestamp,
+                        avg_value,
+                        min_value,
+                        max_value,
+                        rms_avg
+                    FROM dcs_signal_hour
+                    WHERE signal_id = :signal_id
+                    AND timestamp BETWEEN :start_time AND :end_time
+                    ORDER BY timestamp
+                    LIMIT :max_points
+                """)
 
-            return timeline
+                result = await self.db.execute(
+                    query,
+                    {
+                        "signal_id": signal_id,
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "max_points": max_points,
+                    }
+                )
+                rows = result.fetchall()
 
-        except Exception as e:
-            logger.error(f"Error fetching minute timeline for signal {signal_id}: {e}")
-            return []
+                data = []
+                for row in rows:
+                    data.append({
+                        "timestamp": row[0].isoformat() if row[0] else None,
+                        "avg_value": float(row[1]) if row[1] is not None else None,
+                        "min_value": float(row[2]) if row[2] is not None else None,
+                        "max_value": float(row[3]) if row[3] is not None else None,
+                        "rms_avg": float(row[4]) if row[4] is not None else None,
+                    })
 
-    async def get_hour_timeline(
-        self,
-        signal_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        interval_days: int = 30
-    ) -> List[Dict[str, Any]]:
-        """
-        Get data availability timeline for hour data.
+                return data
 
-        Args:
-            signal_id: The DCS signal ID
-            start_time: Start of time range
-            end_time: End of time range
-            interval_days: Interval size in days
-
-        Returns:
-            List of intervals with data count
-        """
-        try:
-            query = text("""
+            # Otherwise, aggregate by time bucket
+            interval_str = f"{bucket_seconds} seconds"
+            query = text(f"""
                 SELECT
-                    date_trunc('month', timestamp) as month_bucket,
-                    COUNT(*) as data_count,
-                    AVG(avg_value) as avg_value,
-                    MIN(min_value) as min_value,
-                    MAX(max_value) as max_value
+                    time_bucket('{interval_str}', timestamp) AS bucket,
+                    AVG(avg_value) AS avg_value,
+                    MIN(min_value) AS min_value,
+                    MAX(max_value) AS max_value,
+                    AVG(rms_avg) AS rms_avg
                 FROM dcs_signal_hour
                 WHERE signal_id = :signal_id
                 AND timestamp BETWEEN :start_time AND :end_time
-                GROUP BY month_bucket
-                ORDER BY month_bucket
+                GROUP BY bucket
+                ORDER BY bucket
             """)
 
             result = await self.db.execute(
@@ -578,25 +513,25 @@ class DCSEngineService:
                 {
                     "signal_id": signal_id,
                     "start_time": start_time,
-                    "end_time": end_time
+                    "end_time": end_time,
                 }
             )
             rows = result.fetchall()
 
-            timeline = []
+            data = []
             for row in rows:
-                timeline.append({
+                data.append({
                     "timestamp": row[0].isoformat() if row[0] else None,
-                    "data_count": row[1] if row[1] is not None else 0,
-                    "avg_value": float(row[2]) if row[2] is not None else None,
-                    "min_value": float(row[3]) if row[3] is not None else None,
-                    "max_value": float(row[4]) if row[4] is not None else None,
+                    "avg_value": float(row[1]) if row[1] is not None else None,
+                    "min_value": float(row[2]) if row[2] is not None else None,
+                    "max_value": float(row[3]) if row[3] is not None else None,
+                    "rms_avg": float(row[4]) if row[4] is not None else None,
                 })
 
-            return timeline
+            return data
 
         except Exception as e:
-            logger.error(f"Error fetching hour timeline for signal {signal_id}: {e}")
+            logger.error(f"Error fetching aggregated hour data for signal {signal_id}: {e}")
             return []
 
     # ============================================================
@@ -604,15 +539,7 @@ class DCSEngineService:
     # ============================================================
 
     async def get_latest_value(self, signal_id: int) -> Optional[Dict[str, Any]]:
-        """
-        Get the latest value for a signal.
-
-        Args:
-            signal_id: The DCS signal ID
-
-        Returns:
-            Latest data point or None
-        """
+        """Get the latest value for a signal."""
         try:
             query = text("""
                 SELECT
@@ -646,15 +573,7 @@ class DCSEngineService:
             return None
 
     async def get_latest_values(self, signal_ids: List[int]) -> Dict[int, Dict[str, Any]]:
-        """
-        Get the latest values for multiple signals.
-
-        Args:
-            signal_ids: List of DCS signal IDs
-
-        Returns:
-            Dictionary mapping signal_id to latest data point
-        """
+        """Get the latest values for multiple signals."""
         if not signal_ids:
             return {}
 
@@ -664,7 +583,6 @@ class DCSEngineService:
                 latest = await self.get_latest_value(signal_id)
                 if latest:
                     result[signal_id] = latest
-
             return result
 
         except Exception as e:
@@ -672,19 +590,198 @@ class DCSEngineService:
             return {}
 
     # ============================================================
+    # DATA AVAILABILITY TIMELINE (Aggregated)
+    # ============================================================
+
+    async def get_raw_timeline_aggregated(
+        self,
+        signal_id: int,
+        start_time: datetime,
+        end_time: datetime,
+        granularity_seconds: int = 3600,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get aggregated data availability timeline for raw data.
+
+        Args:
+            signal_id: The DCS signal ID
+            start_time: Start of time range
+            end_time: End of time range
+            granularity_seconds: Interval size in seconds (default: 1 hour)
+
+        Returns:
+            List of intervals with data count
+        """
+        try:
+            interval_str = f"{granularity_seconds} seconds"
+            query = text(f"""
+                SELECT
+                    time_bucket('{interval_str}', timestamp) AS bucket,
+                    COUNT(*) AS data_count,
+                    AVG(CASE WHEN quality THEN 1 ELSE 0 END) AS quality_ratio,
+                    MIN(value) AS min_value,
+                    MAX(value) AS max_value,
+                    AVG(value) AS avg_value
+                FROM dcs_signal_raw
+                WHERE signal_id = :signal_id
+                AND timestamp BETWEEN :start_time AND :end_time
+                GROUP BY bucket
+                ORDER BY bucket
+            """)
+
+            result = await self.db.execute(
+                query,
+                {
+                    "signal_id": signal_id,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }
+            )
+            rows = result.fetchall()
+
+            timeline = []
+            for row in rows:
+                timeline.append({
+                    "timestamp": row[0].isoformat() if row[0] else None,
+                    "data_count": row[1] if row[1] is not None else 0,
+                    "quality_ratio": float(row[2]) if row[2] is not None else 0,
+                    "min_value": float(row[3]) if row[3] is not None else None,
+                    "max_value": float(row[4]) if row[4] is not None else None,
+                    "avg_value": float(row[5]) if row[5] is not None else None,
+                })
+
+            return timeline
+
+        except Exception as e:
+            logger.error(f"Error fetching raw timeline for signal {signal_id}: {e}")
+            return []
+
+    async def get_minute_timeline_aggregated(
+        self,
+        signal_id: int,
+        start_time: datetime,
+        end_time: datetime,
+        granularity_days: int = 1,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get aggregated data availability timeline for minute data.
+
+        Args:
+            signal_id: The DCS signal ID
+            start_time: Start of time range
+            end_time: End of time range
+            granularity_days: Interval size in days (default: 1 day)
+
+        Returns:
+            List of intervals with data count
+        """
+        try:
+            query = text("""
+                SELECT
+                    date_trunc('day', timestamp) AS day_bucket,
+                    COUNT(*) AS data_count,
+                    AVG(avg_value) AS avg_value,
+                    MIN(min_value) AS min_value,
+                    MAX(max_value) AS max_value
+                FROM dcs_signal_min
+                WHERE signal_id = :signal_id
+                AND timestamp BETWEEN :start_time AND :end_time
+                GROUP BY day_bucket
+                ORDER BY day_bucket
+            """)
+
+            result = await self.db.execute(
+                query,
+                {
+                    "signal_id": signal_id,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }
+            )
+            rows = result.fetchall()
+
+            timeline = []
+            for row in rows:
+                timeline.append({
+                    "timestamp": row[0].isoformat() if row[0] else None,
+                    "data_count": row[1] if row[1] is not None else 0,
+                    "avg_value": float(row[2]) if row[2] is not None else None,
+                    "min_value": float(row[3]) if row[3] is not None else None,
+                    "max_value": float(row[4]) if row[4] is not None else None,
+                })
+
+            return timeline
+
+        except Exception as e:
+            logger.error(f"Error fetching minute timeline for signal {signal_id}: {e}")
+            return []
+
+    async def get_hour_timeline_aggregated(
+        self,
+        signal_id: int,
+        start_time: datetime,
+        end_time: datetime,
+        granularity_months: int = 1,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get aggregated data availability timeline for hour data.
+
+        Args:
+            signal_id: The DCS signal ID
+            start_time: Start of time range
+            end_time: End of time range
+            granularity_months: Interval size in months (default: 1 month)
+
+        Returns:
+            List of intervals with data count
+        """
+        try:
+            query = text("""
+                SELECT
+                    date_trunc('month', timestamp) AS month_bucket,
+                    COUNT(*) AS data_count,
+                    AVG(avg_value) AS avg_value,
+                    MIN(min_value) AS min_value,
+                    MAX(max_value) AS max_value
+                FROM dcs_signal_hour
+                WHERE signal_id = :signal_id
+                AND timestamp BETWEEN :start_time AND :end_time
+                GROUP BY month_bucket
+                ORDER BY month_bucket
+            """)
+
+            result = await self.db.execute(
+                query,
+                {
+                    "signal_id": signal_id,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }
+            )
+            rows = result.fetchall()
+
+            timeline = []
+            for row in rows:
+                timeline.append({
+                    "timestamp": row[0].isoformat() if row[0] else None,
+                    "data_count": row[1] if row[1] is not None else 0,
+                    "avg_value": float(row[2]) if row[2] is not None else None,
+                    "min_value": float(row[3]) if row[3] is not None else None,
+                    "max_value": float(row[4]) if row[4] is not None else None,
+                })
+
+            return timeline
+
+        except Exception as e:
+            logger.error(f"Error fetching hour timeline for signal {signal_id}: {e}")
+            return []
+
+    # ============================================================
     # DATA RANGE INFO
     # ============================================================
 
     async def get_data_range(self, signal_id: int) -> Dict[str, Any]:
-        """
-        Get the min and max timestamps for a signal.
-
-        Args:
-            signal_id: The DCS signal ID
-
-        Returns:
-            Dict with min_timestamp and max_timestamp
-        """
+        """Get the min and max timestamps for a signal."""
         try:
             query = text("""
                 SELECT
@@ -708,78 +805,3 @@ class DCSEngineService:
         except Exception as e:
             logger.error(f"Error fetching data range for signal {signal_id}: {e}")
             return {"min_timestamp": None, "max_timestamp": None}
-
-    # ============================================================
-    # AGGREGATION HELPERS
-    # ============================================================
-
-    async def get_raw_aggregation(
-        self,
-        signal_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        interval_seconds: int = 60
-    ) -> List[Dict[str, Any]]:
-        """
-        Get aggregated raw data for a signal.
-
-        Args:
-            signal_id: The DCS signal ID
-            start_time: Start of time range
-            end_time: End of time range
-            interval_seconds: Interval size in seconds
-
-        Returns:
-            List of aggregated data points
-        """
-        try:
-            query = text("""
-                SELECT
-                    time_bucket,
-                    COUNT(*) as count,
-                    AVG(value) as avg_value,
-                    MIN(value) as min_value,
-                    MAX(value) as max_value,
-                    AVG(CASE WHEN quality THEN 1 ELSE 0 END) as quality_ratio
-                FROM (
-                    SELECT
-                        date_trunc('second', timestamp) -
-                        (EXTRACT(SECOND FROM timestamp)::int % :interval_seconds) * INTERVAL '1 second'
-                        AS time_bucket,
-                        value,
-                        quality
-                    FROM dcs_signal_raw
-                    WHERE signal_id = :signal_id
-                    AND timestamp BETWEEN :start_time AND :end_time
-                ) AS bucketed
-                GROUP BY time_bucket
-                ORDER BY time_bucket
-            """)
-
-            result = await self.db.execute(
-                query,
-                {
-                    "signal_id": signal_id,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "interval_seconds": interval_seconds
-                }
-            )
-            rows = result.fetchall()
-
-            data = []
-            for row in rows:
-                data.append({
-                    "timestamp": row[0].isoformat() if row[0] else None,
-                    "count": row[1] if row[1] is not None else 0,
-                    "avg_value": float(row[2]) if row[2] is not None else None,
-                    "min_value": float(row[3]) if row[3] is not None else None,
-                    "max_value": float(row[4]) if row[4] is not None else None,
-                    "quality_ratio": float(row[5]) if row[5] is not None else 0,
-                })
-
-            return data
-
-        except Exception as e:
-            logger.error(f"Error fetching raw aggregation for signal {signal_id}: {e}")
-            return []

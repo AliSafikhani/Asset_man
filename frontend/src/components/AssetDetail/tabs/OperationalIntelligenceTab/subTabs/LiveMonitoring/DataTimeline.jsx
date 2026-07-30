@@ -1,7 +1,8 @@
 /**
- * DataTimeline Component
+ * DataTimeline Component (Updated for Aggregated Data)
  * File: components/AssetDetail/tabs/OperationalIntelligenceTab/subTabs/LiveMonitoring/DataTimeline.jsx
  * Description: Data availability timeline with swipeable start/end markers
+ * Uses aggregated data from the backend (hourly/day/monthly intervals)
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -11,17 +12,12 @@ import {
   Typography,
   CircularProgress,
   Alert,
-  Slider,
   Tooltip,
   IconButton,
   Chip,
   Stack,
 } from '@mui/material';
 import {
-  PlayArrow as PlayIcon,
-  Pause as PauseIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -55,7 +51,9 @@ const DataBlock = styled(Box)(({ theme, color = 'success', opacity = 1 }) => ({
     ? theme.palette.success.main 
     : color === 'warning' 
       ? theme.palette.warning.main 
-      : theme.palette.grey[300],
+      : color === 'error'
+        ? theme.palette.error.main
+        : theme.palette.grey[300],
   opacity: opacity,
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -132,19 +130,33 @@ const DataTimeline = ({
   const [startPercent, setStartPercent] = useState(0);
   const [endPercent, setEndPercent] = useState(100);
 
-  // Format date for display
+  // Format date for display based on time level
   const formatDate = useCallback((date) => {
     if (!date) return '—';
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, []);
+    
+    if (timeLevel === 'raw') {
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else if (timeLevel === 'minute') {
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } else { // hour
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  }, [timeLevel]);
 
-  // Calculate colors based on data quality
+  // Calculate colors based on data quality and count
   const getBlockColor = (dataCount, qualityRatio) => {
     if (dataCount === 0) return 'grey';
     if (qualityRatio >= 0.9) return 'success';
@@ -222,12 +234,36 @@ const DataTimeline = ({
     onRangeChange,
   ]);
 
+  // Update markers when start/end time changes externally
+  useEffect(() => {
+    if (!startTime || !endTime) return;
+    if (!timelineRef.current) return;
+    
+    // Calculate percentages based on the full range
+    // We need the full range from the intervals
+    if (intervals.length === 0) return;
+    
+    const firstTimestamp = new Date(intervals[0].timestamp);
+    const lastTimestamp = new Date(intervals[intervals.length - 1].timestamp);
+    
+    if (firstTimestamp && lastTimestamp) {
+      const fullDuration = lastTimestamp.getTime() - firstTimestamp.getTime();
+      if (fullDuration === 0) return;
+      
+      const startOffset = startTime.getTime() - firstTimestamp.getTime();
+      const endOffset = endTime.getTime() - firstTimestamp.getTime();
+      
+      const newStartPercent = Math.max(0, Math.min(100, (startOffset / fullDuration) * 100));
+      const newEndPercent = Math.max(0, Math.min(100, (endOffset / fullDuration) * 100));
+      
+      setStartPercent(newStartPercent);
+      setEndPercent(newEndPercent);
+    }
+  }, [startTime, endTime, intervals]);
+
   // Calculate display range
   const rangeStart = startPercent;
   const rangeEnd = endPercent;
-
-  // Determine if we should show detailed view
-  const showDetailed = intervals && intervals.length <= 100;
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
@@ -320,6 +356,14 @@ const DataTimeline = ({
                             </Typography>
                           </>
                         )}
+                        {interval.quality_ratio !== undefined && (
+                          <>
+                            <br />
+                            <Typography variant="caption">
+                              Quality: {(interval.quality_ratio * 100).toFixed(0)}%
+                            </Typography>
+                          </>
+                        )}
                       </Box>
                     }
                     placement="top"
@@ -379,7 +423,7 @@ const DataTimeline = ({
       </Box>
 
       {/* Legend */}
-      <Box display="flex" justifyContent="center" gap={3} mt={1}>
+      <Box display="flex" justifyContent="center" gap={3} mt={1} flexWrap="wrap">
         <Box display="flex" alignItems="center" gap={0.5}>
           <Box sx={{ width: 12, height: 12, bgcolor: 'success.main', borderRadius: 0.5 }} />
           <Typography variant="caption">Good Data</Typography>
@@ -400,6 +444,15 @@ const DataTimeline = ({
           <Box sx={{ width: 12, height: 12, bgcolor: 'rgba(33, 150, 243, 0.15)', border: '1px solid #2196F3', borderRadius: 0.5 }} />
           <Typography variant="caption">Selected Range</Typography>
         </Box>
+      </Box>
+
+      {/* Time level info */}
+      <Box display="flex" justifyContent="center" mt={1}>
+        <Typography variant="caption" color="text.secondary">
+          {timeLevel === 'raw' && 'Each block = 1 hour'}
+          {timeLevel === 'minute' && 'Each block = 1 day'}
+          {timeLevel === 'hour' && 'Each block = 1 month'}
+        </Typography>
       </Box>
     </Paper>
   );

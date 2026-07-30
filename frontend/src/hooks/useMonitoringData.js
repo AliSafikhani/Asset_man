@@ -14,11 +14,12 @@ import {
   updateSignalConfig,
   assignSignalToAsset,
   unassignSignal,
+  getSignalDataRange,
 } from '../api/monitoring';
 
-/**
- * Hook for fetching signals for a plant or asset
- */
+// ============================================================
+// useSignals – Fetch signals for a plant or asset
+// ============================================================
 export const useSignals = (plantId, assetId = null, includeUnassigned = true) => {
   const [signals, setSignals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +35,6 @@ export const useSignals = (plantId, assetId = null, includeUnassigned = true) =>
       let data;
       if (assetId) {
         data = await getAssetSignals(assetId);
-        // Transform asset signals to match plant signals structure
         data = data.map(s => ({
           signal_id: s.signal_id,
           plant_id: s.plant_id,
@@ -70,23 +70,34 @@ export const useSignals = (plantId, assetId = null, includeUnassigned = true) =>
   return { signals, loading, error, refetch: fetchSignals };
 };
 
-/**
- * Hook for fetching signal data (time-series)
- */
+// ============================================================
+// useSignalData – Fetch signal data with max_points
+// ============================================================
 export const useSignalData = (signalId, timeLevel = 'raw', params = {}) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPoints, setTotalPoints] = useState(0);
 
   const fetchData = useCallback(async () => {
-    if (!signalId) return;
+    if (!signalId) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);
     
     try {
-      const response = await getSignalData(signalId, timeLevel, params);
+      // Merge max_points from params or default to 10000
+      const queryParams = {
+        max_points: params.max_points || 10000,
+        start_time: params.start_time,
+        end_time: params.end_time,
+        hours: params.hours,
+      };
+      const response = await getSignalData(signalId, timeLevel, queryParams);
       setData(response.data_points || []);
       setTotalPoints(response.total_points || 0);
     } catch (err) {
@@ -103,15 +114,12 @@ export const useSignalData = (signalId, timeLevel = 'raw', params = {}) => {
   return { data, loading, error, totalPoints, refetch: fetchData };
 };
 
-/**
- * Hook for fetching signal timeline (data availability)
- */
-/**
- * Hook for fetching signal timeline (data availability)
- */
+// ============================================================
+// useSignalTimeline – Fetch signal timeline
+// ============================================================
 export const useSignalTimeline = (signalId, timeLevel = 'raw', params = {}) => {
   const [intervals, setIntervals] = useState([]);
-  const [loading, setLoading] = useState(false); // ← start as false
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalIntervals, setTotalIntervals] = useState(0);
 
@@ -131,11 +139,10 @@ export const useSignalTimeline = (signalId, timeLevel = 'raw', params = {}) => {
       setTotalIntervals(response.total_intervals || 0);
     } catch (err) {
       setError(err.message || 'Failed to fetch timeline');
-      setIntervals([]);
     } finally {
       setLoading(false);
     }
-  }, [signalId, timeLevel, JSON.stringify(params)]); // ← use JSON.stringify to prevent infinite loop
+  }, [signalId, timeLevel, JSON.stringify(params)]);
 
   useEffect(() => {
     fetchTimeline();
@@ -144,9 +151,9 @@ export const useSignalTimeline = (signalId, timeLevel = 'raw', params = {}) => {
   return { intervals, loading, error, totalIntervals, refetch: fetchTimeline };
 };
 
-/**
- * Hook for fetching latest values for signals
- */
+// ============================================================
+// useLatestValues – Fetch latest values for signals
+// ============================================================
 export const useLatestValues = (signalIds = []) => {
   const [values, setValues] = useState({});
   const [loading, setLoading] = useState(true);
@@ -163,14 +170,12 @@ export const useLatestValues = (signalIds = []) => {
     setError(null);
     
     try {
-      // Fetch latest values for each signal
       const results = {};
       for (const id of signalIds) {
         try {
           const data = await getSignalLatest(id);
           results[id] = data;
         } catch (err) {
-          // Individual signal failures don't break the whole batch
           console.warn(`Failed to fetch latest for signal ${id}:`, err);
         }
       }
@@ -189,9 +194,9 @@ export const useLatestValues = (signalIds = []) => {
   return { values, loading, error, refetch: fetchLatest };
 };
 
-/**
- * Hook for updating signal configuration
- */
+// ============================================================
+// useUpdateSignalConfig – Update signal configuration
+// ============================================================
 export const useUpdateSignalConfig = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -217,9 +222,9 @@ export const useUpdateSignalConfig = () => {
   return { updateConfig, loading, error, success };
 };
 
-/**
- * Hook for assigning a signal to an asset
- */
+// ============================================================
+// useAssignSignal – Assign signal to asset
+// ============================================================
 export const useAssignSignal = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -245,9 +250,9 @@ export const useAssignSignal = () => {
   return { assignSignal, loading, error, success };
 };
 
-/**
- * Hook for unassigning a signal
- */
+// ============================================================
+// useUnassignSignal – Unassign signal
+// ============================================================
 export const useUnassignSignal = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -272,12 +277,9 @@ export const useUnassignSignal = () => {
   return { unassignSignal: unassignSignalFn, loading, error, success };
 };
 
-/**
- * Hook for managing selection state of signals
- */
-/**
- * Hook for managing selection state of signals
- */
+// ============================================================
+// useSignalSelection – Manage signal selection state
+// ============================================================
 export const useSignalSelection = (signals = []) => {
   const [selectedSignals, setSelectedSignals] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -293,13 +295,12 @@ export const useSignalSelection = (signals = []) => {
       return;
     }
 
-    // Compare signal IDs to avoid infinite loop
     const prevIds = prevSignalsRef.current.map(s => s.signal_id);
     const currentIds = signals.map(s => s.signal_id);
     
     if (prevIds.length === currentIds.length && 
         prevIds.every((id, i) => id === currentIds[i])) {
-      return; // No change
+      return;
     }
     
     prevSignalsRef.current = signals;
@@ -351,9 +352,10 @@ export const useSignalSelection = (signals = []) => {
     count: selectedSignals.length,
   };
 };
-/**
- * Hook for managing time range state
- */
+
+// ============================================================
+// useTimeRange – Manage time range state
+// ============================================================
 export const useTimeRange = (initialHours = 24) => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -374,7 +376,6 @@ export const useTimeRange = (initialHours = 24) => {
     }
   }, []);
 
-  // ✅ ADD THIS FUNCTION
   const setRangeFromDates = useCallback((startDate, endDate) => {
     setStartTime(startDate);
     setEndTime(endDate);
@@ -390,7 +391,7 @@ export const useTimeRange = (initialHours = 24) => {
     hours,
     setHours,
     setRange,
-    setRangeFromDates,  // ✅ EXPORT IT
+    setRangeFromDates,
     format: {
       start: startTime ? startTime.toISOString() : null,
       end: endTime ? endTime.toISOString() : null,
@@ -398,6 +399,9 @@ export const useTimeRange = (initialHours = 24) => {
   };
 };
 
+// ============================================================
+// Default export
+// ============================================================
 export default {
   useSignals,
   useSignalData,

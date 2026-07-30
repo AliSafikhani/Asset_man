@@ -1,5 +1,5 @@
 /**
- * SignalTable Component
+ * SignalTable Component (Fixed – No page refresh)
  * File: components/AssetDetail/tabs/OperationalIntelligenceTab/subTabs/LiveMonitoring/SignalTable.jsx
  * Description: Table view of signals with checkbox, color picker, and line type dropdown
  */
@@ -23,7 +23,6 @@ import {
   Search as SearchIcon,
   CheckCircle as CheckCircleIcon,
   FiberManualRecord,
-  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 
 const LINE_TYPES = [
@@ -33,6 +32,12 @@ const LINE_TYPES = [
   { value: 'dashdot', label: 'Dash Dot' },
 ];
 
+const TIME_LEVELS = [
+  { id: 'raw', label: 'Real-time' },
+  { id: 'minute', label: 'Minute' },
+  { id: 'hour', label: 'Hour' },
+];
+
 const SignalTable = ({
   signals = [],
   selectedIds = new Set(),
@@ -40,12 +45,10 @@ const SignalTable = ({
   onSelectAll,
   onDeselectAll,
   latestValues = {},
-  onSignalClick,
   onUpdateConfig,
   timeLevel = 'raw',
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [expanded, setExpanded] = useState(true);
 
   const filteredSignals = signals.filter(
     (s) =>
@@ -72,11 +75,6 @@ const SignalTable = ({
   const getLatestValue = (signalId) => {
     const val = latestValues[signalId];
     return val ? val.value : null;
-  };
-
-  const getLatestTimestamp = (signalId) => {
-    const val = latestValues[signalId];
-    return val ? val.timestamp : null;
   };
 
   return (
@@ -130,7 +128,6 @@ const SignalTable = ({
           filteredSignals.map((signal) => {
             const isSelected = selectedIds.has(signal.signal_id);
             const latestValue = getLatestValue(signal.signal_id);
-            const latestTime = getLatestTimestamp(signal.signal_id);
             const color = signal.color_hex || '#2196F3';
             const lineType = signal.line_type || 'solid';
             const displayName = signal.custom_name || signal.name || `Signal ${signal.signal_id}`;
@@ -150,16 +147,15 @@ const SignalTable = ({
                     bgcolor: 'action.hover',
                     borderRadius: 1,
                   },
-                  cursor: 'pointer',
                   transition: 'background 0.15s',
                 }}
-                onClick={() => onSignalClick && onSignalClick(signal.signal_id)}
               >
-                {/* Checkbox */}
+                {/* Checkbox – toggles selection only */}
                 <Checkbox
                   size="small"
                   checked={isSelected}
                   onChange={(e) => {
+                    e.preventDefault();      // ← PREVENT PAGE REFRESH
                     e.stopPropagation();
                     onToggle(signal.signal_id);
                   }}
@@ -204,7 +200,7 @@ const SignalTable = ({
                   )}
                 </Box>
 
-                {/* Color picker (small) */}
+                {/* Color picker */}
                 <Tooltip title="Change color">
                   <Box sx={{ flexShrink: 0 }}>
                     <input
@@ -214,7 +210,6 @@ const SignalTable = ({
                         e.stopPropagation();
                         handleColorChange(signal.signal_id, e.target.value);
                       }}
-                      onClick={(e) => e.stopPropagation()}
                       style={{
                         width: 22,
                         height: 22,
@@ -237,7 +232,6 @@ const SignalTable = ({
                         e.stopPropagation();
                         handleLineTypeChange(signal.signal_id, e.target.value);
                       }}
-                      onClick={(e) => e.stopPropagation()}
                       sx={{
                         height: 22,
                         fontSize: '0.65rem',
@@ -289,12 +283,5 @@ const SignalTable = ({
     </Box>
   );
 };
-
-// Re-import TIME_LEVELS (or pass as prop)
-const TIME_LEVELS = [
-  { id: 'raw', label: 'Real-time', description: '1 second interval', maxDays: 30, defaultHours: 24 },
-  { id: 'minute', label: 'Minute', description: '1 minute aggregated', maxDays: 730, defaultHours: 168 },
-  { id: 'hour', label: 'Hour', description: '1 hour aggregated', maxDays: 10950, defaultHours: 720 },
-];
 
 export default SignalTable;

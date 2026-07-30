@@ -68,7 +68,10 @@ export const getSignalData = async (signalId, timeLevel = 'raw', params = {}) =>
     {
       params: {
         time_level: timeLevel,
-        ...params
+        max_points: params.max_points || 10000, // default to 10000
+        start_time: params.start_time,
+        end_time: params.end_time,
+        hours: params.hours,
       }
     }
   );
@@ -92,10 +95,6 @@ export const getSignalLatest = async (signalId) => {
   const response = await apiClient.get(`/monitoring/signals/${signalId}/latest`);
   return response.data;
 };
-
-// ============================================================
-// SIGNAL DATA RANGE  ← ADD THIS SECTION
-// ============================================================
 
 export const getSignalDataRange = async (signalId) => {
   const response = await apiClient.get(`/monitoring/signals/${signalId}/range`);
@@ -159,6 +158,7 @@ export const getComparisonData = async (plantId, groupId, timeLevel = 'raw', par
       params: {
         group_id: groupId,
         time_level: timeLevel,
+        max_points: params.max_points || 10000,
         ...params
       }
     }
@@ -204,9 +204,9 @@ export const getTimeLevelLabel = (timeLevel) => {
 
 export const getTimeLevelDays = (timeLevel) => {
   const days = {
-    raw: 30,
-    minute: 730,  // 2 years
-    hour: 10950   // 30 years
+    raw: 2,      // ✅ Updated: raw now limited to 2 days
+    minute: 730, // 2 years
+    hour: 10950  // 30 years
   };
   return days[timeLevel] || 0;
 };

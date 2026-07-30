@@ -1,14 +1,14 @@
 """
-Monitoring API Endpoints
+Monitoring API Endpoints – Updated with 2‑Day Raw Limit & Auto‑Downsampling
 File: app/api/v1/endpoints/monitoring.py
 Description: API endpoints for live monitoring module
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from app.core.database import get_db, get_dcs_db
@@ -55,7 +55,11 @@ def parse_date(date_str: Optional[str]) -> Optional[datetime]:
     if not date_str:
         return None
     try:
-        return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        # If it's naive, make it aware with UTC
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
     except ValueError:
         return None
 
@@ -86,12 +90,10 @@ async def create_group(
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new signal group."""
-    # Verify plant exists
     plant_result = await db.execute(select(Plants).where(Plants.id == group.plant_id))
     if not plant_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Plant not found")
     
-    # Check if group name already exists for this plant
     existing = await db.execute(
         select(SignalGroup).where(
             SignalGroup.plant_id == group.plant_id,
@@ -99,7 +101,7 @@ async def create_group(
         )
     )
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Group name already exists for this plant")
+        raise HTTPException(status_code=400, detail="Group name already exists")
     
     new_group = SignalGroup(**group.dict())
     db.add(new_group)
@@ -158,15 +160,11 @@ async def get_plant_signals(
     db: AsyncSession = Depends(get_db),
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
-    """
-    Get all signals for a plant with their configuration and latest values.
-    """
-    # Verify plant exists
+    """Get all signals for a plant with their configuration and latest values."""
     plant_result = await db.execute(select(Plants).where(Plants.id == plant_id))
     if not plant_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Plant not found")
     
-    # Get signals from DCS engine database
     dcs_service = DCSEngineService(dcs_db)
     dcs_signals = await dcs_service.get_signals_by_plant(plant_id)
     
@@ -178,7 +176,6 @@ async def get_plant_signals(
             signals=[]
         )
     
-    # Get configurations from webapp database
     config_result = await db.execute(
         select(SignalConfiguration)
         .where(SignalConfiguration.plant_id == plant_id)
@@ -186,31 +183,23 @@ async def get_plant_signals(
     )
     configs = {c.signal_id: c for c in config_result.scalars().all()}
     
-    # Get asset names for configs
     asset_ids = [c.asset_id for c in configs.values() if c.asset_id]
     assets = {}
     if asset_ids:
-        asset_result = await db.execute(
-            select(Assets).where(Assets.id.in_(asset_ids))
-        )
+        asset_result = await db.execute(select(Assets).where(Assets.id.in_(asset_ids)))
         for a in asset_result.scalars().all():
             assets[a.id] = a.asset_name
     
-    # Get group names for configs
     group_ids = [c.group_id for c in configs.values() if c.group_id]
     groups = {}
     if group_ids:
-        group_result = await db.execute(
-            select(SignalGroup).where(SignalGroup.id.in_(group_ids))
-        )
+        group_result = await db.execute(select(SignalGroup).where(SignalGroup.id.in_(group_ids)))
         for g in group_result.scalars().all():
             groups[g.id] = g.group_name
     
-    # Get latest values
     signal_ids = [s['id'] for s in dcs_signals]
     latest_values = await dcs_service.get_latest_values(signal_ids)
     
-    # Build response
     signals_response = []
     assigned_count = 0
     
@@ -346,14 +335,12 @@ async def get_signal_config(
     config = result.scalar_one_or_none()
     
     if not config:
-        # Check if signal exists in DCS engine
         dcs_service = DCSEngineService(dcs_db)
         signal = await dcs_service.get_signal_by_id(signal_id)
         if not signal:
             raise HTTPException(status_code=404, detail="Signal not found in DCS engine")
-        raise HTTPException(status_code=404, detail="Configuration not found for this signal")
+        raise HTTPException(status_code=404, detail="Configuration not found")
     
-    # Add signal details
     dcs_service = DCSEngineService(dcs_db)
     signal = await dcs_service.get_signal_by_id(signal_id)
     config_dict = {
@@ -394,7 +381,6 @@ async def update_signal_config(
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
     """Update configuration for a signal."""
-    # Find existing configuration
     query = select(SignalConfiguration).where(SignalConfiguration.signal_id == signal_id)
     if plant_id:
         query = query.where(SignalConfiguration.plant_id == plant_id)
@@ -403,13 +389,11 @@ async def update_signal_config(
     config = result.scalar_one_or_none()
     
     if not config:
-        # Check if signal exists in DCS engine
         dcs_service = DCSEngineService(dcs_db)
         signal = await dcs_service.get_signal_by_id(signal_id)
         if not signal:
             raise HTTPException(status_code=404, detail="Signal not found in DCS engine")
         
-        # Create new configuration
         create_data = {
             "signal_id": signal_id,
             "plant_id": plant_id or signal['plant_id'],
@@ -421,7 +405,6 @@ async def update_signal_config(
         await db.commit()
         await db.refresh(new_config)
         
-        # Return with signal details
         dcs_service = DCSEngineService(dcs_db)
         signal = await dcs_service.get_signal_by_id(signal_id)
         config_dict = {
@@ -450,16 +433,14 @@ async def update_signal_config(
         }
         return config_dict
     
-    # Update existing configuration
     update_data = config_update.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(config, key, value)
     
-    config.updated_at = datetime.utcnow()
+    config.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(config)
     
-    # Return with signal details
     dcs_service = DCSEngineService(dcs_db)
     signal = await dcs_service.get_signal_by_id(signal_id)
     config_dict = {
@@ -491,7 +472,7 @@ async def update_signal_config(
 
 
 # ============================================================
-# SIGNAL DATA
+# SIGNAL DATA (with Raw 2‑Day Limit & Auto‑Downsampling)
 # ============================================================
 
 @router.get("/signals/{signal_id}/data", response_model=SignalDataResponse)
@@ -501,44 +482,119 @@ async def get_signal_data(
     start_time: Optional[str] = None,
     end_time: Optional[str] = None,
     hours: int = Query(24, description="Number of hours to fetch (if no start/end time)"),
-    max_points: int = Query(10000, le=50000),
+    max_points: int = Query(10000, le=50000, description="Maximum points to return (auto‑downsample if exceeded)"),
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
-    """
-    Get time-series data for a signal.
-    """
-    # Validate time_level
     if time_level not in ["raw", "minute", "hour"]:
-        raise HTTPException(status_code=400, detail="Invalid time_level. Must be 'raw', 'minute', or 'hour'")
-    
-    # Parse dates
+        raise HTTPException(status_code=400, detail="Invalid time_level")
+
     start = parse_date(start_time) if start_time else None
     end = parse_date(end_time) if end_time else None
-    
-    # Set default time range if not provided
+    now = datetime.now(timezone.utc)
+
+    # Set defaults if not provided
     if not end:
-        end = datetime.utcnow()
+        end = now
     if not start:
-        start = end - timedelta(hours=hours)
-    
-    # Check time range based on time_level
-    if time_level == "raw" and (end - start).days > 30:
-        raise HTTPException(status_code=400, detail="Raw data is only available for the last 30 days")
-    elif time_level == "minute" and (end - start).days > 730:
-        raise HTTPException(status_code=400, detail="Minute data is only available for the last 2 years")
-    elif time_level == "hour" and (end - start).days > 10950:
-        raise HTTPException(status_code=400, detail="Hour data is only available for the last 30 years")
-    
-    # Get data from DCS engine
-    dcs_service = DCSEngineService(dcs_db)
-    
+        if time_level == "raw":
+            start = end - timedelta(days=2)
+        elif time_level == "minute":
+            start = end - timedelta(hours=hours)
+        else:
+            start = end - timedelta(hours=hours)
+
+    # ============================================================
+    # RAW DATA: Only last 2 days
+    # ============================================================
     if time_level == "raw":
-        data = await dcs_service.get_raw_data(signal_id, start, end, max_points)
+        window_start = now - timedelta(days=2)
+        window_end = now
+
+        effective_start = max(start, window_start)
+        effective_end = min(end, window_end)
+
+        if effective_start > effective_end:
+            # No overlap → return empty
+            return SignalDataResponse(
+                signal_id=signal_id,
+                time_level=time_level,
+                start_time=start.isoformat(),
+                end_time=end.isoformat(),
+                data_points=[],
+                total_points=0
+            )
+
+        start = effective_start
+        end = effective_end
+
+        # Ensure maximum range is 2 days
+        if end - start > timedelta(days=2):
+            end = start + timedelta(days=2)
+
+    # ============================================================
+    # MINUTE DATA: Only last 2 years
+    # ============================================================
     elif time_level == "minute":
-        data = await dcs_service.get_minute_data(signal_id, start, end, max_points)
-    else:  # hour
-        data = await dcs_service.get_hour_data(signal_id, start, end, max_points)
-    
+        window_start = now - timedelta(days=730)
+        window_end = now
+
+        effective_start = max(start, window_start)
+        effective_end = min(end, window_end)
+
+        if effective_start > effective_end:
+            return SignalDataResponse(
+                signal_id=signal_id,
+                time_level=time_level,
+                start_time=start.isoformat(),
+                end_time=end.isoformat(),
+                data_points=[],
+                total_points=0
+            )
+
+        start = effective_start
+        end = effective_end
+
+        if end - start > timedelta(days=730):
+            end = start + timedelta(days=730)
+
+    # ============================================================
+    # HOUR DATA: Only last 30 years
+    # ============================================================
+    elif time_level == "hour":
+        window_start = now - timedelta(days=10950)
+        window_end = now
+
+        effective_start = max(start, window_start)
+        effective_end = min(end, window_end)
+
+        if effective_start > effective_end:
+            return SignalDataResponse(
+                signal_id=signal_id,
+                time_level=time_level,
+                start_time=start.isoformat(),
+                end_time=end.isoformat(),
+                data_points=[],
+                total_points=0
+            )
+
+        start = effective_start
+        end = effective_end
+
+        if end - start > timedelta(days=10950):
+            end = start + timedelta(days=10950)
+
+    # ============================================================
+    # Fetch data using the aggregated methods
+    # ============================================================
+    dcs_service = DCSEngineService(dcs_db)
+
+    if time_level == "raw":
+        data = await dcs_service.get_raw_data_aggregated(signal_id, start, end, max_points)
+    elif time_level == "minute":
+        data = await dcs_service.get_minute_data_aggregated(signal_id, start, end, max_points)
+    else:
+        data = await dcs_service.get_hour_data_aggregated(signal_id, start, end, max_points)
+
     return SignalDataResponse(
         signal_id=signal_id,
         time_level=time_level,
@@ -548,6 +604,9 @@ async def get_signal_data(
         total_points=len(data)
     )
 
+# ============================================================
+# SIGNAL TIMELINE (Aggregated)
+# ============================================================
 
 @router.get("/signals/{signal_id}/timeline", response_model=TimelineResponse)
 async def get_signal_timeline(
@@ -558,32 +617,71 @@ async def get_signal_timeline(
     hours: int = Query(24, description="Number of hours to show (if no start/end time)"),
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
+    """
+    Get data availability timeline for a signal.
+    - Raw: aggregated per hour (last 2 days max)
+    - Minute: aggregated per day (last 2 years max)
+    - Hour: aggregated per month (last 30 years max)
+    """
     if time_level not in ["raw", "minute", "hour"]:
         raise HTTPException(status_code=400, detail="Invalid time_level")
     
-    # ✅ Parse dates to datetime objects
+    # Parse dates
     start = parse_date(start_time) if start_time else None
     end = parse_date(end_time) if end_time else None
+    now = datetime.now(timezone.utc)
     
     # Set default time range
     if not end:
-        end = datetime.utcnow()
+        end = now
     if not start:
         if time_level == "raw":
-            start = end - timedelta(days=30)
+            start = end - timedelta(days=2)
         elif time_level == "minute":
-            start = end - timedelta(days=365)
+            start = end - timedelta(days=30)  # Default: last 30 days
         else:  # hour
-            start = end - timedelta(days=3650)
+            start = end - timedelta(days=365)  # Default: last year
+    
+    # Apply limits
+    if time_level == "raw":
+        max_start = now - timedelta(days=2)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=2):
+            end = start + timedelta(days=2)
+    elif time_level == "minute":
+        max_start = now - timedelta(days=730)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=730):
+            end = start + timedelta(days=730)
+    elif time_level == "hour":
+        max_start = now - timedelta(days=10950)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=10950):
+            end = start + timedelta(days=10950)
     
     dcs_service = DCSEngineService(dcs_db)
     
     if time_level == "raw":
-        intervals = await dcs_service.get_raw_timeline(signal_id, start, end, interval_minutes=60)
+        intervals = await dcs_service.get_raw_timeline_aggregated(
+            signal_id, start, end, granularity_seconds=3600  # 1 hour
+        )
     elif time_level == "minute":
-        intervals = await dcs_service.get_minute_timeline(signal_id, start, end, interval_days=1)
+        intervals = await dcs_service.get_minute_timeline_aggregated(
+            signal_id, start, end, granularity_days=1  # 1 day
+        )
     else:  # hour
-        intervals = await dcs_service.get_hour_timeline(signal_id, start, end, interval_days=30)
+        intervals = await dcs_service.get_hour_timeline_aggregated(
+            signal_id, start, end, granularity_months=1  # 1 month
+        )
     
     return TimelineResponse(
         signal_id=signal_id,
@@ -591,6 +689,11 @@ async def get_signal_timeline(
         intervals=intervals,
         total_intervals=len(intervals)
     )
+
+
+# ============================================================
+# LATEST VALUE
+# ============================================================
 
 @router.get("/signals/{signal_id}/latest", response_model=LatestValueResponse)
 async def get_signal_latest(
@@ -605,16 +708,13 @@ async def get_signal_latest(
     if not latest:
         raise HTTPException(status_code=404, detail="No data found for this signal")
     
-    # Get signal metadata
     signal = await dcs_service.get_signal_by_id(signal_id)
     
-    # Get configuration from webapp
     config_result = await db.execute(
         select(SignalConfiguration).where(SignalConfiguration.signal_id == signal_id)
     )
     config = config_result.scalar_one_or_none()
     
-    # Determine status
     status = "normal"
     if config and config.is_threshold_enabled:
         value = latest.get('value', 0)
@@ -638,7 +738,7 @@ async def get_signal_latest(
 
 
 # ============================================================
-# SIGNAL DATA RANGE
+# DATA RANGE
 # ============================================================
 
 @router.get("/signals/{signal_id}/range")
@@ -646,9 +746,7 @@ async def get_signal_data_range(
     signal_id: int,
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
-    """
-    Get the actual data range (min/max timestamp) for a signal.
-    """
+    """Get the actual data range (min/max timestamp) for a signal."""
     dcs_service = DCSEngineService(dcs_db)
     range_data = await dcs_service.get_data_range(signal_id)
     return range_data
@@ -669,23 +767,19 @@ async def assign_signal_to_asset(
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
     """Assign a DCS signal to an asset."""
-    # Verify signal exists in DCS engine
     dcs_service = DCSEngineService(dcs_db)
     signal = await dcs_service.get_signal_by_id(signal_id)
     if not signal:
         raise HTTPException(status_code=404, detail="Signal not found in DCS engine")
     
-    # Verify asset exists
     asset_result = await db.execute(select(Assets).where(Assets.id == asset_id))
     if not asset_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Asset not found")
     
-    # Verify plant exists
     plant_result = await db.execute(select(Plants).where(Plants.id == plant_id))
     if not plant_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Plant not found")
     
-    # Check if configuration already exists
     existing = await db.execute(
         select(SignalConfiguration).where(
             SignalConfiguration.signal_id == signal_id,
@@ -699,7 +793,7 @@ async def assign_signal_to_asset(
         config.group_id = group_id
         config.is_active = True
         config.assigned_by = user_id
-        config.assigned_at = datetime.utcnow()
+        config.assigned_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(config)
         return {"message": "Signal assigned successfully", "config_id": config.id}
@@ -766,7 +860,6 @@ async def get_comparison_groups(
     )
     groups = result.scalars().all()
     
-    # Load items for each group
     for group in groups:
         items_result = await db.execute(
             select(ComparisonGroupItem)
@@ -884,23 +977,48 @@ async def get_comparison_data(
     start_time: Optional[str] = None,
     end_time: Optional[str] = None,
     hours: int = Query(24),
+    max_points: int = Query(10000, le=50000),
     db: AsyncSession = Depends(get_db),
     dcs_db: AsyncSession = Depends(get_dcs_db)
 ):
-    """
-    Get comparison data for a specific group across all assets.
-    """
+    """Get comparison data for a specific group across all assets."""
     if time_level not in ["raw", "minute", "hour"]:
         raise HTTPException(status_code=400, detail="Invalid time_level")
     
-    # Parse dates
     start = parse_date(start_time) if start_time else None
     end = parse_date(end_time) if end_time else None
+    now = datetime.now(timezone.utc)
     
     if not end:
-        end = datetime.utcnow()
+        end = now
     if not start:
         start = end - timedelta(hours=hours)
+    
+    # Apply limits based on time_level
+    if time_level == "raw":
+        max_start = now - timedelta(days=2)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=2):
+            end = start + timedelta(days=2)
+    elif time_level == "minute":
+        max_start = now - timedelta(days=730)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=730):
+            end = start + timedelta(days=730)
+    elif time_level == "hour":
+        max_start = now - timedelta(days=10950)
+        if start < max_start:
+            start = max_start
+        if end > now:
+            end = now
+        if end - start > timedelta(days=10950):
+            end = start + timedelta(days=10950)
     
     group_result = await db.execute(select(ComparisonGroup).where(ComparisonGroup.id == group_id))
     group = group_result.scalar_one_or_none()
@@ -920,18 +1038,17 @@ async def get_comparison_data(
         select(SignalConfiguration).where(SignalConfiguration.id.in_(config_ids))
     )
     configs = config_result.scalars().all()
-    signal_ids = [c.signal_id for c in configs]
     
     dcs_service = DCSEngineService(dcs_db)
     
     result_data = []
     for config in configs:
         if time_level == "raw":
-            data = await dcs_service.get_raw_data(config.signal_id, start, end)
+            data = await dcs_service.get_raw_data_aggregated(config.signal_id, start, end, max_points)
         elif time_level == "minute":
-            data = await dcs_service.get_minute_data(config.signal_id, start, end)
+            data = await dcs_service.get_minute_data_aggregated(config.signal_id, start, end, max_points)
         else:
-            data = await dcs_service.get_hour_data(config.signal_id, start, end)
+            data = await dcs_service.get_hour_data_aggregated(config.signal_id, start, end, max_points)
         
         signal = await dcs_service.get_signal_by_id(config.signal_id)
         
@@ -1033,7 +1150,7 @@ async def acknowledge_alarm(
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
     
-    alarm.acknowledged_at = datetime.utcnow()
+    alarm.acknowledged_at = datetime.now(timezone.utc)
     alarm.acknowledged_by = user_id
     
     await db.commit()
@@ -1055,7 +1172,7 @@ async def clear_alarm(
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
     
-    alarm.cleared_at = datetime.utcnow()
+    alarm.cleared_at = datetime.now(timezone.utc)
     alarm.is_cleared = True
     
     await db.commit()
