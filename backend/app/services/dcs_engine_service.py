@@ -270,12 +270,8 @@ class DCSEngineService:
         end_time: datetime,
         max_points: int = 10000,
     ) -> List[Dict[str, Any]]:
-        """
-        Get raw data – always returns the most recent `max_points` points.
-        The time range parameters are ignored for raw data.
-        """
+        print("🔴 get_raw_data_aggregated called!")  # <-- ADD THIS
         try:
-            # ✅ Ignore time range – always get newest points
             query = text("""
                 SELECT
                     timestamp,
@@ -288,19 +284,9 @@ class DCSEngineService:
                 ORDER BY timestamp DESC
                 LIMIT :max_points
             """)
-
-            result = await self.db.execute(
-                query,
-                {
-                    "signal_id": signal_id,
-                    "max_points": max_points,
-                }
-            )
+            result = await self.db.execute(query, {"signal_id": signal_id, "max_points": max_points})
             rows = result.fetchall()
-
-            # Reverse to show oldest → newest (left to right on chart)
             rows = rows[::-1]
-
             data = []
             for row in rows:
                 data.append({
@@ -310,9 +296,7 @@ class DCSEngineService:
                     "max_value": float(row[3]) if row[3] is not None else None,
                     "quality": row[4] if row[4] is not None else True,
                 })
-
             return data
-
         except Exception as e:
             logger.error(f"Error fetching raw data for signal {signal_id}: {e}")
             return []

@@ -1,5 +1,5 @@
 /**
- * Live Monitoring Component – Full Corrected Version (No Duplicate)
+ * Live Monitoring Component – With Actual Data Range Chip
  * File: components/AssetDetail/tabs/OperationalIntelligenceTab/subTabs/LiveMonitoring/index.jsx
  */
 
@@ -159,7 +159,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   }, [selectedSignalIds, timeLevel, setRange, setRangeFromDates]);
 
   // ============================================================
-  // 🔥 CHART DATA FETCH – Single source of truth
+  // CHART DATA FETCH – Single source of truth
   // ============================================================
   useEffect(() => {
     const fetchChartData = async () => {
@@ -224,7 +224,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
     };
 
     fetchChartData();
-  }, [selectedSignalIds.join(','), timeLevel, dataRange, forceRefresh]); // ✅ includes dataRange
+  }, [selectedSignalIds.join(','), timeLevel, dataRange, forceRefresh]);
 
   // ============================================================
   // Timeline
@@ -321,6 +321,22 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   const isRangeFixed = selectedTimeLevel?.isFixedRange || false;
 
   // ============================================================
+  // COMPUTE ACTUAL DATA RANGE FROM LOADED CHART DATA
+  // ============================================================
+  const totalDataPoints = Object.values(chartData).reduce((sum, data) => sum + (data?.length || 0), 0);
+  const hasChartData = selectedSignalIds.length > 0 && totalDataPoints > 0;
+
+  const dataRangeDisplay = useMemo(() => {
+    if (!hasChartData) return null;
+    const allPoints = Object.values(chartData).flat();
+    if (allPoints.length === 0) return null;
+    const timestamps = allPoints.map(p => new Date(p.timestamp));
+    const min = new Date(Math.min(...timestamps));
+    const max = new Date(Math.max(...timestamps));
+    return { start: min, end: max };
+  }, [chartData, hasChartData]);
+
+  // ============================================================
   // Loading states
   // ============================================================
   if (signalsLoading || isLoadingRange) {
@@ -358,12 +374,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   }
 
   // ============================================================
-  // DEBUG: Show what's happening
-  // ============================================================
-  const totalDataPoints = Object.values(chartData).reduce((sum, data) => sum + (data?.length || 0), 0);
-  const hasChartData = selectedSignalIds.length > 0 && totalDataPoints > 0;
-
-  // ============================================================
   // Main Render
   // ============================================================
   return (
@@ -389,33 +399,35 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
           <Typography variant="h5" sx={{ color: 'white', fontWeight: 600, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             Live Monitoring
           </Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-            {selectedCount} of {signals.length} signals selected · {selectedTimeLevel?.label}
+          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mt={0.5}>
+            <Chip
+              label={`${selectedCount} of ${signals.length} signals`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
+            />
             {isRangeFixed && (
               <Chip
                 label="2 Days Fixed"
                 size="small"
-                sx={{
-                  ml: 1,
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                }}
+                sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
               />
             )}
             {!chartLoading && (
               <Chip
                 label={`${totalDataPoints} points`}
                 size="small"
-                sx={{
-                  ml: 1,
-                  backgroundColor: hasChartData ? 'rgba(76,175,80,0.3)' : 'rgba(255,193,7,0.3)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                }}
+                sx={{ backgroundColor: hasChartData ? 'rgba(76,175,80,0.3)' : 'rgba(255,193,7,0.3)', color: 'white' }}
               />
             )}
-          </Typography>
+            {/* 🔥 NEW: Actual data range chip */}
+            {dataRangeDisplay && (
+              <Chip
+                label={`${dataRangeDisplay.start.toLocaleString()} → ${dataRangeDisplay.end.toLocaleString()}`}
+                size="small"
+                sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
+              />
+            )}
+          </Box>
         </Box>
         <Box display="flex" alignItems="center" gap={1}>
           <Tooltip title="Refresh Data">
