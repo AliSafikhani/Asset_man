@@ -1,5 +1,5 @@
 /**
- * Live Monitoring Component – With Actual Data Range Chip
+ * Live Monitoring Component – Generous Default Ranges (No Auto-Adjust)
  * File: components/AssetDetail/tabs/OperationalIntelligenceTab/subTabs/LiveMonitoring/index.jsx
  */
 
@@ -15,7 +15,6 @@ import {
   Tooltip,
   Button,
   Chip,
-  Collapse,
   Drawer,
   Divider,
   useTheme,
@@ -27,26 +26,18 @@ import {
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  CompareArrows as CompareIcon,
   Close as CloseIcon,
   Settings as SettingsIcon,
-  Timeline as TimelineIcon,
   CalendarToday as CalendarIcon,
-  Lock as LockIcon,
 } from '@mui/icons-material';
 
 import SignalTable from './SignalTable';
 import TrendChart from './TrendChart';
-import DataTimeline from './DataTimeline';
-import ComparisonPanel from './ComparisonPanel';
 import RealTimeValues from './RealTimeValues';
 import SignalSettings from './SignalSettings';
 
 import {
   useSignals,
-  useSignalTimeline,
   useLatestValues,
   useSignalSelection,
   useTimeRange,
@@ -55,10 +46,13 @@ import {
 
 import { getSignalDataRange, getSignalData } from '../../../../../../api/monitoring';
 
+// ============================================================
+// TIME LEVELS CONFIGURATION – Generous Defaults
+// ============================================================
 const TIME_LEVELS = [
-  { id: 'raw', label: 'Real-time', description: '1 second', maxDays: 2, defaultHours: 48, isFixedRange: true },
-  { id: 'minute', label: 'Minute', description: '1 min avg', maxDays: 730, defaultHours: 168, isFixedRange: false },
-  { id: 'hour', label: 'Hour', description: '1 hour avg', maxDays: 10950, defaultHours: 720, isFixedRange: false },
+  { id: 'raw', label: 'Real-time', description: '1 sec', defaultHours: 20, maxDays: 30 },
+  { id: 'minute', label: 'Minute', description: '1 min avg', defaultHours: 10, maxDays: 730 }, // 30 days
+  { id: 'hour', label: 'Hour', description: '1 hour avg', defaultHours: 2160, maxDays: 10950 }, // 90 days
 ];
 
 const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
@@ -74,8 +68,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   // ============================================================
   const [timeLevel, setTimeLevel] = useState('raw');
   const [selectedSignalId, setSelectedSignalId] = useState(null);
-  const [showTimeline, setShowTimeline] = useState(false);
-  const [showComparison, setShowComparison] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [dataRange, setDataRange] = useState({ min_timestamp: null, max_timestamp: null });
   const [isLoadingRange, setIsLoadingRange] = useState(false);
   const [chartData, setChartData] = useState({});
@@ -86,7 +79,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   // ============================================================
   // Hooks
   // ============================================================
-  const { startTime, endTime, hours, setRange, setRangeFromDates, format: timeFormat } = useTimeRange(24);
+  const { startTime, endTime, setRange, setRangeFromDates } = useTimeRange(24);
 
   const {
     signals,
@@ -105,26 +98,22 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   } = useSignalSelection(signals);
 
   // ============================================================
-  // AUTO-SELECT SIGNALS ON LOAD
+  // Auto-select on load
   // ============================================================
   useEffect(() => {
     if (signals.length > 0 && selectedIds.size === 0 && !initialLoadDone.current) {
-      console.log('🔄 Auto-selecting all signals:', signals.map(s => s.signal_id));
       selectAll();
       initialLoadDone.current = true;
     }
   }, [signals, selectAll, selectedIds]);
 
-  // ============================================================
-  // Derived state
-  // ============================================================
   const selectedSignalIds = useMemo(
     () => signals.filter(s => isSelected(s.signal_id)).map(s => s.signal_id),
     [signals, isSelected]
   );
 
   // ============================================================
-  // Data range
+  // Fetch data range (min/max timestamps) for the signal
   // ============================================================
   useEffect(() => {
     const fetchDataRange = async () => {
@@ -159,7 +148,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   }, [selectedSignalIds, timeLevel, setRange, setRangeFromDates]);
 
   // ============================================================
-  // CHART DATA FETCH – Single source of truth
+  // Fetch chart data – uses the current range (startTime/endTime)
   // ============================================================
   useEffect(() => {
     const fetchChartData = async () => {
@@ -172,21 +161,9 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
       const now = new Date();
       let start, end;
 
-      if (timeLevel === 'raw') {
-        // ✅ RAW: Always use last 48 hours, ending at NOW
-        start = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-        end = now;
-      } else {
-        // ✅ Minute / Hour: use dataRange if available, otherwise fallback to defaults
-        if (dataRange.min_timestamp && dataRange.max_timestamp) {
-          start = new Date(dataRange.min_timestamp);
-          end = new Date(dataRange.max_timestamp);
-        } else {
-          const defaultHours = TIME_LEVELS.find(t => t.id === timeLevel)?.defaultHours || 24;
-          start = new Date(now.getTime() - defaultHours * 60 * 60 * 1000);
-          end = now;
-        }
-      }
+      // Use the current state range (set by handleTimeLevelChange or user)
+      start = startTime || new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      end = endTime || now;
 
       const startStr = start.toISOString();
       const endStr = end.toISOString();
@@ -224,24 +201,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
     };
 
     fetchChartData();
-  }, [selectedSignalIds.join(','), timeLevel, dataRange, forceRefresh]);
-
-  // ============================================================
-  // Timeline
-  // ============================================================
-  const {
-    intervals: timelineData,
-    loading: timelineLoading,
-    error: timelineError,
-  } = useSignalTimeline(
-    selectedSignalIds.length === 1 ? selectedSignalIds[0] : null,
-    timeLevel,
-    {
-      start_time: timeFormat.start,
-      end_time: timeFormat.end,
-      hours: hours,
-    }
-  );
+  }, [selectedSignalIds.join(','), timeLevel, startTime, endTime, forceRefresh]);
 
   // ============================================================
   // Latest values
@@ -258,32 +218,15 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   // Handlers
   // ============================================================
   const handleTimeLevelChange = useCallback((event, newValue) => {
-    console.log(`🔄 Switching to ${newValue} tab`);
+    const level = TIME_LEVELS.find(t => t.id === newValue);
+    const now = new Date();
+    // ✅ Set the default range based on TIME_LEVELS
+    const start = new Date(now.getTime() - level.defaultHours * 60 * 60 * 1000);
+    setRange(start, now);
     setTimeLevel(newValue);
     setChartData({});
     setChartLoading(true);
-
-    const level = TIME_LEVELS.find(t => t.id === newValue);
-    
-    // 🔥 RAW: Always use last 48 hours (ignore dataRange)
-    if (newValue === 'raw') {
-      const now = new Date();
-      const start = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-      setRange(start, now);
-    } else if (dataRange.min_timestamp && dataRange.max_timestamp) {
-      const minDate = new Date(dataRange.min_timestamp);
-      const maxDate = new Date(dataRange.max_timestamp);
-      const padding = (maxDate - minDate) * 0.1;
-      setRangeFromDates(
-        new Date(minDate.getTime() - padding),
-        new Date(maxDate.getTime() + padding)
-      );
-    } else {
-      const defaultHours = level?.defaultHours || 24;
-      const now = new Date();
-      setRange(new Date(now.getTime() - defaultHours * 60 * 60 * 1000), now);
-    }
-  }, [dataRange, setRange, setRangeFromDates]);
+  }, [setRange]);
 
   const handleTimeRangeChange = useCallback((start, end) => {
     setRange(start, end);
@@ -291,6 +234,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
 
   const handleSignalSelect = useCallback((signalId) => {
     setSelectedSignalId(signalId);
+    setShowSettings(true);
   }, []);
 
   const handleSignalConfigUpdate = useCallback(async (signalId, config) => {
@@ -303,14 +247,12 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   }, [updateConfig, plantId, refetchSignals]);
 
   const handleRefresh = useCallback(() => {
-    console.log('🔄 Manual refresh triggered');
     refetchLatest();
     refetchSignals();
     setForceRefresh(prev => prev + 1);
   }, [refetchLatest, refetchSignals]);
 
-  const toggleTimeline = () => setShowTimeline(!showTimeline);
-  const toggleComparison = () => setShowComparison(!showComparison);
+  const closeSettings = () => setShowSettings(false);
 
   const selectedSignalData = useMemo(
     () => signals.filter(s => isSelected(s.signal_id)),
@@ -318,10 +260,9 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
   );
 
   const selectedTimeLevel = TIME_LEVELS.find(t => t.id === timeLevel);
-  const isRangeFixed = selectedTimeLevel?.isFixedRange || false;
 
   // ============================================================
-  // COMPUTE ACTUAL DATA RANGE FROM LOADED CHART DATA
+  // Compute actual data range from loaded chart data
   // ============================================================
   const totalDataPoints = Object.values(chartData).reduce((sum, data) => sum + (data?.length || 0), 0);
   const hasChartData = selectedSignalIds.length > 0 && totalDataPoints > 0;
@@ -385,7 +326,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           borderRadius: 3,
           padding: { xs: '16px 20px', sm: '20px 28px' },
-          marginBottom: 3,
+          mb: 3,
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
@@ -405,13 +346,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
               size="small"
               sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
             />
-            {isRangeFixed && (
-              <Chip
-                label="2 Days Fixed"
-                size="small"
-                sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
-              />
-            )}
             {!chartLoading && (
               <Chip
                 label={`${totalDataPoints} points`}
@@ -419,7 +353,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
                 sx={{ backgroundColor: hasChartData ? 'rgba(76,175,80,0.3)' : 'rgba(255,193,7,0.3)', color: 'white' }}
               />
             )}
-            {/* 🔥 NEW: Actual data range chip */}
             {dataRangeDisplay && (
               <Chip
                 label={`${dataRangeDisplay.start.toLocaleString()} → ${dataRangeDisplay.end.toLocaleString()}`}
@@ -440,22 +373,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Button
-            size="small"
-            variant="contained"
-            startIcon={<CompareIcon />}
-            onClick={toggleComparison}
-            sx={{
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: 2,
-              textTransform: 'none',
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' },
-            }}
-          >
-            Compare
-          </Button>
         </Box>
       </Box>
 
@@ -468,7 +385,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
             borderRadius: 2,
             bgcolor: '#f1f5f9',
             display: 'inline-flex',
-            alignSelf: 'flex-start',
           }}
         >
           <Tabs
@@ -510,34 +426,18 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
                     <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.6rem', fontWeight: 400 }}>
                       {level.description}
                     </Typography>
-                    {level.isFixedRange && (
-                      <LockIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
-                    )}
                   </Box>
                 }
               />
             ))}
           </Tabs>
         </Paper>
-
-        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-          {isRangeFixed ? (
-            <Chip
-              icon={<LockIcon sx={{ fontSize: 14 }} />}
-              label={`Last ${selectedTimeLevel?.maxDays} days (fixed)`}
-              size="small"
-              variant="outlined"
-              sx={{ borderColor: '#94a3b8', color: '#64748b' }}
-            />
-          ) : (
-            <Chip
-              label={`Range: Up to ${selectedTimeLevel?.maxDays} days`}
-              size="small"
-              variant="outlined"
-              sx={{ borderColor: '#667eea', color: '#667eea' }}
-            />
-          )}
-        </Typography>
+        <Chip
+          label={`Default: ${selectedTimeLevel?.defaultHours}h`}
+          size="small"
+          variant="outlined"
+          sx={{ borderColor: '#667eea', color: '#667eea' }}
+        />
       </Box>
 
       {/* ===== TIME RANGE PICKER ===== */}
@@ -553,7 +453,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
                 setRange(newStart, endTime);
               }
             }}
-            disabled={isRangeFixed}
             size="small"
             InputProps={{
               startAdornment: (
@@ -564,9 +463,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
             }}
             sx={{
               minWidth: 200,
-              '& .MuiInputBase-root': {
-                bgcolor: isRangeFixed ? '#f1f5f9' : 'white',
-              },
+              '& .MuiInputBase-root': { bgcolor: 'white' },
             }}
           />
           <Typography variant="body2" color="text.secondary">→</Typography>
@@ -580,7 +477,6 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
                 setRange(startTime, newEnd);
               }
             }}
-            disabled={isRangeFixed}
             size="small"
             InputProps={{
               startAdornment: (
@@ -591,20 +487,9 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
             }}
             sx={{
               minWidth: 200,
-              '& .MuiInputBase-root': {
-                bgcolor: isRangeFixed ? '#f1f5f9' : 'white',
-              },
+              '& .MuiInputBase-root': { bgcolor: 'white' },
             }}
           />
-          {isRangeFixed && (
-            <Chip
-              icon={<LockIcon sx={{ fontSize: 14 }} />}
-              label="Range is fixed to last 2 days"
-              size="small"
-              color="warning"
-              variant="outlined"
-            />
-          )}
         </Box>
       </Box>
 
@@ -612,30 +497,23 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
           gap: 1.5,
           mb: 2.5,
           width: '100%',
         }}
       >
-        <Box sx={{ background: 'white', borderRadius: 2, p: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>Total Signals</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>{signals.length}</Typography>
-        </Box>
-        <Box sx={{ background: 'white', borderRadius: 2, p: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>Selected</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#10b981' }}>{selectedCount}</Typography>
-        </Box>
-        <Box sx={{ background: 'white', borderRadius: 2, p: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>Data Points</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>
-            {totalDataPoints}
-          </Typography>
-        </Box>
-        <Box sx={{ background: 'white', borderRadius: 2, p: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>Time Level</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>{selectedTimeLevel?.label}</Typography>
-        </Box>
+        {[
+          { label: 'Total Signals', value: signals.length },
+          { label: 'Selected', value: selectedCount, color: '#10b981' },
+          { label: 'Data Points', value: totalDataPoints },
+          { label: 'Time Level', value: selectedTimeLevel?.label },
+        ].map((item, idx) => (
+          <Box key={idx} sx={{ background: 'white', borderRadius: 2, p: 1.5, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>{item.label}</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: item.color || '#0f172a' }}>{item.value}</Typography>
+          </Box>
+        ))}
       </Box>
 
       {/* ===== REAL-TIME VALUES ===== */}
@@ -725,154 +603,25 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
               />
             ) : totalDataPoints === 0 && !chartLoading && selectedSignalIds.length > 0 ? (
               <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={420} bgcolor="#fafafa" borderRadius={2} gap={2}>
-                <Typography variant="body1" color="text.secondary">
-                  ⏳ No data points loaded yet
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Selected signals: {selectedSignalIds.join(', ')}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Try clicking the Refresh button or check if the DCS generator is running.
-                </Typography>
-                <Button variant="outlined" size="small" onClick={handleRefresh} startIcon={<RefreshIcon />}>
-                  Refresh Data
-                </Button>
+                <Typography variant="body1" color="text.secondary">⏳ No data points loaded yet</Typography>
+                <Typography variant="caption" color="text.secondary">Try refreshing or check the DCS generator.</Typography>
+                <Button variant="outlined" size="small" onClick={handleRefresh} startIcon={<RefreshIcon />}>Refresh</Button>
               </Box>
             ) : (
               <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height={420} bgcolor="#fafafa" borderRadius={2} gap={1}>
-                <Typography variant="body2" color="text.secondary">
-                  Select a signal from the list to view data.
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {signals.length} signals available
-                </Typography>
+                <Typography variant="body2" color="text.secondary">Select a signal from the list to view data.</Typography>
+                <Typography variant="caption" color="text.secondary">{signals.length} signals available</Typography>
               </Box>
             )}
           </Box>
         </Grid>
       </Grid>
 
-      {/* ===== FOOTER ===== */}
-      <Box mt={2.5} display="flex" flexDirection="column" gap={1} width="100%">
-
-        {/* Timeline */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            border: '1px solid #e2e8f0',
-          }}
-        >
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{
-              px: 2,
-              py: 1.2,
-              cursor: 'pointer',
-              '&:hover': { bgcolor: '#f8fafc' },
-              transition: 'background 0.15s',
-            }}
-            onClick={toggleTimeline}
-          >
-            <Box display="flex" alignItems="center" gap={1.5}>
-              <TimelineIcon fontSize="small" sx={{ color: '#64748b' }} />
-              <Typography variant="body2" fontWeight="600" color="text.secondary">
-                Data Availability Timeline
-              </Typography>
-              {selectedSignalIds.length === 1 && timelineData && timelineData.length > 0 && (
-                <Chip label={`${timelineData.length} intervals`} size="small" variant="outlined" />
-              )}
-            </Box>
-            <IconButton size="small">
-              {showTimeline ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-          </Box>
-          <Collapse in={showTimeline}>
-            <Box sx={{ p: 2, pt: 0 }}>
-              {selectedSignalIds.length === 1 ? (
-                timelineLoading ? (
-                  <Box display="flex" justifyContent="center" p={2}>
-                    <CircularProgress size={20} />
-                  </Box>
-                ) : timelineError ? (
-                  <Alert severity="error">{timelineError}</Alert>
-                ) : !timelineData || timelineData.length === 0 ? (
-                  <Alert severity="info">No timeline data available for this signal</Alert>
-                ) : (
-                  <DataTimeline
-                    signalId={selectedSignalIds[0]}
-                    timeLevel={timeLevel}
-                    intervals={timelineData}
-                    loading={timelineLoading}
-                    error={timelineError}
-                    startTime={startTime}
-                    endTime={endTime}
-                    onRangeChange={handleTimeRangeChange}
-                    height={100}
-                  />
-                )
-              ) : (
-                <Alert severity="info">Select a single signal to view data availability</Alert>
-              )}
-            </Box>
-          </Collapse>
-        </Paper>
-
-        {/* Comparison */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            border: '1px solid #e2e8f0',
-          }}
-        >
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{
-              px: 2,
-              py: 1.2,
-              cursor: 'pointer',
-              '&:hover': { bgcolor: '#f8fafc' },
-              transition: 'background 0.15s',
-            }}
-            onClick={toggleComparison}
-          >
-            <Box display="flex" alignItems="center" gap={1.5}>
-              <CompareIcon fontSize="small" sx={{ color: '#64748b' }} />
-              <Typography variant="body2" fontWeight="600" color="text.secondary">
-                Cross-Asset Comparison
-              </Typography>
-            </Box>
-            <IconButton size="small">
-              {showComparison ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-          </Box>
-          <Collapse in={showComparison}>
-            <Box sx={{ p: 2, pt: 0 }}>
-              <ComparisonPanel
-                plantId={plantId}
-                currentAssetId={assetId}
-                timeLevel={timeLevel}
-                startTime={startTime}
-                endTime={endTime}
-                maxPoints={MAX_POINTS}
-              />
-            </Box>
-          </Collapse>
-        </Paper>
-      </Box>
-
       {/* ===== DRAWER: Signal Settings ===== */}
       <Drawer
         anchor="right"
-        open={!!selectedSignalId && !!signals.find(s => s.signal_id === selectedSignalId)}
-        onClose={() => setSelectedSignalId(null)}
+        open={showSettings && !!selectedSignalId && !!signals.find(s => s.signal_id === selectedSignalId)}
+        onClose={closeSettings}
         PaperProps={{
           sx: {
             width: { xs: '100%', sm: 420, md: 480 },
@@ -883,7 +632,7 @@ const LiveMonitoring = ({ asset, assetId, plantId: propPlantId }) => {
       >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" fontWeight="bold">Signal Settings</Typography>
-          <IconButton onClick={() => setSelectedSignalId(null)}>
+          <IconButton onClick={closeSettings}>
             <CloseIcon />
           </IconButton>
         </Box>

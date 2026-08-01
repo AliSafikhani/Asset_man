@@ -1178,3 +1178,35 @@ async def clear_alarm(
     await db.commit()
     
     return {"message": "Alarm cleared"}
+
+from sqlalchemy import text
+
+@router.get("/signals/{signal_id}/range-by-level")
+async def get_signal_range_by_level(
+    signal_id: int,
+    time_level: str = Query("raw", description="raw, minute, hour"),
+    dcs_db: AsyncSession = Depends(get_dcs_db)
+):
+    """Get min/max timestamp for a specific time level."""
+    table_map = {
+        "raw": "dcs_signal_raw",
+        "minute": "dcs_signal_min",
+        "hour": "dcs_signal_hour",
+    }
+    if time_level not in table_map:
+        raise HTTPException(400, detail="Invalid time_level")
+    table = table_map[time_level]
+    
+    query = text(f"""
+        SELECT MIN(timestamp) as min_ts, MAX(timestamp) as max_ts
+        FROM {table}
+        WHERE signal_id = :signal_id
+    """)
+    result = await dcs_db.execute(query, {"signal_id": signal_id})
+    row = result.fetchone()
+    if not row or row[0] is None:
+        return {"min_timestamp": None, "max_timestamp": None}
+    return {
+        "min_timestamp": row[0].isoformat() if row[0] else None,
+        "max_timestamp": row[1].isoformat() if row[1] else None,
+    }

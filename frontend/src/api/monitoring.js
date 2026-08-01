@@ -210,3 +210,12 @@ export const getTimeLevelDays = (timeLevel) => {
   };
   return days[timeLevel] || 0;
 };
+
+export const getSignalRangeByLevel = async (signalId, timeLevel) => {
+  const response = await apiClient.get(
+    `/monitoring/signals/${signalId}/range-by-level`,
+    { params: { time_level: timeLevel } }
+  );
+  return response.data;
+};
+
