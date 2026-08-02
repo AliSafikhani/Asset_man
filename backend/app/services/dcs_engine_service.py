@@ -63,6 +63,41 @@ class DCSEngineService:
             logger.error(f"Error fetching signals for plant {plant_id}: {e}")
             return []
 
+    async def get_signal_by_id(self, signal_id: int) -> Optional[Dict[str, Any]]:
+        """Get a single signal by its ID."""
+        try:
+            query = text("""
+                SELECT
+                    id, plant_id, kks_code, name, description, unit,
+                    alarm_level_1, alarm_level_2, alarm_level_3,
+                    max_permissible, min_permissible, valid_from, valid_to
+                FROM dcs_signal_characteristic
+                WHERE id = :signal_id
+                AND valid_to = 'infinity'
+            """)
+            result = await self.db.execute(query, {"signal_id": signal_id})
+            row = result.fetchone()
+            if not row:
+                return None
+            return {
+                "id": row[0],
+                "plant_id": row[1],
+                "kks_code": row[2],
+                "name": row[3],
+                "description": row[4],
+                "unit": row[5],
+                "alarm_level_1": float(row[6]) if row[6] is not None else None,
+                "alarm_level_2": float(row[7]) if row[7] is not None else None,
+                "alarm_level_3": float(row[8]) if row[8] is not None else None,
+                "max_permissible": float(row[9]) if row[9] is not None else None,
+                "min_permissible": float(row[10]) if row[10] is not None else None,
+                "valid_from": row[11].isoformat() if row[11] else None,
+                "valid_to": row[12].isoformat() if row[12] else None,
+            }
+        except Exception as e:
+            logger.error(f"Error fetching signal by id {signal_id}: {e}")
+            return None
+
     async def get_signals_by_ids(self, signal_ids: List[int]) -> List[Dict[str, Any]]:
         """Get multiple signals safely without SQL injection."""
         if not signal_ids:
@@ -105,9 +140,6 @@ class DCSEngineService:
 
     # ============================================================
     # RAW DATA (Retention enforced: Max 30 days lookback)
-    # ============================================================
-# ============================================================
-    # RAW DATA – Reverted to original robust SQL query execution
     # ============================================================
     async def get_raw_data_aggregated(
         self,
@@ -155,6 +187,7 @@ class DCSEngineService:
         except Exception as e:
             logger.error(f"Error fetching raw data for signal {signal_id}: {e}")
             return []
+
     # ============================================================
     # MINUTE DATA (Retention enforced: Max 1 year lookback)
     # ============================================================
