@@ -1,10 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
+from app.core.database import get_db, get_dcs_db
 from app.services.ieee_service import IEEEService
 from app.services.iec62874_service import IEC62874Service
+from app.services.rul_service import RULService
 
 router = APIRouter(tags=["Diagnostics"])
+
+
+class RULConfigPayload(BaseModel):
+    top_oil_signal_id: Optional[int] = None
+    ambient_signal_id: Optional[int] = None
+    current_signal_id: Optional[int] = None
 
 # ============================================
 # IEEE C57.104-2019 Endpoint (Live)
@@ -73,6 +82,79 @@ async def get_iec62874_status(
         "status": "success",
         "data": result
     }
+
+# ============================================
+# RUL — Thermal Life (IEC 60076-7) Endpoints (Live)
+# ============================================
+
+@router.get("/transformer/{asset_id}/rul")
+async def get_rul_status(
+    asset_id: int,
+    db: AsyncSession = Depends(get_db),
+    dcs_db: AsyncSession = Depends(get_dcs_db),
+):
+    """
+    Live IEC 60076-7 thermal-life (RUL) assessment.
+
+    Reads transformer nameplate params (webapp DB), the per-asset DCS signal
+    mapping (rul_signal_config), and the mapped signals' hourly history from
+    the read-only DCS DB. Results are NOT stored.
+    """
+    service = RULService()
+    result = await service.calculate_rul(db, dcs_db, asset_id)
+
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transformer not found or configuration error",
+        )
+
+    if "error" in result:
+        # signals_not_configured is a normal, expected state — return it as data
+        # so the UI can prompt the user to configure, rather than a hard error.
+        if result["error"] == "signals_not_configured":
+            return {"asset_id": asset_id, "status": "not_configured", "data": result}
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message", "RUL calculation failed"),
+        )
+
+    return {"asset_id": asset_id, "status": "success", "data": result}
+
+
+@router.get("/transformer/{asset_id}/rul/config")
+async def get_rul_config(
+    asset_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get the saved RUL signal mapping for an asset."""
+    service = RULService()
+    return await service.get_signal_config(db, asset_id)
+
+
+@router.put("/transformer/{asset_id}/rul/config")
+async def save_rul_config(
+    asset_id: int,
+    payload: RULConfigPayload,
+    db: AsyncSession = Depends(get_db),
+):
+    """Upsert the RUL signal mapping (top oil / ambient / current) for an asset."""
+    service = RULService()
+    return await service.save_signal_config(db, asset_id, payload.model_dump())
+
+
+@router.get("/transformer/{asset_id}/rul/available-signals")
+async def get_rul_available_signals(
+    asset_id: int,
+    db: AsyncSession = Depends(get_db),
+    dcs_db: AsyncSession = Depends(get_dcs_db),
+):
+    """List all DCS signals for the asset's plant (for the mapping dropdowns)."""
+    service = RULService()
+    signals = await service.get_available_signals(db, dcs_db, asset_id)
+    if signals is None:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return {"asset_id": asset_id, "signals": signals}
 
 # ============================================
 # Debug Endpoints (for development/testing)

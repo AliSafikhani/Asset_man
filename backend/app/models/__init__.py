@@ -15,6 +15,7 @@ from app.models.monitoring import (
     ComparisonGroup,
     ComparisonGroupItem
 )
+from app.models.rul_config import RULSignalConfig
 __all__ = [
     "Base",
     "TimestampMixin",
