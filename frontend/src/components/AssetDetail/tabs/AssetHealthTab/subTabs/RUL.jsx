@@ -18,7 +18,15 @@ import RULSettings from './RULSettings';
  */
 const RUL = ({ asset, assetId }) => {
   const [tab, setTab] = useState(0);
+  // Bumped whenever the signal mapping is saved, so the Results tab re-runs
+  // the assessment with the new configuration instead of its cached result.
+  const [refreshKey, setRefreshKey] = useState(0);
   const plantId = asset?.plant_id;
+
+  const handleSaved = () => {
+    setRefreshKey((k) => k + 1);
+    setTab(0); // jump to Results so the user sees the updated assessment
+  };
 
   return (
     <Box sx={{ background: '#f8fafc', minHeight: '100%' }}>
@@ -46,10 +54,15 @@ const RUL = ({ asset, assetId }) => {
       </Box>
 
       <Box sx={{ display: tab === 0 ? 'block' : 'none' }}>
-        <RULResults asset={asset} assetId={assetId} onConfigure={() => setTab(1)} />
+        <RULResults
+          asset={asset}
+          assetId={assetId}
+          refreshKey={refreshKey}
+          onConfigure={() => setTab(1)}
+        />
       </Box>
       <Box sx={{ display: tab === 1 ? 'block' : 'none' }}>
-        <RULSettings asset={asset} assetId={assetId} plantId={plantId} />
+        <RULSettings asset={asset} assetId={assetId} plantId={plantId} onSaved={handleSaved} />
       </Box>
     </Box>
   );

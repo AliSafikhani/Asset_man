@@ -1,0 +1,17 @@
+i want to add a report to my webapp , i think my app should have report in different level , company report , plant report , asset report , module report , 
+company and plant report is general and dapend on existing assets , but assets and molude report is specific . 
+now i focuse on transformer ( asset report )  , app should generate a pdf file 
+so in this stage i want to design an asset report , the location for this is here :
+frontend\src\components\AssetDetail\tabs\DecisionSupportTab\subTabs\Reports.jsx
+in this page user should can select modules for example whit check boxes , we have 3 stable module for transformer ( DGA , Iec 62784 , RUL ) until now ,
+ so user see a list ( contain these 3 modules )
+select moludes whit click on check box of it , and then a click on a bottom ( create report ) 
+the report page is here :
+page 1 : overview . compane name , plant name , and general information of asset (transformer ) whit a proffecional and attractive structure and design 
+page 2 : DGA ( if select ) top of page trend line af gases whit exponential scale ( becuse some gas is in order 10 and some gases in in order 5000 )
+        middle of page is a table contain these  columns (  date of test , iec ( status), ieee (status ) , duval 1 ( diagnostic ), duval 3 ( diagnostic )
+        duval 6 ( diagnostic ) , pentagon 1 ( diagnostic ), pentagon 2 ( diagnostic ), iec ( diagnostic ), rogers ( diagnostic ) , doerenburg ( diagnostic )
+        ML ( diagnostic )) , bottom of page a recommandation ( now is a blank )
+page 3 : iec 62874 . all item in this page of web app should map in report 
+page 4 : RUL .all item in this page of web app should map in report 
+        

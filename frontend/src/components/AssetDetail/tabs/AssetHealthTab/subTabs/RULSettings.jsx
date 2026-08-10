@@ -71,7 +71,7 @@ const signalLabel = (s) => {
   return parts.join(' ');
 };
 
-const RULSettings = ({ assetId }) => {
+const RULSettings = ({ assetId, onSaved }) => {
   const [signals, setSignals] = useState([]);
   const [mapping, setMapping] = useState({
     top_oil_signal_id: '',
@@ -133,6 +133,9 @@ const RULSettings = ({ assetId }) => {
       };
       await saveRULConfig(assetId, payload);
       setSnack({ severity: 'success', message: 'Signal mapping saved.' });
+      // Notify the container so the Results tab re-runs with the new mapping.
+      // Small delay so the success snackbar is visible before the tab switches.
+      if (onSaved) setTimeout(() => onSaved(), 600);
     } catch (err) {
       setSnack({
         severity: 'error',

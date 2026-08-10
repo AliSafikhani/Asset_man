@@ -8,6 +8,7 @@ venv/
 # Backend
 backend/venv/
 backend/__pycache__/
+backend/node_modules/
 
 # Frontend
 frontend/node_modules/

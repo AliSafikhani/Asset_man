@@ -29,6 +29,7 @@ const buildChartData = (ts) => {
       top_oil: ts.top_oil_temperature?.[i] ?? null,
       ambient: ts.ambient_temperature?.[i] ?? null,
       faa: ts.faa?.[i] ?? null,
+      load_factor: ts.load_factor?.[i] ?? null,
     });
   }
   return rows;
@@ -78,7 +79,44 @@ const StatCard = ({ label, value, sub, valueColor = '#0f172a', icon }) => (
   </Card>
 );
 
-const RULResults = ({ asset, assetId, onConfigure }) => {
+// Reusable trend figure: one card, a titled line chart, N series and an
+// optional horizontal reference line (nominal / limit).
+const TrendChart = ({ title, data, series, height = 260, refLine }) => (
+  <Card>
+    <h4 style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>{title}</h4>
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis dataKey="t" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={fmtDate} minTickGap={40} />
+        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} domain={['auto', 'auto']} />
+        <Tooltip labelFormatter={fmtDate} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+        <Legend verticalAlign="top" height={36} />
+        {refLine && (
+          <ReferenceLine
+            y={refLine.y}
+            stroke={refLine.color}
+            strokeDasharray="5 5"
+            label={{ value: refLine.label, fill: refLine.color, fontSize: 11, position: 'right' }}
+          />
+        )}
+        {series.map((s) => (
+          <Line
+            key={s.key}
+            type="monotone"
+            dataKey={s.key}
+            name={s.name}
+            stroke={s.color}
+            strokeWidth={s.width || 2}
+            dot={false}
+            connectNulls
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  </Card>
+);
+
+const RULResults = ({ asset, assetId, refreshKey, onConfigure }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -107,8 +145,9 @@ const RULResults = ({ asset, assetId, onConfigure }) => {
   }, [assetId]);
 
   useEffect(() => {
+    // run is stable per assetId; refreshKey bumps on save to force a re-run.
     run();
-  }, [run]);
+  }, [run, refreshKey]);
 
   // ---- Loading ----
   if (loading) {
@@ -231,6 +270,9 @@ const RULResults = ({ asset, assetId, onConfigure }) => {
   const alerts = result.alerts || {};
   const summary = result.data_summary || {};
   const chartData = buildChartData(result.time_series);
+  // Load-factor series is only present when a current signal is mapped and
+  // the transformer has rated MVA/kV (so rated current can be derived).
+  const hasLoadFactor = chartData.some((r) => r.load_factor != null);
 
   const remaining = overall.remaining_life_years;
   const design = overall.design_life_years;
@@ -470,42 +512,54 @@ const RULResults = ({ asset, assetId, onConfigure }) => {
       {chartData.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <h3 style={{ marginBottom: 16, fontSize: 18, color: '#0f172a' }}>Thermal Trends</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }}>
-            <Card>
-              <h4 style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>
-                Hot-spot / Top-oil / Ambient (°C)
-              </h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="t" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={fmtDate} minTickGap={40} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                  <Tooltip labelFormatter={fmtDate} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
-                  <Legend verticalAlign="top" height={36} />
-                  <ReferenceLine y={110} stroke="#ef4444" strokeDasharray="5 5" label={{ value: 'HS limit 110°C', fill: '#ef4444', fontSize: 11, position: 'right' }} />
-                  <Line type="monotone" dataKey="hot_spot" name="Hot-spot" stroke="#ef4444" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="top_oil" name="Top-oil" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="ambient" name="Ambient" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 24 }}>
+            {/* 1 — Raw signals: Top Oil & Ambient */}
+            <TrendChart
+              title="Raw Signals — Top Oil & Ambient (°C)"
+              data={chartData}
+              height={280}
+              series={[
+                { key: 'top_oil', name: 'Top Oil', color: '#f59e0b' },
+                { key: 'ambient', name: 'Ambient', color: '#3b82f6', width: 1.5 },
+              ]}
+            />
 
-            <Card>
-              <h4 style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>
-                Ageing Acceleration Factor (FAA)
-              </h4>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="t" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={fmtDate} minTickGap={40} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                  <Tooltip labelFormatter={fmtDate} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
-                  <Legend verticalAlign="top" height={36} />
-                  <ReferenceLine y={1} stroke="#94a3b8" strokeDasharray="3 3" label={{ value: 'Normal (1.0)', fill: '#94a3b8', fontSize: 11, position: 'right' }} />
-                  <Line type="monotone" dataKey="faa" name="FAA" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
+            {/* 2 — FAA vs nominal (1.0) */}
+            <TrendChart
+              title="Ageing Acceleration Factor (FAA)"
+              data={chartData}
+              height={280}
+              refLine={{ y: 1, color: '#94a3b8', label: 'FAA nominal (1.0)' }}
+              series={[{ key: 'faa', name: 'FAA', color: '#8b5cf6' }]}
+            />
+
+            {/* 3 — Load factor */}
+            {hasLoadFactor ? (
+              <TrendChart
+                title="Load Factor (pu)"
+                data={chartData}
+                height={280}
+                refLine={{ y: 1, color: '#94a3b8', label: 'Rated (1.0)' }}
+                series={[{ key: 'load_factor', name: 'Load Factor', color: '#10b981' }]}
+              />
+            ) : (
+              <Card>
+                <h4 style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>Load Factor (pu)</h4>
+                <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '0 24px' }}>
+                  No load-factor trend — map a Load Current signal in Settings and ensure the
+                  transformer has rated MVA/kV on its nameplate.
+                </div>
+              </Card>
+            )}
+
+            {/* 4 — Hot-spot vs limit (110°C) */}
+            <TrendChart
+              title="Hot-Spot Temperature (°C)"
+              data={chartData}
+              height={280}
+              refLine={{ y: 110, color: '#ef4444', label: 'HS limit 110°C' }}
+              series={[{ key: 'hot_spot', name: 'Hot-spot', color: '#ef4444' }]}
+            />
           </div>
           <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 8 }}>
             {summary.hours_used ? `${summary.hours_used.toLocaleString()} hourly samples` : ''}

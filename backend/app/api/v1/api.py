@@ -15,6 +15,7 @@ from app.api.v1.endpoints import alarms
 from app.api.v1.endpoints import events
 from app.api.v1.endpoints import maintenance_activities  # NEW: Import maintenance activities
 from app.api.v1.endpoints import diagnostics  # NEW: Import diagnostics (IEEE, IEC, etc.)
+from app.api.v1.endpoints import reports  # NEW: Import transformer asset report aggregator
 from app.api.algorithms import router as algorithms_router
 from app.api import upload
 from app.api.v1.endpoints import monitoring
@@ -36,6 +37,7 @@ api_router.include_router(alarms.router, prefix="/alarms")
 api_router.include_router(events.router, prefix="/events")
 api_router.include_router(maintenance_activities.router, prefix="/maintenance-activities")  # NEW: Register maintenance activities
 api_router.include_router(diagnostics.router, prefix="/diagnostics")  # NEW: Register diagnostics (IEEE live endpoint)
+api_router.include_router(reports.router, prefix="/reports")  # NEW: Register transformer asset report aggregator
 
 api_router.include_router(algorithms_router, prefix="/algorithms")
 api_router.include_router(upload.router, prefix="/upload")
