@@ -5,6 +5,11 @@ import ColumnSelector from '../../../ColumnSelector';
 import DGAAlgorithmsResults from '../../../DGAAlgorithmsResults';
 import AddResultMenu from '../../../AddResultMenu';
 import TestResultForm from '../../../TestResultForm';
+import OilQualityForm from '../../../../../components/OilQualityForm';
+import OilQualityResults from '../../../../../components/OilQualityResults';
+import OilQualityTrend from '../../../../../components/OilQualityTrend';
+import { oilQualityAPI } from '../../../../../services/api';
+import { badge60422, badge60296 } from '../../../../../constants/oilQualityConstants';
 import {
   DGA_GASES,
   GAS_KEYS,
@@ -34,6 +39,8 @@ const getDefaultVisibilityForTestType = (testTypeId, fields, testTypes) => {
     actions: true,
     ieee_status: true,
     iec_status: true,
+    iec60296_status: true,
+    iec60422_status: true,
   };
   fields.forEach(f => {
     def[f.field_name] = isDga ? DGA_GASES.includes(f.field_name) : false;
@@ -70,10 +77,27 @@ const TestResults = ({ assetId, asset }) => {
   const [statusLoading, setStatusLoading] = useState({ ieee: false, iec: false });
   const [sortConfig, setSortConfig] = useState({ key: 'test_date', direction: 'desc' });
 
+  // ---- Oil Quality (IEC 60296 + IEC 60422) state ----
+  const [oilStatusMap, setOilStatusMap] = useState({}); // test_result_id -> {iec60296_status, iec60422_status, operating_state}
+  const [oilStatusLoading, setOilStatusLoading] = useState(false);
+  const [showOilForm, setShowOilForm] = useState(false);
+  const [oilEditingResult, setOilEditingResult] = useState(null);
+  const [showOilResults, setShowOilResults] = useState(false);
+  const [oilResultsData, setOilResultsData] = useState(null);
+  const [oilResultsLoading, setOilResultsLoading] = useState(false);
+  const [showOilTrend, setShowOilTrend] = useState(false);
+  const [oilTrendData, setOilTrendData] = useState(null);
+  const [oilTrendLoading, setOilTrendLoading] = useState(false);
+
   // ---- Computed ----
   const isDGA = useMemo(() => {
     const tt = testTypes.find(t => t.id === selectedTestTypeId);
     return tt?.test_name?.toLowerCase().includes('dga') || false;
+  }, [testTypes, selectedTestTypeId]);
+
+  const isOilQuality = useMemo(() => {
+    const tt = testTypes.find(t => t.id === selectedTestTypeId);
+    return tt?.test_name?.toLowerCase().includes('oil quality') || false;
   }, [testTypes, selectedTestTypeId]);
 
   const currentVisibleColumns = useMemo(() => {
@@ -91,9 +115,12 @@ const TestResults = ({ assetId, asset }) => {
     if (isDGA) {
       special.push('ieee_status', 'iec_status');
     }
+    if (isOilQuality) {
+      special.push('iec60296_status', 'iec60422_status');
+    }
     const paramKeys = testFields.map(f => f.field_name);
     return [...new Set([...special, ...paramKeys])];
-  }, [selectedTestTypeId, isDGA, testFields]);
+  }, [selectedTestTypeId, isDGA, isOilQuality, testFields]);
 
   // ---- Effects ----
   useEffect(() => {
@@ -123,6 +150,15 @@ const TestResults = ({ assetId, asset }) => {
       loadStatus('iec');
     }
   }, [testResults, selectedTestTypeId, isDGA]);
+
+  useEffect(() => {
+    if (isOilQuality && testResults.length > 0 && assetType === 'transformer') {
+      loadOilStatuses();
+    } else {
+      setOilStatusMap({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testResults, selectedTestTypeId, isOilQuality]);
 
   // ---- Data loading ----
   const loadTestFields = async (testTypeId) => {
@@ -271,6 +307,77 @@ const TestResults = ({ assetId, asset }) => {
   // ============================================================
   // END OF UPDATED loadStatus
   // ============================================================
+
+  // ---- Oil Quality: live IEC 60296 / 60422 statuses + analyze/trend ----
+  const loadOilStatuses = async () => {
+    setOilStatusLoading(true);
+    try {
+      const res = await oilQualityAPI.statuses(assetId);
+      const rows = res.data?.data || [];
+      const map = {};
+      rows.forEach(row => {
+        if (row.test_result_id != null) {
+          map[row.test_result_id] = {
+            iec60296_status: row.iec60296_status,
+            iec60422_status: row.iec60422_status,
+            operating_state: row.operating_state,
+          };
+        }
+      });
+      setOilStatusMap(map);
+    } catch (error) {
+      console.error('Error loading oil quality statuses:', error);
+      setOilStatusMap({});
+    } finally {
+      setOilStatusLoading(false);
+    }
+  };
+
+  const handleOilAnalyze = async (result) => {
+    setShowOilResults(true);
+    setOilResultsData(null);
+    setOilResultsLoading(true);
+    try {
+      const res = await oilQualityAPI.assess(assetId, result.id);
+      setOilResultsData(res.data?.data || null);
+    } catch (error) {
+      alert('Error: ' + (error.response?.data?.detail || error.message));
+      setShowOilResults(false);
+    } finally {
+      setOilResultsLoading(false);
+    }
+  };
+
+  const handleOilTrend = async () => {
+    setShowOilTrend(true);
+    setOilTrendData(null);
+    setOilTrendLoading(true);
+    try {
+      const res = await oilQualityAPI.trend(assetId);
+      setOilTrendData(res.data?.data || null);
+    } catch (error) {
+      alert('Error: ' + (error.response?.data?.detail || error.message));
+      setShowOilTrend(false);
+    } finally {
+      setOilTrendLoading(false);
+    }
+  };
+
+  const handleOilAdd = () => {
+    setOilEditingResult(null);
+    setShowOilForm(true);
+  };
+
+  const handleOilEdit = (result) => {
+    setOilEditingResult(result);
+    setShowOilForm(true);
+  };
+
+  const handleOilFormSuccess = () => {
+    setShowOilForm(false);
+    setOilEditingResult(null);
+    loadTestResults(selectedTestTypeId);
+  };
 
   // ---- Sort & filter ----
   const sortedAndFilteredResults = useMemo(() => {
@@ -643,11 +750,21 @@ const TestResults = ({ assetId, asset }) => {
               📊 Columns ▼
             </button>
             <button
-              onClick={() => setShowAddMenu(true)}
+              onClick={() => (isOilQuality ? handleOilAdd() : setShowAddMenu(true))}
               style={{ padding: '6px 16px', background: '#667eea', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
             >
               + Add Test Result
             </button>
+            {isOilQuality && assetType === 'transformer' && (
+              <button
+                onClick={handleOilTrend}
+                disabled={testResults.length < 2}
+                title={testResults.length < 2 ? 'Need at least 2 tests for a trend' : ''}
+                style={{ padding: '6px 16px', background: testResults.length < 2 ? '#cbd5e1' : '#0ea5e9', color: 'white', border: 'none', borderRadius: '6px', cursor: testResults.length < 2 ? 'not-allowed' : 'pointer', fontSize: '13px' }}
+              >
+                📈 Trend Analyze
+              </button>
+            )}
             {selectedRows.length > 0 && (
               <button
                 onClick={handleBulkDelete}
@@ -667,6 +784,11 @@ const TestResults = ({ assetId, asset }) => {
             {isDGA && (
               <span style={{ fontSize: '12px', color: (statusLoading.ieee || statusLoading.iec) ? '#f59e0b' : '#10b981' }}>
                 {(statusLoading.ieee || statusLoading.iec) ? '🔄 Loading...' : '✅ Status Ready'}
+              </span>
+            )}
+            {isOilQuality && assetType === 'transformer' && (
+              <span style={{ fontSize: '12px', color: oilStatusLoading ? '#f59e0b' : '#10b981' }}>
+                {oilStatusLoading ? '🔄 Loading...' : '✅ Status Ready'}
               </span>
             )}
           </div>
@@ -697,7 +819,7 @@ const TestResults = ({ assetId, asset }) => {
               <h3 style={{ color: '#1e293b' }}>No Test Results Found</h3>
               <p>No test results found for {selectedTestTypeName}</p>
               <button
-                onClick={() => { setEditingResult(null); setShowTestForm(true); }}
+                onClick={() => { if (isOilQuality) { handleOilAdd(); } else { setEditingResult(null); setShowTestForm(true); } }}
                 style={{ marginTop: '12px', padding: '8px 20px', background: '#667eea', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
               >
                 + Add First Test Result
@@ -729,6 +851,8 @@ const TestResults = ({ assetId, asset }) => {
                       {currentVisibleColumns.lab_name !== false && <th style={tableStyles.th}>Laboratory Name</th>}
                       {isDGA && currentVisibleColumns.ieee_status !== false && <th style={tableStyles.th}>IEEE</th>}
                       {isDGA && currentVisibleColumns.iec_status !== false && <th style={tableStyles.th}>IEC</th>}
+                      {isOilQuality && currentVisibleColumns.iec60296_status !== false && <th style={tableStyles.th}>IEC 60296</th>}
+                      {isOilQuality && currentVisibleColumns.iec60422_status !== false && <th style={tableStyles.th}>IEC 60422</th>}
                       {testFields.map(f => currentVisibleColumns[f.field_name] !== false && (
                         <th key={f.id} style={tableStyles.th}>{f.display_name}</th>
                       ))}
@@ -783,6 +907,22 @@ const TestResults = ({ assetId, asset }) => {
                               )}
                             </td>
                           )}
+                          {isOilQuality && currentVisibleColumns.iec60296_status !== false && (
+                            <td style={tableStyles.td}>
+                              {oilStatusLoading ? '⏳' : (() => {
+                                const b = badge60296(oilStatusMap[result.id]?.iec60296_status);
+                                return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '999px', background: b.bg, color: b.color, fontSize: '11px', fontWeight: 700 }}>{b.label}</span>;
+                              })()}
+                            </td>
+                          )}
+                          {isOilQuality && currentVisibleColumns.iec60422_status !== false && (
+                            <td style={tableStyles.td}>
+                              {oilStatusLoading ? '⏳' : (() => {
+                                const b = badge60422(oilStatusMap[result.id]?.iec60422_status);
+                                return <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '999px', background: b.bg, color: b.color, fontSize: '11px', fontWeight: 700 }}>{b.label}</span>;
+                              })()}
+                            </td>
+                          )}
                           {testFields.map(field => {
                             if (currentVisibleColumns[field.field_name] === false) return null;
                             const param = result.parameters?.find(p => p.field_name === field.field_name);
@@ -799,7 +939,15 @@ const TestResults = ({ assetId, asset }) => {
                           {currentVisibleColumns.notes !== false && <td style={tableStyles.td}>{result.notes || '-'}</td>}
                           {currentVisibleColumns.actions !== false && (
                             <td style={tableStyles.tdActions}>
-                              <button onClick={() => handleEdit(result)} style={tableStyles.editButton}>Edit</button>
+                              {isOilQuality && (
+                                <button
+                                  onClick={() => handleOilAnalyze(result)}
+                                  style={{ marginRight: '4px', padding: '2px 8px', backgroundColor: '#0ea5e9', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                                >
+                                  Analyze
+                                </button>
+                              )}
+                              <button onClick={() => (isOilQuality ? handleOilEdit(result) : handleEdit(result))} style={tableStyles.editButton}>Edit</button>
                               <button onClick={() => handleDelete(result.id)} style={tableStyles.deleteButton}>Delete</button>
                             </td>
                           )}
@@ -863,6 +1011,45 @@ const TestResults = ({ assetId, asset }) => {
               onClose={() => setShowAddMenu(false)}
               onSuccess={() => { loadTestResults(selectedTestTypeId); setShowAddMenu(false); }}
             />
+          )}
+
+          {/* Oil Quality: add/edit form */}
+          {showOilForm && (
+            <OilQualityForm
+              assetId={assetId}
+              testTypeId={selectedTestTypeId}
+              editingResult={oilEditingResult}
+              onClose={() => { setShowOilForm(false); setOilEditingResult(null); }}
+              onSuccess={handleOilFormSuccess}
+            />
+          )}
+
+          {/* Oil Quality: per-test analyze dashboard */}
+          {showOilResults && (
+            oilResultsLoading || !oilResultsData ? (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, color: '#fff', fontSize: '16px' }}>
+                🔄 Loading analysis…
+              </div>
+            ) : (
+              <OilQualityResults
+                data={oilResultsData}
+                onClose={() => { setShowOilResults(false); setOilResultsData(null); }}
+              />
+            )
+          )}
+
+          {/* Oil Quality: series trend analysis */}
+          {showOilTrend && (
+            oilTrendLoading || !oilTrendData ? (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, color: '#fff', fontSize: '16px' }}>
+                🔄 Loading trend…
+              </div>
+            ) : (
+              <OilQualityTrend
+                data={oilTrendData}
+                onClose={() => { setShowOilTrend(false); setOilTrendData(null); }}
+              />
+            )
           )}
         </>
       )}

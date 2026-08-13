@@ -13,6 +13,8 @@ import TestsPage from './pages/TestsPage';
 import DCSPage from './pages/DCSPage';
 import AlarmsPage from './pages/AlarmsPage';
 import EventsPage from './pages/EventsPage';
+import OilOriginality from './pages/OilOriginality';
+import OilOriginalityDetail from './pages/OilOriginalityDetail';
 import './styles/global.css';
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
             <Route path="/assets" element={<Assets />} />
             <Route path="/setr" element={<Setr />} />
             <Route path="/assets/:assetId" element={<AssetDetail />} />
+            <Route path="/oil-originality" element={<OilOriginality />} />
+            <Route path="/oil-originality/:recordId" element={<OilOriginalityDetail />} />
             <Route path="/tests" element={<TestsPage />} />
             <Route path="/dcs" element={<DCSPage />} />
             <Route path="/alarms" element={<AlarmsPage />} />

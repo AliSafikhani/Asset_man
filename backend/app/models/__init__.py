@@ -16,6 +16,7 @@ from app.models.monitoring import (
     ComparisonGroupItem
 )
 from app.models.rul_config import RULSignalConfig
+from app.models.oil_originality import OilOriginalityRecord
 __all__ = [
     "Base",
     "TimestampMixin",
@@ -35,5 +36,7 @@ __all__ = [
     "RealtimeData",
     "SignalDefinitions",
     "AlarmRules",
-    "AlarmsLog"
+    "AlarmsLog",
+    "RULSignalConfig",
+    "OilOriginalityRecord"
 ]

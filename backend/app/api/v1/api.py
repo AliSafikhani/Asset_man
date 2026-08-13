@@ -16,6 +16,8 @@ from app.api.v1.endpoints import events
 from app.api.v1.endpoints import maintenance_activities  # NEW: Import maintenance activities
 from app.api.v1.endpoints import diagnostics  # NEW: Import diagnostics (IEEE, IEC, etc.)
 from app.api.v1.endpoints import reports  # NEW: Import transformer asset report aggregator
+from app.api.v1.endpoints import oil_originality  # NEW: Import oil originality module
+from app.api.v1.endpoints import oil_quality  # NEW: Import oil quality control module (IEC 60296 + 60422)
 from app.api.algorithms import router as algorithms_router
 from app.api import upload
 from app.api.v1.endpoints import monitoring
@@ -38,6 +40,8 @@ api_router.include_router(events.router, prefix="/events")
 api_router.include_router(maintenance_activities.router, prefix="/maintenance-activities")  # NEW: Register maintenance activities
 api_router.include_router(diagnostics.router, prefix="/diagnostics")  # NEW: Register diagnostics (IEEE live endpoint)
 api_router.include_router(reports.router, prefix="/reports")  # NEW: Register transformer asset report aggregator
+api_router.include_router(oil_originality.router, prefix="/oil-originality")  # NEW: Register oil originality module
+api_router.include_router(oil_quality.router, prefix="/oil-quality")  # NEW: Register oil quality control module
 
 api_router.include_router(algorithms_router, prefix="/algorithms")
 api_router.include_router(upload.router, prefix="/upload")

@@ -1,0 +1,15 @@
+i want to add aa new module to my web app, 
+oil originality 
+the algorithm is in this path :
+help\h_ahmadi\oil_originality
+please read this . 
+this module is related to plant , so the location should be on plant page . so at first we need a database table to store history data of this module , 
+this table should link to a plant whit plant_id 
+when user enter a plant should see oil originality  module as a bottom , click on it and enter a new page 
+ 
+this in this page user should add new oil originality , and see the history  previus added oil originality as a list 
+so in this page we have list whit mian information ( number ,date , custom name , status , action ( edit , delete , open ))
+and also a bottom ( add new ) , when user add new , it should enter a name , date and required input data ( as ecxel or copy paset ) 
+when user selest on of list ( click open) it should see a page like this :
+help\h_ahmadi\oil_originality\e06247eb-ed23-4d40-b61b-f6f8e337f7f2.png
+please do it 

@@ -74,6 +74,38 @@ export const eventAPI = {
   }
 };
 
+// Oil Originality APIs (اصالت روغن) — plant-level DSC/DTA authenticity module
+export const oilOriginalityAPI = {
+  // List records for a plant (newest first)
+  list: (plantId) => API.get(`/oil-originality/?plant_id=${plantId}`),
+  // Get one record with full detail (verdict + features + curves)
+  get: (id) => API.get(`/oil-originality/${id}`),
+  // Create a record; runs the DSC+DTA engine on the submitted curves
+  create: (plantId, data) => API.post(`/oil-originality/?plant_id=${plantId}`, data),
+  // Update editable metadata (name/date/notes)
+  update: (id, data) => API.put(`/oil-originality/${id}`, data),
+  // Delete a record
+  delete: (id) => API.delete(`/oil-originality/${id}`),
+  // Parse an uploaded Excel workbook into DSC + DTA sample curves
+  parseExcel: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return API.post('/oil-originality/parse-excel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+};
+
+// Oil Quality Control APIs — transformer IEC 60296 + IEC 60422:2024 (live, not stored)
+export const oilQualityAPI = {
+  // Per-test 60296 / 60422 statuses for the Test Results list columns
+  statuses: (assetId) => API.get(`/oil-quality/transformer/${assetId}/status`),
+  // Full analyze dashboard for one test (+ embedded trend)
+  assess: (assetId, testResultId) => API.get(`/oil-quality/transformer/${assetId}/assess/${testResultId}`),
+  // Trend analysis over the whole series of the transformer's Oil Quality tests
+  trend: (assetId) => API.get(`/oil-quality/transformer/${assetId}/trend`),
+};
+
 export const algorithmAPI = {
   // Get algorithms for a specific asset and test type
   getAlgorithms: (assetType, testType) => 

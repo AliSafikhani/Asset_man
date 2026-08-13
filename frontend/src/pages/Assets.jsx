@@ -1707,6 +1707,21 @@ function Assets() {
         </div>
       )}
 
+      {selectedPlantId && (
+        <div style={styles.moduleBar}>
+          <span style={styles.moduleBarLabel}>
+            <FaFlask size={14} color="#8b5cf6" style={{ marginRight: '6px' }} /> Plant Modules
+          </span>
+          <button
+            style={styles.moduleBtn}
+            onClick={() => navigate(`/oil-originality?plant_id=${selectedPlantId}`)}
+          >
+            <FaOilCan size={16} /> Oil Originality
+            <FaArrowRight size={12} style={{ marginLeft: '4px' }} />
+          </button>
+        </div>
+      )}
+
       <div style={styles.tableContainer}>
         <div style={styles.tableHeader}>
           <span style={styles.tableTitle}><FaDatabase size={16} color="#64748b" style={{ marginRight: '8px' }} /> Assets <span style={styles.tableCount}>({assets.length})</span></span>
@@ -2091,6 +2106,37 @@ const styles = {
     borderRadius: '12px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
     overflow: 'hidden'
+  },
+  moduleBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    background: 'white',
+    borderRadius: '12px',
+    padding: '14px 20px',
+    marginBottom: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    flexWrap: 'wrap'
+  },
+  moduleBarLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#64748b',
+    display: 'inline-flex',
+    alignItems: 'center'
+  },
+  moduleBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '9px 18px',
+    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600'
   },
   tableHeader: {
     padding: '16px 20px',

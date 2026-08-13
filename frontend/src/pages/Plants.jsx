@@ -7,10 +7,10 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Table from '../components/ui/Table';
 import toast from 'react-hot-toast';
-import { 
-  FaIndustry, FaSearch, FaPlus, FaEdit, FaTrash, FaArrowRight, 
+import {
+  FaIndustry, FaSearch, FaPlus, FaEdit, FaTrash, FaArrowRight,
   FaTimes, FaBuilding, FaMapMarkerAlt, FaWarehouse, FaDatabase,
-  FaChevronRight, FaFilter, FaHome, FaCity
+  FaChevronRight, FaFilter, FaHome, FaCity, FaFlask
 } from 'react-icons/fa';
 import { MdOutlineFactory } from 'react-icons/md';
 
@@ -469,9 +469,15 @@ function Plants() {
                 <button style={styles.detailActionBtn} onClick={() => handleEnter(selectedPlant.id)}>
                   <FaArrowRight size={16} /> View Assets
                 </button>
-                <button style={styles.detailActionBtn} onClick={() => { 
-                  setShowDetailModal(false); 
-                  handleEdit(selectedPlant); 
+                <button style={styles.detailActionBtn} onClick={() => {
+                  setShowDetailModal(false);
+                  navigate(`/oil-originality?plant_id=${selectedPlant.id}`);
+                }}>
+                  <FaFlask size={16} /> Oil Originality
+                </button>
+                <button style={styles.detailActionBtn} onClick={() => {
+                  setShowDetailModal(false);
+                  handleEdit(selectedPlant);
                 }}>
                   <FaEdit size={16} /> Edit Plant
                 </button>

@@ -1,0 +1,60 @@
+i want to add aa new module to my web app, 
+Oil Quality Control
+the algorithm is in this path :
+	help\h_ahmadi\oil_quality_control\oil quality Control
+and my require visualization page  put  in this path as image file :
+	help\h_ahmadi\oil_quality_control\f45ef9bf-341d-4c34-9b68-372c33ebd95e-2.png
+please refactor this for be syncro whit  my webapp and put algorithm in this path :
+	backend\algorithms\transformer\oil quality control
+for front we have a test result in this path 
+	frontend\src\components\AssetDetail\tabs\ConditionDiagnosticsTab\subTabs\TestResults.jsx
+in this tab user switch to oil quality test , it should can add new test results ( abottom ), see the previus added test results (a list  ) and a trned analyze ( a bottom) 
+i explain these 3 section one by one
+
+1- add new test result ( i have alredy this section , but it need to refactor ) 
+user select this bottom , see a field and enter these parameter 
+Test Date , Laboratory Name , OperatingState - dropdown (before_energization/in_service) , note , and test results as 3 subsection 
+    # ========== Group 1 – Routine tests ==========
+    "routine": [
+        {"parameter": "colour", "subclause": "7.2", "method": "ISO 2049 or ASTM D1500"},
+        {"parameter": "appearance", "subclause": "7.3", "method": "Visual test"},
+        {"parameter": "breakdown_voltage", "subclause": "7.4", "method": "IEC 60156"},
+        {"parameter": "water_content", "subclause": "7.5", "method": "IEC 60814"},
+        {"parameter": "acidity", "subclause": "7.6", "method": "IEC 62021-2 or IEC 62021-1"},
+        {"parameter": "dielectric_dissipation_90", "subclause": "7.7", "method": "IEC 60247"},
+        {"parameter": "inhibitor_content", "subclause": "7.8", "method": "IEC 60666"},
+    ],
+
+    # ========== Group 2 – Complementary tests ==========
+    "complementary": [
+        {"parameter": "sediments", "subclause": "7.9", "method": "Annex E of this document"},
+        {"parameter": "interfacial_tension", "subclause": "7.11", "method": "IEC 62961 or ASTM D971"},  
+        {"parameter": "particles", "subclause": "7.12", "method": "IEC 60970"},
+    ],
+
+    # ========== Group 3 – Special investigative tests ==========
+    "special": [
+        {"parameter": "sludge", "subclause": "7.10", "method": "Annex E of this document"},
+        {"parameter": "flash_point", "subclause": "7.13", "method": "ISO 2719"},
+        {"parameter": "compatibility", "subclause": "7.14", "method": "See 7.14"},
+        {"parameter": "pour_point", "subclause": "7.15", "method": "ISO 3016"},
+        {"parameter": "density_20", "subclause": "7.16", "method": "ISO 12185 or ISO 3675 or ASTM D7042"},
+        {"parameter": "viscosity_40", "subclause": "7.17", "method": "ISO 3104 or ASTM D7042"},
+        {"parameter": "pcb", "subclause": "7.18", "method": "IEC 61619"},
+        {"parameter": "corrosive_sulphur", "subclause": "7.19.2", "method": "DIN 51353"},
+        {"parameter": "potentially_corrosive_sulphur", "subclause": "7.19.3", "method": "IEC 62535"},
+        {"parameter": "dbds", "subclause": "7.19.4", "method": "IEC 62697-1"},
+        {"parameter": "passivator_content", "subclause": "7.20", "method": "Annex B of IEC 60666:2010"},
+    ],
+
+2- list of previus tests :
+in this section user see the list of previus test result whit this features 
+number , test date , 60296 status , 60422 status , and actions ( edit , delete , analyze)
+tha main algorithms (60296  , 60422 ) work on individual test 
+if user click on analyze , it should see the result of specific test like this image (f45ef9bf-341d-4c34-9b68-372c33ebd95e-2.png)
+
+3- a trend analyze bottom : 
+and a trend algorithm i have , that work on the series of tests 
+if user click on it , it sould see the result of trend analyze 
+	
+
