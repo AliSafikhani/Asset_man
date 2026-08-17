@@ -7,7 +7,7 @@ export const SUB_TABS_CONFIG = {
     subTabs: [
       { id: 'overview', label: 'Overview' },
       { id: 'specifications', label: 'Specifications' },
-      { id: 'history', label: 'History' },
+      // { id: 'history', label: 'History' },
       { id: 'documents', label: 'Documents' },
     ],
   },
@@ -15,10 +15,10 @@ export const SUB_TABS_CONFIG = {
     id: 'assetHealth',
     label: 'Asset Health',
     subTabs: [
-      { id: 'healthIndex', label: 'Health Index' },
-      { id: 'risk', label: 'Risk' },
+      // { id: 'healthIndex', label: 'Health Index' },
+      // { id: 'risk', label: 'Risk' },
       { id: 'rul', label: 'RUL' },
-      { id: 'recommendations', label: 'Recommendations' },
+      // { id: 'recommendations', label: 'Recommendations' },
       { id: 'iec62874', label: 'IEC 62874' },   // <-- NEW
     ],
   },
@@ -27,9 +27,9 @@ export const SUB_TABS_CONFIG = {
     label: 'Condition Diagnostics',
     subTabs: [
       { id: 'testResults', label: 'Test Results' },
-      { id: 'diagnostics', label: 'Diagnostics' },
-      { id: 'trends', label: 'Trends' },
-      { id: 'reports', label: 'Reports' },
+      // { id: 'diagnostics', label: 'Diagnostics' },
+      // { id: 'trends', label: 'Trends' },
+      // { id: 'reports', label: 'Reports' },
     ],
   },
   operationalIntelligence: {
@@ -38,9 +38,9 @@ export const SUB_TABS_CONFIG = {
     subTabs: [
       { id: 'liveMonitoring', label: 'Live Monitoring' },
       { id: 'signalConfiguration', label: 'Signal Configuration' },  // ← NEW
-      { id: 'analytics', label: 'Analytics' },
-      { id: 'alarms', label: 'Alarms' },
-      { id: 'events', label: 'Events' },
+      // { id: 'analytics', label: 'Analytics' },
+      // { id: 'alarms', label: 'Alarms' },
+      // { id: 'events', label: 'Events' },
     ],
   },
   fleetAnalytics: {
@@ -57,10 +57,10 @@ export const SUB_TABS_CONFIG = {
     id: 'decisionSupport',
     label: 'Decision Support',
     subTabs: [
-      { id: 'recommendations', label: 'Recommendations' },
+      // { id: 'recommendations', label: 'Recommendations' },
       { id: 'maintenance', label: 'Maintenance' },
       { id: 'reports', label: 'Reports' },
-      { id: 'knowledgeBase', label: 'Knowledge Base' },
+      // { id: 'knowledgeBase', label: 'Knowledge Base' },
     ],
   },
 };

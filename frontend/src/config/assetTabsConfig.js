@@ -27,12 +27,12 @@ export const MAIN_TABS = [
     component: () => import('../components/AssetDetail/tabs/OperationalIntelligenceTab'),
     subTabs: SUB_TABS_CONFIG.operationalIntelligence.subTabs,
   },
-  {
-    id: 'fleetAnalytics',
-    label: 'Fleet Analytics',
-    component: () => import('../components/AssetDetail/tabs/FleetAnalyticsTab'),
-    subTabs: SUB_TABS_CONFIG.fleetAnalytics.subTabs,
-  },
+  // {
+  //   id: 'fleetAnalytics',
+  //   label: 'Fleet Analytics',
+  //   component: () => import('../components/AssetDetail/tabs/FleetAnalyticsTab'),
+  //   subTabs: SUB_TABS_CONFIG.fleetAnalytics.subTabs,
+  // },
   {
     id: 'decisionSupport',
     label: 'Decision Support',
